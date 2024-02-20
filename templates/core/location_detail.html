@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<div class="text-sm breadcrumbs">
+  <ul>
+    <li><a href="{% url 'home' %}">Home</a></li>
+    <li>
+        {{ location.name }}
+    </li>
+  </ul>
+</div>
+
+<div class="flex">
+  <div class="flex flex-col">
+    <h1 class="text-3xl font-bold py-6">{{location.name}}</h1>
+    <div class="shadow-xl rounded-t-lg">
+      <img
+        class="max-w-sm self-end round"
+        src="/media/{{location.image}}"
+        alt="Image for {{location.name}}"
+      />
+      <p class="py-3">{{location.address}}</p>
+    </div>
+  </div>
+</div>
+
+<h2 class="text-2xl py-6">Rooms ({{ location.room_set.count}})</h2>
+<div class="flex flex-row flex-wrap space-x-3">
+  {% for room in location.room_set.all %}
+  <a
+    class="card card-compact w-1/4 bg-base-300 shadow-lg hover:shadow-2xl"
+    href="/rooms/{{room.id}}"
+  >
+    <figure class="max-h-52">
+      <img
+        class="rounded-t-lg"
+        {% if room.roomphoto_set.first %}
+        src="/media/{{room.roomphoto_set.first.image}}"
+        {% else %}
+        src="{% static 'img/room-default.png' %}"
+        {% endif %}
+      />
+    </figure>
+    <div class="card-body">
+      <div class="card-title">{{ room.name }}</div>
+      <p>{{ room.description }}</p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-title">Items</div>
+          <div class="stat-value">{{ room.item_set.count }}</div>
+        </div>
+      </div>
+    </div>
+  </a>
+  {% empty %}
+  <div>No rooms yet. <a href="#">Create one?</a></div>
+  {% endfor %}
+</div>
+{% endblock content %}

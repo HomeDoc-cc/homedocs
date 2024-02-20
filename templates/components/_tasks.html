@@ -1,0 +1,6 @@
+  <h2 class="text-xl py-6">Reminders</h2>
+<ul>
+    {% for task in tasks %}
+        <li>{{ task.name }} - {{ task.description }} - {{ task.date_scheduled }}</li>
+    {% endfor %}
+</ul>

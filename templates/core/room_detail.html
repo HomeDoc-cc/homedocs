@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<div class="text-sm breadcrumbs">
+  <ul>
+    <li><a href="{% url 'home' %}">Home</a></li>
+    <li>
+      <a href="{% url 'location_detail' room.location.id %}"
+        >{{ room.location.name }}</a
+      >
+    </li>
+    <li>{{ room.name }}</li>
+  </ul>
+</div>
+
+<div class="flex max-w-sm">
+  <div class="flex flex-col">
+    <h1 class="text-3xl font-bold py-6">{{room.name}}</h1>
+    <div class="carousel carousel-center rounded-box">
+      {% for pic in room.roomphoto_set.all %}
+      <div class="flex flex-row">
+        <img class="max-w-xs" src="/media/{{ pic.image }}" alt="Photo of {{ room.name }}" />
+      </div>
+      {% endfor %}
+    </div>
+    <p class="py-3">{{room.description}}</p>
+  </div>
+</div>
+
+<div class="flex flex-col">
+  <h2 class="text-2xl py-6">Items ({{ room.item_set.count}})</h2>
+  <div class="flex flex-row flex-wrap space-x-3">
+    {% for item in room.item_set.all %}
+  <a
+    class="card card-compact w-1/4 bg-base-300 shadow-lg hover:shadow-2xl"
+    href="{% url 'item_detail' item.id %}"
+  >
+    <figure class="max-h-52">
+      <img
+        class="rounded-t-lg"
+        src="{{item.image}}"
+        alt="{{ item.name }}"
+      />
+    </figure>
+    <div class="card-body">
+      <div class="card-title">{{ item.name }}</div>
+      <p>{{ item.description }}</p>
+    </div>
+  </a>
+  {% empty %}
+  <div>No items yet. <a href="#">Create one?</a></div>
+  {% endfor %} 
+  </div>
+</div>
+{% endblock content %}

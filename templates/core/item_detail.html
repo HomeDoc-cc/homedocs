@@ -1,0 +1,19 @@
+{% extends "base.html" %} {% block content %}
+<div class="text-sm breadcrumbs">
+  <ul>
+    <li><a href="{% url 'home' %}">Home</a></li>
+    <li>
+      <a href="{% url 'location_detail' item.location.id %}"
+        >{{ item.location.name }}</a
+      >
+    </li>
+    <li><a href="{% url 'room_detail' item.room.id %}">{{ item.room.name }}</a></li>
+    <li>{{item.name}}</li>
+  </ul>
+</div>
+<div class="flex">
+  <div class="flex flex-col">
+    <h1 class="text-3xl font-bold py-6">{{item.name}}</h1>
+  </div>
+</div>
+{% include "components/_tasks.html" with tasks=tasks %} {% endblock content %}

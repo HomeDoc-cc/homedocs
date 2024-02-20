@@ -1,0 +1,16 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}HomeDoc.cc{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+    <script src="{% static 'js/app.js' %}" async="true"></script>
+  </head>
+  <body>
+    {% include "components/_nav.html" %}
+    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+      {% block content %}{% endblock content %}
+    </div>
+  </body>
+</html>

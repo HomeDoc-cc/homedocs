@@ -1,0 +1,44 @@
+<nav class="bg-base-300">
+  <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+    <div class="flex justify-between">
+      <div class="flex flex-shrink-0 items-center justify-center">
+        <img class="h-12 w-auto" src="/static/img/logo.jpg" alt="HomeDoc" />
+      </div>
+      <div class="flex flex-grow items-center justify-start px-8">
+        <div class="flex space-x-4">
+          <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+          <a
+            href="/"
+            class="btn btn-ghost text-xl"
+            aria-current="page"
+            >Home</a
+          >
+          <a
+            href="/locations/"
+            class="btn btn-ghost text-xl"
+            aria-current="page"
+            >Locations</a
+          >
+          <a
+            href="/items/"
+            class="btn btn-ghost text-xl"
+            >Items</a
+          >
+        </div>
+      </div>
+
+      {% include "components/_themes.html" %}
+
+        <div class="avatar items-center">
+          <div class="w-12 h-12 rounded-full">
+            <img
+              class=""
+              src="/media/{{ user.userprofile.avatar }}"
+              alt="Your avatar"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

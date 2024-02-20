@@ -1,0 +1,36 @@
+{% extends "base.html" %} {% block content %}
+<h1 class="text-2xl py-6">Welcome {{ user.username }}!</h1>
+<div class="stats shadow">
+  <div class="stat">
+    <span class="stat-title">Locations</span>
+    <span class="stat-value">{{locations.count}}</span>
+    <button class="btn btn-sm">Add Location</button>
+  </div>
+  <div class="stat">
+    <span class="stat-title">Rooms</span>
+    <span class="stat-value">{{rooms.count}}</span>
+    <button class="btn btn-sm">Add Room</button>
+  </div>
+  <div class="stat">
+    <span class="stat-title">Items</span>
+    <span class="stat-value">{{items.count}}</span>
+    <button class="btn btn-sm">Add Item</button>
+  </div>
+</div>
+<div>
+  <h2 class="text-xl py-6">Recent Items</h2>
+  <ul>
+    {% for item in items %}
+    <li>
+      <a href="/items/{{item.id}}">{{ item.name }}</a> 
+      {% if item.room %} 
+      in {{item.room.name }} 
+      {% else %} 
+      at {{ item.location.name }} 
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% include "../components/_tasks.html" with tasks=tasks %}
+{% endblock content %}

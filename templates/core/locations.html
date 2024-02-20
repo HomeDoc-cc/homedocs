@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block content %} {% for location in locations %}
+<h1 class="text-2xl py-6">Locations</h1>
+<div class="grid grid-cols-4">
+  <a
+    href="/locations/{{location.id}}"
+    class="card card-compact w-96 bg-base-300 shadow-lg hover:shadow-2xl"
+  >
+    <figure><img src="/media/{{location.image}}" /></figure>
+    <div class="card-body">
+      <div class="card-title">{{ location.name }}</div>
+      <p>{{ location.address }}</p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-title">Rooms</div>
+          <div class="stat-value">{{ location.room_set.count }}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">Items</div>
+          <div class="stat-value">{{ location.item_set.count }}</div>
+        </div>
+      </div>
+    </div>
+  </a>
+  {% empty %}
+  <div>No locations yet. <a href="#">Create one?</a></div>
+</div>
+{% endfor %} {% endblock content %}
