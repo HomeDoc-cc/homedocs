@@ -1,0 +1,24 @@
+{
+  "name": "js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "watch": "npx esbuild app.js --bundle --outfile=../static/js/app.js & tailwindcss -i ../templates/global.css -o ../static/css/global.css --watch",
+    "tailwind-watch": "tailwindcss -i ../templates/global.css -o ../static/css/global.css --watch",
+    "tailwind-build": "tailwindcss -i ../templates/global.css -o ../static/css/global.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "daisyui": "^4.4.19",
+    "esbuild": "0.19.11",
+    "tailwindcss": "^3.3.6"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.5.10",
+    "theme-change": "^2.5.0"
+  }
+}
