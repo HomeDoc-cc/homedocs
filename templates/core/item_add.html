@@ -1,0 +1,23 @@
+{% extends "base.html" %} 
+{% load tailwind_filters %}
+{% block content %}
+<div class="text-sm breadcrumbs">
+    <ul>
+      <li><a href="{% url 'home' %}">Home</a></li>
+      <li>
+        <a href="{% url 'location_detail' room.location.id %}"
+          >{{ room.location.name }}</a
+        >
+      </li>
+      <li><a href="{% url 'room_detail' room.id %}">{{ room.name }}</a></li>
+      <li>Add Item</li>
+    </ul>
+  </div>
+  <div class="flex">
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Add Item</button>
+    </form>
+</div>
+{% endblock content %}

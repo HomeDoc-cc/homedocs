@@ -1,8 +1,9 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import Location, Room, Coating, Item, Task
+from .forms import ItemForm, TaskForm, CoatingForm, RoomForm, LocationForm
 import json
 
 
@@ -69,6 +70,21 @@ def room_detail(request, room_id):
 
 
 @login_required
+def room_add(request, location_id):
+    if request.method == "POST":
+        form = RoomForm(request.POST)
+        if form.is_valid():
+            room = form.save(commit=False)
+            # Assuming you have a 'room_id' parameter in the URL
+            room.location_id = location_id
+            room.save()
+            return redirect("location_detail", location_id=location_id)
+    else:
+        form = RoomForm()
+    return render(request, "core/room_add.html", {"form": form})
+
+
+@login_required
 def item_detail(request, item_id):
     item = get_object_or_404(Item, pk=item_id)
     tasks = Task.objects.filter(content_type__model="item", object_id=item_id)
@@ -77,3 +93,19 @@ def item_detail(request, item_id):
         "core/item_detail.html",
         {"item": item, "tasks": tasks},
     )
+
+
+@login_required
+def item_add(request, room_id):
+    if request.method == "POST":
+        form = ItemForm(request.POST)
+        if form.is_valid():
+            item = form.save(commit=False)
+            # Assuming you have a 'room_id' parameter in the URL
+            item.room_id = room_id
+            item.save()
+            return redirect("room_detail", room_id=room_id)
+    else:
+        room = get_object_or_404(Room, pk=room_id, location__user=request.user)
+        form = ItemForm()
+    return render(request, "core/item_add.html", {"form": form, "room": room})

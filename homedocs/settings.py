@@ -37,6 +37,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "crispy_forms",
+    "crispy_tailwind",
     "core.apps.CoreConfig",
     "django_browser_reload",
     "django.contrib.admin",
@@ -110,6 +111,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+
+CRISPY_TEMPLATE_PACK = "tailwind"
 
 # Media settings
 MEDIA_URL = "media/"

@@ -51,7 +51,15 @@ class RoomPhotoForm(forms.ModelForm):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = "__all__"
+        fields = [
+            "name",
+            "description",
+            "purchase_date",
+            "image",
+            "brand",
+            "model",
+            "serial",
+        ]
 
 
 class CategoryForm(forms.ModelForm):
