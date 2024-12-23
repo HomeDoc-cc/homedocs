@@ -1,0 +1,220 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Auth Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type             String
+  provider         String
+  providerAccountId String
+  refresh_token    String? @db.Text
+  access_token     String? @db.Text
+  expires_at       Int?
+  token_type       String?
+  scope            String?
+  id_token         String? @db.Text
+  session_state    String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // App relations
+  ownedHomes    Home[]    @relation("HomeOwner")
+  sharedHomes   HomeShare[]
+  createdTasks  Task[]    @relation("TaskCreator")
+  assignedTasks Task[]    @relation("TaskAssignee")
+}
+
+// App Models
+model Home {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  address     String
+  description String?
+
+  owner   User   @relation("HomeOwner", fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  shares    HomeShare[]
+  rooms     Room[]
+  items     Item[]
+  tasks     Task[]
+  paints    Paint[]
+  floorings Flooring[]
+}
+
+model HomeShare {
+  id        String     @id @default(cuid())
+  homeId    String
+  userId    String
+  role      ShareRole  @default(READ)
+  home      Home       @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@unique([homeId, userId])
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+
+  home   Home   @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  homeId String
+
+  items     Item[]
+  tasks     Task[]
+  paints    Paint[]
+  floorings Flooring[]
+}
+
+model Item {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  category      String?
+  manufacturer  String?
+  modelNumber   String?
+  serialNumber  String?
+  purchaseDate  DateTime?
+  warrantyUntil DateTime?
+  manualUrl     String?
+  
+  homeId        String
+  home          Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  roomId        String
+  room          Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  
+  tasks         Task[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  cronPattern String?      // For recurring tasks
+  
+  // Relations
+  homeId      String?
+  home        Home?        @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  roomId      String?
+  room        Room?        @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  itemId      String?
+  item        Item?        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  creatorId   String
+  creator     User         @relation("TaskCreator", fields: [creatorId], references: [id])
+  assigneeId  String?
+  assignee    User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum ShareRole {
+  READ
+  WRITE
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Paint {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  brand       String
+  color       String
+  finish      String
+  code        String?
+  location    String?
+  notes       String?
+
+  home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  homeId String?
+
+  room   Room?   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId String?
+
+  @@unique([homeId, roomId])
+}
+
+model Flooring {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name     String
+  type     String
+  material String
+  brand    String
+  color    String?
+  pattern  String?
+  notes    String?
+
+  home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  homeId String?
+
+  room   Room?   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId String?
+
+  @@unique([homeId, roomId])
+}
