@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface HomeFormData {
   name: string;
@@ -22,27 +22,27 @@ export default function NewHomePage() {
 
     const formData = new FormData(event.currentTarget);
     const data: HomeFormData = {
-      name: formData.get("name") as string,
-      address: formData.get("address") as string,
+      name: formData.get('name') as string,
+      address: formData.get('address') as string,
     };
 
     try {
-      const response = await fetch("/api/homes", {
-        method: "POST",
+      const response = await fetch('/api/homes', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create home");
+        throw new Error('Failed to create home');
       }
 
       const home = await response.json();
       router.push(`/homes/${home.id}`);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to create home");
+      setError(error instanceof Error ? error.message : 'Failed to create home');
     } finally {
       setIsLoading(false);
     }
@@ -82,15 +82,13 @@ export default function NewHomePage() {
             />
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
           <div className="flex justify-end space-x-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Cancel
             </button>
@@ -99,11 +97,11 @@ export default function NewHomePage() {
               disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isLoading ? "Creating..." : "Create Home"}
+              {isLoading ? 'Creating...' : 'Create Home'}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

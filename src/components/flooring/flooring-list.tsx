@@ -1,4 +1,4 @@
-import { type Flooring as PrismaFlooring } from ".prisma/client";
+import { type Flooring as PrismaFlooring } from '.prisma/client';
 
 interface FlooringListProps {
   floorings: PrismaFlooring[];
@@ -15,9 +15,7 @@ export function FlooringList({ floorings, onEdit, onDelete }: FlooringListProps)
             <div className="px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-medium text-gray-900 truncate">
-                    {flooring.name}
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900 truncate">{flooring.name}</h3>
                   <div className="mt-2 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
                     <div className="mt-2 flex items-center text-sm text-gray-500">
                       <span className="font-medium">Type:</span>
@@ -72,4 +70,4 @@ export function FlooringList({ floorings, onEdit, onDelete }: FlooringListProps)
       </ul>
     </div>
   );
-} 
+}

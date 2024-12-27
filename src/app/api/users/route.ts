@@ -1,11 +1,12 @@
-import { prisma } from "@/lib/db";
-import { requireAuth } from "@/lib/session";
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+
+import { prisma } from '@/lib/db';
+import { requireAuth } from '@/lib/session';
 
 export async function GET() {
   try {
     const user = await requireAuth();
-    
+
     // Get all users that are either owners or members of homes that the current user has access to
     const users = await prisma.user.findMany({
       where: {
@@ -55,19 +56,13 @@ export async function GET() {
       },
       distinct: ['id'], // Ensure no duplicate users
     });
-    
+
     return NextResponse.json(users);
   } catch (error) {
     if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

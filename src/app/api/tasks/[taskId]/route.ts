@@ -1,60 +1,23 @@
-import { updateTask, deleteTask } from "@/lib/task.utils";
-import { requireAuth } from "@/lib/session";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
-interface RouteContext {
-  params: {
-    taskId: string;
-  };
+import { requireAuth } from '@/lib/session';
+import { deleteTask, updateTask } from '@/lib/task.utils';
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ taskId: string }> }
+) {
+  const session = await requireAuth();
+  const json = await request.json();
+  const task = await updateTask((await params).taskId, session.id, json);
+
+  return NextResponse.json(task);
 }
 
-export async function PATCH(request: Request, context: RouteContext) {
-  try {
-    const user = await requireAuth();
-    const json = await request.json();
-    const task = await updateTask(context.params.taskId, user.id, json);
-    
-    return NextResponse.json(task);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input data" },
-        { status: 400 }
-      );
-    }
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
+  const session = await requireAuth();
+  await deleteTask((await params).taskId, session.id);
 
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  return new NextResponse(null, { status: 204 });
 }
-
-export async function DELETE(_: Request, context: RouteContext) {
-  try {
-    const user = await requireAuth();
-    await deleteTask(context.params.taskId, user.id);
-    
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-} 

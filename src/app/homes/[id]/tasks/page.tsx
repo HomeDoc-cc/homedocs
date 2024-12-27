@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Task } from "@/types/prisma";
-import { useSession } from "next-auth/react";
-import { TaskList } from "@/components/tasks/task-list";
-import { TaskModal } from "@/components/tasks/task-modal";
-import { useRouter } from "next/navigation";
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { TaskList } from '@/components/tasks/task-list';
+import { TaskModal } from '@/components/tasks/task-modal';
+import { Task } from '@/types/prisma';
 
 type User = {
   id: string;
@@ -13,64 +14,85 @@ type User = {
   email: string | null;
 };
 
-interface HomeTasksPageProps {
-  params: {
+interface TasksPageProps {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 interface TaskFormData {
   title: string;
   description?: string;
-  priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
-  status: "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   dueDate?: string;
   assigneeId?: string;
 }
 
-export default function HomeTasksPage({ params }: HomeTasksPageProps) {
+export default function TasksPage({ params }: TasksPageProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTasks();
-    fetchUsers();
-  }, [params.id]);
+    async function getParams() {
+      const { id } = await params;
+      setId(id);
+    }
+    getParams();
+  }, [params]);
 
-  const fetchTasks = async () => {
-    const response = await fetch(`/api/homes/${params.id}/tasks`);
-    const data = await response.json();
-    setTasks(data);
-  };
+  useEffect(() => {
+    if (id) {
+      fetchTasks();
+    }
+  }, [id]);
+
+  async function fetchTasks() {
+    try {
+      const response = await fetch(`/api/homes/${id}/tasks`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
+      }
+      const data = await response.json();
+      setTasks(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch tasks');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const fetchUsers = async () => {
-    const response = await fetch("/api/users");
+    const response = await fetch('/api/users');
     const data = await response.json();
     setUsers(data);
   };
 
   const handleCreateTask = async (data: TaskFormData) => {
     try {
-      const response = await fetch(`/api/homes/${params.id}/tasks`, {
-        method: "POST",
+      const response = await fetch(`/api/homes/${id}/tasks`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create task");
+        throw new Error('Failed to create task');
       }
 
       await fetchTasks();
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Error creating task:", error);
+      console.error('Error creating task:', error);
     }
   };
 
@@ -79,40 +101,40 @@ export default function HomeTasksPage({ params }: HomeTasksPageProps) {
 
     try {
       const response = await fetch(`/api/tasks/${selectedTask.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update task");
+        throw new Error('Failed to update task');
       }
 
       await fetchTasks();
       setIsModalOpen(false);
       setSelectedTask(undefined);
     } catch (error) {
-      console.error("Error updating task:", error);
+      console.error('Error updating task:', error);
     }
   };
 
   const handleDeleteTask = async (task: Task) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    if (!confirm('Are you sure you want to delete this task?')) return;
 
     try {
       const response = await fetch(`/api/tasks/${task.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete task");
+        throw new Error('Failed to delete task');
       }
 
       await fetchTasks();
     } catch (error) {
-      console.error("Error deleting task:", error);
+      console.error('Error deleting task:', error);
     }
   };
 
@@ -142,6 +164,7 @@ export default function HomeTasksPage({ params }: HomeTasksPageProps) {
         tasks={tasks}
         onEdit={handleOpenModal}
         onDelete={handleDeleteTask}
+        isLoading={isLoading}
       />
 
       <TaskModal

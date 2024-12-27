@@ -1,11 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Task, User } from "@/types/prisma";
-import { useSession } from "next-auth/react";
-import { TaskList } from "@/components/tasks/task-list";
-import { TaskModal } from "@/components/tasks/task-modal";
-import { useRouter } from "next/navigation";
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import { TaskList } from '@/components/tasks/task-list';
+import { TaskModal } from '@/components/tasks/task-modal';
+import { Task, User } from '@/types/prisma';
 
 interface TaskFormData {
   title: string;
@@ -33,14 +35,14 @@ export default function TasksPage() {
   const fetchTasks = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/tasks");
+      const response = await fetch('/api/tasks');
       if (!response.ok) {
         throw new Error(`Failed to fetch tasks: ${response.statusText}`);
       }
       const data = await response.json();
       setTasks(data);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error('Error fetching tasks:', error);
       setTasks([]);
     } finally {
       setIsLoading(false);
@@ -48,29 +50,29 @@ export default function TasksPage() {
   };
 
   const fetchUsers = async () => {
-    const response = await fetch("/api/users");
+    const response = await fetch('/api/users');
     const data = await response.json();
     setUsers(data);
   };
 
   const handleCreateTask = async (data: TaskFormData) => {
     try {
-      const response = await fetch("/api/tasks", {
-        method: "POST",
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create task");
+        throw new Error('Failed to create task');
       }
 
       await fetchTasks();
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Error creating task:", error);
+      console.error('Error creating task:', error);
     }
   };
 
@@ -79,40 +81,40 @@ export default function TasksPage() {
 
     try {
       const response = await fetch(`/api/tasks/${selectedTask.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update task");
+        throw new Error('Failed to update task');
       }
 
       await fetchTasks();
       setIsModalOpen(false);
       setSelectedTask(undefined);
     } catch (error) {
-      console.error("Error updating task:", error);
+      console.error('Error updating task:', error);
     }
   };
 
   const handleDeleteTask = async (task: Task) => {
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    if (!confirm('Are you sure you want to delete this task?')) return;
 
     try {
       const response = await fetch(`/api/tasks/${task.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete task");
+        throw new Error('Failed to delete task');
       }
 
       await fetchTasks();
     } catch (error) {
-      console.error("Error deleting task:", error);
+      console.error('Error deleting task:', error);
     }
   };
 
@@ -129,13 +131,15 @@ export default function TasksPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">All Tasks</h1>
-        <button
-          onClick={() => handleOpenModal()}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Create Task
-        </button>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Tasks</h1>
+        <div className="flex space-x-4">
+          <Link
+            href="/tasks/new"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Create Task
+          </Link>
+        </div>
       </div>
 
       <TaskList
@@ -154,4 +158,4 @@ export default function TasksPage() {
       />
     </div>
   );
-} 
+}

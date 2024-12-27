@@ -1,5 +1,6 @@
-import { prisma } from "./db";
-import { z } from "zod";
+import { z } from 'zod';
+
+import { prisma } from './db';
 
 export const homeSchema = z.object({
   name: z.string().min(1),
@@ -75,7 +76,7 @@ export async function getUserHomes(userId: string) {
       },
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -129,13 +130,26 @@ export async function getHomeById(homeId: string, userId: string) {
       },
       tasks: {
         where: {
-          OR: [
-            { status: "PENDING" },
-            { status: "IN_PROGRESS" },
-          ],
+          OR: [{ status: 'PENDING' }, { status: 'IN_PROGRESS' }],
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         take: 5,
       },
@@ -149,17 +163,13 @@ export async function getHomeById(homeId: string, userId: string) {
   });
 
   if (!home) {
-    throw new Error("Home not found");
+    throw new Error('Home not found');
   }
 
   return home;
 }
 
-export async function updateHome(
-  homeId: string,
-  userId: string,
-  input: Partial<CreateHomeInput>
-) {
+export async function updateHome(homeId: string, userId: string, input: Partial<CreateHomeInput>) {
   const home = await prisma.home.findFirst({
     where: {
       id: homeId,
@@ -169,7 +179,7 @@ export async function updateHome(
           shares: {
             some: {
               userId,
-              role: "WRITE",
+              role: 'WRITE',
             },
           },
         },
@@ -178,7 +188,7 @@ export async function updateHome(
   });
 
   if (!home) {
-    throw new Error("Home not found or insufficient permissions");
+    throw new Error('Home not found or insufficient permissions');
   }
 
   const updatedHome = await prisma.home.update({
@@ -207,7 +217,7 @@ export async function deleteHome(homeId: string, userId: string) {
   });
 
   if (!home) {
-    throw new Error("Home not found or insufficient permissions");
+    throw new Error('Home not found or insufficient permissions');
   }
 
   await prisma.home.delete({
@@ -221,7 +231,7 @@ export async function shareHome(
   homeId: string,
   userId: string,
   targetUserEmail: string,
-  role: "READ" | "WRITE"
+  role: 'READ' | 'WRITE'
 ) {
   const home = await prisma.home.findFirst({
     where: {
@@ -231,7 +241,7 @@ export async function shareHome(
   });
 
   if (!home) {
-    throw new Error("Home not found or insufficient permissions");
+    throw new Error('Home not found or insufficient permissions');
   }
 
   const targetUser = await prisma.user.findUnique({
@@ -239,11 +249,11 @@ export async function shareHome(
   });
 
   if (!targetUser) {
-    throw new Error("User not found");
+    throw new Error('User not found');
   }
 
   if (targetUser.id === userId) {
-    throw new Error("Cannot share home with yourself");
+    throw new Error('Cannot share home with yourself');
   }
 
   const existingShare = await prisma.homeShare.findUnique({
@@ -256,7 +266,7 @@ export async function shareHome(
   });
 
   if (existingShare) {
-    throw new Error("Home already shared with this user");
+    throw new Error('Home already shared with this user');
   }
 
   const homeShare = await prisma.homeShare.create({
@@ -277,4 +287,4 @@ export async function shareHome(
   });
 
   return homeShare;
-} 
+}

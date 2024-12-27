@@ -1,11 +1,12 @@
-import { prisma } from "./db";
-import { hash } from "bcryptjs";
-import { encode } from "next-auth/jwt";
+import { hash } from 'bcryptjs';
+import { encode } from 'next-auth/jwt';
+
+import { prisma } from './db';
 
 export async function getTestUserToken() {
   // Create a test user if it doesn't exist
-  const email = "test@example.com";
-  const password = "password123";
+  const email = 'test@example.com';
+  const password = 'password123';
 
   let user = await prisma.user.findUnique({
     where: { email },
@@ -16,7 +17,7 @@ export async function getTestUserToken() {
       data: {
         email,
         password: await hash(password, 12),
-        name: "Test User",
+        name: 'Test User',
       },
     });
   }
@@ -32,4 +33,4 @@ export async function getTestUserToken() {
   });
 
   return token;
-} 
+}

@@ -1,17 +1,18 @@
-"use client";
+'use client';
 
-import { type Paint as PrismaPaint } from ".prisma/client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+
+import { type Paint as PrismaPaint } from '.prisma/client';
 
 const paintSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  brand: z.string().min(1, "Brand is required"),
-  color: z.string().min(1, "Color is required"),
-  finish: z.string().min(1, "Finish is required"),
+  name: z.string().min(1, 'Name is required'),
+  brand: z.string().min(1, 'Brand is required'),
+  color: z.string().min(1, 'Color is required'),
+  finish: z.string().min(1, 'Finish is required'),
   code: z.string().optional(),
-  location: z.string().min(1, "Location is required"),
+  location: z.string().min(1, 'Location is required'),
   notes: z.string().optional(),
 });
 
@@ -30,15 +31,17 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<PaintFormData>({
     resolver: zodResolver(paintSchema),
-    defaultValues: paint ? {
-      name: paint.name,
-      brand: paint.brand,
-      color: paint.color,
-      finish: paint.finish,
-      code: paint.code || undefined,
-      location: paint.location || "",
-      notes: paint.notes || undefined,
-    } : undefined,
+    defaultValues: paint
+      ? {
+          name: paint.name,
+          brand: paint.brand,
+          color: paint.color,
+          finish: paint.finish,
+          code: paint.code || undefined,
+          location: paint.location || '',
+          notes: paint.notes || undefined,
+        }
+      : undefined,
   });
 
   return (
@@ -50,12 +53,10 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
         <input
           type="text"
           id="name"
-          {...register("name")}
+          {...register('name')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
-        {errors.name && (
-          <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-        )}
+        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
       </div>
 
       <div>
@@ -65,12 +66,10 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
         <input
           type="text"
           id="brand"
-          {...register("brand")}
+          {...register('brand')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
-        {errors.brand && (
-          <p className="mt-1 text-sm text-red-600">{errors.brand.message}</p>
-        )}
+        {errors.brand && <p className="mt-1 text-sm text-red-600">{errors.brand.message}</p>}
       </div>
 
       <div>
@@ -80,12 +79,10 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
         <input
           type="text"
           id="color"
-          {...register("color")}
+          {...register('color')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
-        {errors.color && (
-          <p className="mt-1 text-sm text-red-600">{errors.color.message}</p>
-        )}
+        {errors.color && <p className="mt-1 text-sm text-red-600">{errors.color.message}</p>}
       </div>
 
       <div>
@@ -94,7 +91,7 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
         </label>
         <select
           id="finish"
-          {...register("finish")}
+          {...register('finish')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         >
           <option value="">Select a finish</option>
@@ -104,9 +101,7 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
           <option value="Semi-Gloss">Semi-Gloss</option>
           <option value="Gloss">Gloss</option>
         </select>
-        {errors.finish && (
-          <p className="mt-1 text-sm text-red-600">{errors.finish.message}</p>
-        )}
+        {errors.finish && <p className="mt-1 text-sm text-red-600">{errors.finish.message}</p>}
       </div>
 
       <div>
@@ -116,12 +111,10 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
         <input
           type="text"
           id="code"
-          {...register("code")}
+          {...register('code')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
-        {errors.code && (
-          <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>
-        )}
+        {errors.code && <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>}
       </div>
 
       <div>
@@ -130,7 +123,7 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
         </label>
         <select
           id="location"
-          {...register("location")}
+          {...register('location')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         >
           <option value="">Select a location</option>
@@ -141,9 +134,7 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
           <option value="Cabinets">Cabinets</option>
           <option value="Other">Other</option>
         </select>
-        {errors.location && (
-          <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
-        )}
+        {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>}
       </div>
 
       <div>
@@ -153,12 +144,10 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
         <textarea
           id="notes"
           rows={3}
-          {...register("notes")}
+          {...register('notes')}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
-        {errors.notes && (
-          <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>
-        )}
+        {errors.notes && <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>}
       </div>
 
       <div className="flex justify-end space-x-3">
@@ -174,9 +163,9 @@ export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
           disabled={isSubmitting}
           className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
-          {isSubmitting ? "Saving..." : paint ? "Update Paint" : "Add Paint"}
+          {isSubmitting ? 'Saving...' : paint ? 'Update Paint' : 'Add Paint'}
         </button>
       </div>
     </form>
   );
-} 
+}

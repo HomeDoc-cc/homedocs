@@ -1,5 +1,6 @@
-import { prisma } from "./db";
-import { z } from "zod";
+import { z } from 'zod';
+
+import { prisma } from './db';
 
 export const flooringSchema = z.object({
   name: z.string().min(1),
@@ -20,7 +21,7 @@ export async function createFlooring(
 ) {
   // Ensure either homeId or roomId is provided, but not both
   if ((!homeId && !roomId) || (homeId && roomId)) {
-    throw new Error("Must provide either homeId or roomId");
+    throw new Error('Must provide either homeId or roomId');
   }
 
   // Check if user has access to the home/room
@@ -34,7 +35,7 @@ export async function createFlooring(
             shares: {
               some: {
                 userId,
-                role: "WRITE",
+                role: 'WRITE',
               },
             },
           },
@@ -43,7 +44,7 @@ export async function createFlooring(
     });
 
     if (!home) {
-      throw new Error("Home not found or insufficient permissions");
+      throw new Error('Home not found or insufficient permissions');
     }
   }
 
@@ -58,7 +59,7 @@ export async function createFlooring(
               shares: {
                 some: {
                   userId,
-                  role: "WRITE",
+                  role: 'WRITE',
                 },
               },
             },
@@ -68,7 +69,7 @@ export async function createFlooring(
     });
 
     if (!room) {
-      throw new Error("Room not found or insufficient permissions");
+      throw new Error('Room not found or insufficient permissions');
     }
   }
 
@@ -109,7 +110,7 @@ export async function getFlooringByHome(homeId: string, userId: string) {
   });
 
   if (!home) {
-    throw new Error("Home not found or insufficient permissions");
+    throw new Error('Home not found or insufficient permissions');
   }
 
   const flooring = await prisma.flooring.findMany({
@@ -117,7 +118,7 @@ export async function getFlooringByHome(homeId: string, userId: string) {
       homeId,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -145,7 +146,7 @@ export async function getFlooringByRoom(roomId: string, userId: string) {
   });
 
   if (!room) {
-    throw new Error("Room not found or insufficient permissions");
+    throw new Error('Room not found or insufficient permissions');
   }
 
   const flooring = await prisma.flooring.findMany({
@@ -153,7 +154,7 @@ export async function getFlooringByRoom(roomId: string, userId: string) {
       roomId,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -177,7 +178,7 @@ export async function updateFlooring(
                 shares: {
                   some: {
                     userId,
-                    role: "WRITE",
+                    role: 'WRITE',
                   },
                 },
               },
@@ -193,7 +194,7 @@ export async function updateFlooring(
                   shares: {
                     some: {
                       userId,
-                      role: "WRITE",
+                      role: 'WRITE',
                     },
                   },
                 },
@@ -206,7 +207,7 @@ export async function updateFlooring(
   });
 
   if (!flooring) {
-    throw new Error("Flooring not found or insufficient permissions");
+    throw new Error('Flooring not found or insufficient permissions');
   }
 
   const updatedFlooring = await prisma.flooring.update({
@@ -230,7 +231,7 @@ export async function deleteFlooring(flooringId: string, userId: string) {
                 shares: {
                   some: {
                     userId,
-                    role: "WRITE",
+                    role: 'WRITE',
                   },
                 },
               },
@@ -246,7 +247,7 @@ export async function deleteFlooring(flooringId: string, userId: string) {
                   shares: {
                     some: {
                       userId,
-                      role: "WRITE",
+                      role: 'WRITE',
                     },
                   },
                 },
@@ -259,10 +260,10 @@ export async function deleteFlooring(flooringId: string, userId: string) {
   });
 
   if (!flooring) {
-    throw new Error("Flooring not found or insufficient permissions");
+    throw new Error('Flooring not found or insufficient permissions');
   }
 
   await prisma.flooring.delete({
     where: { id: flooringId },
   });
-} 
+}

@@ -1,60 +1,44 @@
-import { deleteFlooring, updateFlooring } from "@/lib/flooring.utils";
-import { requireAuth } from "@/lib/session";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
-interface RouteContext {
-  params: {
-    flooringId: string;
-  };
+import { deleteFlooring, updateFlooring } from '@/lib/flooring.utils';
+import { requireAuth } from '@/lib/session';
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ flooringId: string }> }
+) {
+  const session = await requireAuth();
+
+  const body = await request.json();
+  const schema = z.object({
+    name: z.string().optional(),
+    description: z.string().optional(),
+    brand: z.string().optional(),
+    color: z.string().optional(),
+    material: z.string().optional(),
+    style: z.string().optional(),
+    price: z.number().optional(),
+    purchaseDate: z.string().optional(),
+    purchaseLocation: z.string().optional(),
+    installDate: z.string().optional(),
+    warranty: z.string().optional(),
+    notes: z.string().optional(),
+  });
+
+  const validatedBody = schema.parse(body);
+  const flooring = await updateFlooring((await params).flooringId, session.id, validatedBody);
+
+  return NextResponse.json(flooring);
 }
 
-export async function PATCH(request: Request, context: RouteContext) {
-  try {
-    const user = await requireAuth();
-    const json = await request.json();
-    const flooring = await updateFlooring(context.params.flooringId, user.id, json);
-    
-    return NextResponse.json(flooring);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input data" },
-        { status: 400 }
-      );
-    }
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: Promise<{ flooringId: string }> }
+) {
+  const session = await requireAuth();
 
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
+  await deleteFlooring((await params).flooringId, session.id);
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  return new NextResponse(null, { status: 204 });
 }
-
-export async function DELETE(_: Request, context: RouteContext) {
-  try {
-    const user = await requireAuth();
-    await deleteFlooring(context.params.flooringId, user.id);
-    
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-} 

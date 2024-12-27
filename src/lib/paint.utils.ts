@@ -1,5 +1,6 @@
-import { prisma } from "./db";
-import { z } from "zod";
+import { z } from 'zod';
+
+import { prisma } from './db';
 
 export const paintSchema = z.object({
   name: z.string().min(1),
@@ -20,7 +21,7 @@ export async function createPaint(
 ) {
   // Ensure either homeId or roomId is provided, but not both
   if ((!homeId && !roomId) || (homeId && roomId)) {
-    throw new Error("Must provide either homeId or roomId");
+    throw new Error('Must provide either homeId or roomId');
   }
 
   // Check if user has access to the home/room
@@ -34,7 +35,7 @@ export async function createPaint(
             shares: {
               some: {
                 userId,
-                role: "WRITE",
+                role: 'WRITE',
               },
             },
           },
@@ -43,7 +44,7 @@ export async function createPaint(
     });
 
     if (!home) {
-      throw new Error("Home not found or insufficient permissions");
+      throw new Error('Home not found or insufficient permissions');
     }
   }
 
@@ -58,7 +59,7 @@ export async function createPaint(
               shares: {
                 some: {
                   userId,
-                  role: "WRITE",
+                  role: 'WRITE',
                 },
               },
             },
@@ -68,7 +69,7 @@ export async function createPaint(
     });
 
     if (!room) {
-      throw new Error("Room not found or insufficient permissions");
+      throw new Error('Room not found or insufficient permissions');
     }
   }
 
@@ -102,7 +103,7 @@ export async function getPaintByHome(homeId: string, userId: string) {
   });
 
   if (!home) {
-    throw new Error("Home not found or insufficient permissions");
+    throw new Error('Home not found or insufficient permissions');
   }
 
   const paint = await prisma.paint.findMany({
@@ -110,7 +111,7 @@ export async function getPaintByHome(homeId: string, userId: string) {
       homeId,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -138,7 +139,7 @@ export async function getPaintByRoom(roomId: string, userId: string) {
   });
 
   if (!room) {
-    throw new Error("Room not found or insufficient permissions");
+    throw new Error('Room not found or insufficient permissions');
   }
 
   const paint = await prisma.paint.findMany({
@@ -146,7 +147,7 @@ export async function getPaintByRoom(roomId: string, userId: string) {
       roomId,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -170,7 +171,7 @@ export async function updatePaint(
                 shares: {
                   some: {
                     userId,
-                    role: "WRITE",
+                    role: 'WRITE',
                   },
                 },
               },
@@ -186,7 +187,7 @@ export async function updatePaint(
                   shares: {
                     some: {
                       userId,
-                      role: "WRITE",
+                      role: 'WRITE',
                     },
                   },
                 },
@@ -199,7 +200,7 @@ export async function updatePaint(
   });
 
   if (!paint) {
-    throw new Error("Paint not found or insufficient permissions");
+    throw new Error('Paint not found or insufficient permissions');
   }
 
   const updatedPaint = await prisma.paint.update({
@@ -223,7 +224,7 @@ export async function deletePaint(paintId: string, userId: string) {
                 shares: {
                   some: {
                     userId,
-                    role: "WRITE",
+                    role: 'WRITE',
                   },
                 },
               },
@@ -239,7 +240,7 @@ export async function deletePaint(paintId: string, userId: string) {
                   shares: {
                     some: {
                       userId,
-                      role: "WRITE",
+                      role: 'WRITE',
                     },
                   },
                 },
@@ -252,7 +253,7 @@ export async function deletePaint(paintId: string, userId: string) {
   });
 
   if (!paint) {
-    throw new Error("Paint not found or insufficient permissions");
+    throw new Error('Paint not found or insufficient permissions');
   }
 
   await prisma.paint.delete({
@@ -260,4 +261,4 @@ export async function deletePaint(paintId: string, userId: string) {
   });
 
   return true;
-} 
+}

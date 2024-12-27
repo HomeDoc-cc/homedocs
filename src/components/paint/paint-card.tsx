@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Paint } from "@/types/prisma";
+import { Paint } from '@/types/prisma';
 
 interface PaintCardProps {
   paint: Paint;
@@ -18,16 +18,8 @@ export function PaintCard({ paint, onEdit, onDelete }: PaintCardProps) {
         </div>
         <div className="flex space-x-2">
           {onEdit && (
-            <button
-              onClick={onEdit}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+            <button onClick={onEdit} className="text-gray-400 hover:text-gray-500">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -38,16 +30,8 @@ export function PaintCard({ paint, onEdit, onDelete }: PaintCardProps) {
             </button>
           )}
           {onDelete && (
-            <button
-              onClick={onDelete}
-              className="text-gray-400 hover:text-red-500"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+            <button onClick={onDelete} className="text-gray-400 hover:text-red-500">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -89,4 +73,4 @@ export function PaintCard({ paint, onEdit, onDelete }: PaintCardProps) {
       )}
     </div>
   );
-} 
+}

@@ -1,10 +1,12 @@
+import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
-import DashboardPage from './page';
 import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+
 import { getUserHomes } from '@/lib/home.utils';
 import { getRecentTasks } from '@/lib/task.utils';
-import '@testing-library/jest-dom';
-import { redirect } from 'next/navigation';
+
+import DashboardPage from './page';
 
 // Mock the modules
 jest.mock('next-auth');
@@ -93,7 +95,7 @@ describe('DashboardPage', () => {
 
   it('shows empty state when no homes exist', async () => {
     (getUserHomes as jest.Mock).mockResolvedValue([]);
-    
+
     const page = await DashboardPage();
     render(page);
 
@@ -102,10 +104,10 @@ describe('DashboardPage', () => {
 
   it('shows empty state when no tasks exist', async () => {
     (getRecentTasks as jest.Mock).mockResolvedValue([]);
-    
+
     const page = await DashboardPage();
     render(page);
 
     expect(screen.getByText("You don't have any active tasks.")).toBeInTheDocument();
   });
-}); 
+});

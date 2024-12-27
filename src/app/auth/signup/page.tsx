@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function SignUp() {
   const router = useRouter();
@@ -15,36 +15,36 @@ export default function SignUp() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const name = formData.get("name") as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const name = formData.get('name') as string;
 
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to create account");
+        throw new Error(data.error || 'Failed to create account');
       }
 
       // Sign in the user after successful signup
-      const result = await signIn("credentials", {
+      const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
       if (result?.error) {
-        throw new Error("Failed to sign in");
+        throw new Error('Failed to sign in');
       }
 
-      router.push("/");
+      router.push('/');
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Something went wrong");
+      setError(error instanceof Error ? error.message : 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -105,9 +105,7 @@ export default function SignUp() {
             </div>
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
           <div>
             <button
@@ -115,11 +113,11 @@ export default function SignUp() {
               disabled={isLoading}
               className="group relative flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
             >
-              {isLoading ? "Creating account..." : "Sign up"}
+              {isLoading ? 'Creating account...' : 'Sign up'}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

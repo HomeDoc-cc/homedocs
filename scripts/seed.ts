@@ -1,5 +1,6 @@
 import { prisma } from "../src/lib/db";
 import { hash } from "bcryptjs";
+import { TaskPriority, TaskStatus, TaskRecurrenceUnit } from "@/types/prisma";
 
 async function main() {
   try {
@@ -89,6 +90,7 @@ async function main() {
         manualUrl: "https://www.lg.com/manual.pdf",
         roomId: livingRoom.id,
         homeId: home1.id,
+        images: [],
       },
     });
 
@@ -103,6 +105,7 @@ async function main() {
         warrantyUntil: new Date("2026-02-01"),
         roomId: livingRoom.id,
         homeId: home1.id,
+        images: [],
       },
     });
 
@@ -120,6 +123,7 @@ async function main() {
         manualUrl: "https://www.samsung.com/manual.pdf",
         roomId: kitchen.id,
         homeId: home1.id,
+        images: [],
       },
     });
 
@@ -128,13 +132,18 @@ async function main() {
       data: {
         title: "Clean Living Room",
         description: "Vacuum and dust the living room",
-        priority: "MEDIUM",
-        status: "PENDING",
+        priority: TaskPriority.MEDIUM,
+        status: TaskStatus.PENDING,
         dueDate: new Date("2024-03-01"),
         creatorId: user1.id,
         assigneeId: user2.id,
         homeId: home1.id,
         roomId: livingRoom.id,
+        isRecurring: true,
+        interval: 1,
+        unit: TaskRecurrenceUnit.WEEKLY,
+        lastCompleted: null,
+        nextDueDate: new Date("2024-03-08"),
       },
     });
 
@@ -142,13 +151,18 @@ async function main() {
       data: {
         title: "Fix Kitchen Sink",
         description: "Repair leaking kitchen sink",
-        priority: "HIGH",
-        status: "IN_PROGRESS",
+        priority: TaskPriority.HIGH,
+        status: TaskStatus.IN_PROGRESS,
         dueDate: new Date("2024-02-25"),
         creatorId: user2.id,
         assigneeId: user1.id,
         homeId: home1.id,
         roomId: kitchen.id,
+        isRecurring: false,
+        interval: null,
+        unit: null,
+        lastCompleted: null,
+        nextDueDate: null,
       },
     });
 
@@ -159,6 +173,9 @@ async function main() {
         brand: "Benjamin Moore",
         color: "Revere Pewter",
         finish: "EGGSHELL",
+        code: "HC-172",
+        location: "Walls",
+        notes: "Used in main living areas",
         roomId: livingRoom.id,
         homeId: home1.id,
       },
@@ -173,6 +190,7 @@ async function main() {
         brand: "Bruce",
         color: "Natural",
         pattern: "Plank",
+        notes: "3/4 inch solid hardwood",
         roomId: livingRoom.id,
         homeId: home1.id,
       },

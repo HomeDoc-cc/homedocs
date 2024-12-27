@@ -17,16 +17,16 @@ datasource db {
 model Account {
   id                String  @id @default(cuid())
   userId            String
-  type             String
-  provider         String
+  type              String
+  provider          String
   providerAccountId String
-  refresh_token    String? @db.Text
-  access_token     String? @db.Text
-  expires_at       Int?
-  token_type       String?
-  scope            String?
-  id_token         String? @db.Text
-  session_state    String?
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -50,12 +50,12 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  
+
   // App relations
-  ownedHomes    Home[]    @relation("HomeOwner")
+  ownedHomes    Home[]      @relation("HomeOwner")
   sharedHomes   HomeShare[]
-  createdTasks  Task[]    @relation("TaskCreator")
-  assignedTasks Task[]    @relation("TaskAssignee")
+  createdTasks  Task[]      @relation("TaskCreator")
+  assignedTasks Task[]      @relation("TaskAssignee")
 }
 
 // App Models
@@ -68,7 +68,7 @@ model Home {
   address     String
   description String?
 
-  owner   User   @relation("HomeOwner", fields: [userId], references: [id], onDelete: Cascade)
+  owner  User   @relation("HomeOwner", fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   shares    HomeShare[]
@@ -80,13 +80,13 @@ model Home {
 }
 
 model HomeShare {
-  id        String     @id @default(cuid())
+  id        String    @id @default(cuid())
   homeId    String
   userId    String
-  role      ShareRole  @default(READ)
-  home      Home       @relation(fields: [homeId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime   @default(now())
+  role      ShareRole @default(READ)
+  home      Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
 
   @@unique([homeId, userId])
 }
@@ -119,15 +119,16 @@ model Item {
   purchaseDate  DateTime?
   warrantyUntil DateTime?
   manualUrl     String?
-  
-  homeId        String
-  home          Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
-  roomId        String
-  room          Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  
-  tasks         Task[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  images        String[]  @default([])
+
+  homeId String
+  home   Home   @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Task {
@@ -137,23 +138,32 @@ model Task {
   status      TaskStatus   @default(PENDING)
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
-  cronPattern String?      // For recurring tasks
-  
+
+  // Recurring task fields
+  isRecurring   Boolean             @default(false)
+  interval      Int? // The number of units (e.g., 2 for "every 2 weeks")
+  unit          TaskRecurrenceUnit? // "DAILY", "WEEKLY", "MONTHLY", "YEARLY"
+  lastCompleted DateTime? // Track when the task was last completed
+  nextDueDate   DateTime? // The next occurrence date
+  parentTaskId  String? // Reference to the original recurring task
+  parentTask    Task?               @relation("RecurringTasks", fields: [parentTaskId], references: [id])
+  childTasks    Task[]              @relation("RecurringTasks")
+
   // Relations
-  homeId      String?
-  home        Home?        @relation(fields: [homeId], references: [id], onDelete: Cascade)
-  roomId      String?
-  room        Room?        @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  itemId      String?
-  item        Item?        @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  
-  creatorId   String
-  creator     User         @relation("TaskCreator", fields: [creatorId], references: [id])
-  assigneeId  String?
-  assignee    User?        @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  homeId String?
+  home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  roomId String?
+  room   Room?   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  itemId String?
+  item   Item?   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  creatorId  String
+  creator    User    @relation("TaskCreator", fields: [creatorId], references: [id])
+  assigneeId String?
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum ShareRole {
@@ -175,18 +185,25 @@ enum TaskPriority {
   URGENT
 }
 
+enum TaskRecurrenceUnit {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
 model Paint {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String
-  brand       String
-  color       String
-  finish      String
-  code        String?
-  location    String?
-  notes       String?
+  name     String
+  brand    String
+  color    String
+  finish   String
+  code     String?
+  location String?
+  notes    String?
 
   home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
   homeId String?

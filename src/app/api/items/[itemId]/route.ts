@@ -1,30 +1,22 @@
-import { getItemById } from "@/lib/item.utils";
-import { requireAuth } from "@/lib/session";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
-interface RouteContext {
-  params: {
-    itemId: string;
-  };
+import { getItemById, updateItem } from '@/lib/item.utils';
+import { requireAuth } from '@/lib/session';
+
+export async function GET(_: NextRequest, { params }: { params: Promise<{ itemId: string }> }) {
+  const session = await requireAuth();
+  const item = await getItemById((await params).itemId, session.id);
+
+  return NextResponse.json(item);
 }
 
-export async function GET(_: Request, context: RouteContext) {
-  try {
-    const user = await requireAuth();
-    const item = await getItemById(context.params.itemId, user.id);
-    
-    return NextResponse.json(item);
-  } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ itemId: string }> }
+) {
+  const session = await requireAuth();
+  const json = await request.json();
+  const item = await updateItem((await params).itemId, session.id, json);
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-} 
+  return NextResponse.json(item);
+}

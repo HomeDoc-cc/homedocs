@@ -1,5 +1,6 @@
-import { prisma } from "./db";
-import { z } from "zod";
+import { z } from 'zod';
+
+import { prisma } from './db';
 
 export const itemSchema = z.object({
   name: z.string().min(1),
@@ -11,12 +12,12 @@ export const itemSchema = z.object({
   purchaseDate: z.string().datetime().optional(),
   warrantyUntil: z.string().datetime().optional(),
   manualUrl: z.string().url().optional(),
+  images: z.array(z.string().url()).default([]),
 });
 
 export type CreateItemInput = z.infer<typeof itemSchema>;
 
 export async function createItem(roomId: string, userId: string, input: CreateItemInput) {
-  // Check if user has access to the room
   const room = await prisma.room.findFirst({
     where: {
       id: roomId,
@@ -27,35 +28,30 @@ export async function createItem(roomId: string, userId: string, input: CreateIt
             shares: {
               some: {
                 userId,
-                role: "WRITE",
+                role: 'WRITE',
               },
             },
           },
         ],
       },
     },
+    include: {
+      home: true,
+    },
   });
 
   if (!room) {
-    throw new Error("Room not found or insufficient permissions");
+    throw new Error('Room not found or insufficient permissions');
   }
-
-  const { 
-    purchaseDate,
-    warrantyUntil,
-    ...rest
-  } = itemSchema.parse(input);
 
   const item = await prisma.item.create({
     data: {
-      ...rest,
-      purchaseDate: purchaseDate ? new Date(purchaseDate) : undefined,
-      warrantyUntil: warrantyUntil ? new Date(warrantyUntil) : undefined,
+      ...input,
       room: {
         connect: { id: roomId },
       },
       home: {
-        connect: { id: room.homeId },
+        connect: { id: room.home.id },
       },
     },
   });
@@ -84,7 +80,7 @@ export async function getItemsByRoom(roomId: string, userId: string) {
   });
 
   if (!room) {
-    throw new Error("Room not found or insufficient permissions");
+    throw new Error('Room not found or insufficient permissions');
   }
 
   const items = await prisma.item.findMany({
@@ -92,21 +88,10 @@ export async function getItemsByRoom(roomId: string, userId: string) {
       roomId,
     },
     include: {
-      tasks: {
-        where: {
-          OR: [
-            { status: "PENDING" },
-            { status: "IN_PROGRESS" },
-          ],
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        take: 5,
-      },
+      room: true,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -133,20 +118,12 @@ export async function getItemById(itemId: string, userId: string) {
       },
     },
     include: {
-      tasks: {
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
       room: {
-        select: {
-          id: true,
-          name: true,
+        include: {
           home: {
             select: {
               id: true,
               name: true,
-              userId: true,
             },
           },
         },
@@ -160,17 +137,13 @@ export async function getItemById(itemId: string, userId: string) {
   });
 
   if (!item) {
-    throw new Error("Item not found");
+    throw new Error('Item not found or insufficient permissions');
   }
 
   return item;
 }
 
-export async function updateItem(
-  itemId: string,
-  userId: string,
-  input: Partial<CreateItemInput>
-) {
+export async function updateItem(itemId: string, userId: string, input: Partial<CreateItemInput>) {
   const item = await prisma.item.findFirst({
     where: {
       id: itemId,
@@ -182,7 +155,7 @@ export async function updateItem(
               shares: {
                 some: {
                   userId,
-                  role: "WRITE",
+                  role: 'WRITE',
                 },
               },
             },
@@ -193,14 +166,10 @@ export async function updateItem(
   });
 
   if (!item) {
-    throw new Error("Item not found or insufficient permissions");
+    throw new Error('Item not found or insufficient permissions');
   }
 
-  const { 
-    purchaseDate,
-    warrantyUntil,
-    ...rest
-  } = input;
+  const { purchaseDate, warrantyUntil, ...rest } = input;
 
   const updatedItem = await prisma.item.update({
     where: { id: itemId },
@@ -226,7 +195,7 @@ export async function deleteItem(itemId: string, userId: string) {
               shares: {
                 some: {
                   userId,
-                  role: "WRITE",
+                  role: 'WRITE',
                 },
               },
             },
@@ -237,7 +206,7 @@ export async function deleteItem(itemId: string, userId: string) {
   });
 
   if (!item) {
-    throw new Error("Item not found or insufficient permissions");
+    throw new Error('Item not found or insufficient permissions');
   }
 
   await prisma.item.delete({
@@ -245,4 +214,4 @@ export async function deleteItem(itemId: string, userId: string) {
   });
 
   return true;
-} 
+}

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { type Paint as PrismaPaint } from ".prisma/client";
+import { type Paint as PrismaPaint } from '.prisma/client';
 
 interface PaintListProps {
   paints: PrismaPaint[];
@@ -17,9 +17,7 @@ export function PaintList({ paints, onEdit, onDelete }: PaintListProps) {
             <div className="px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-medium text-gray-900 truncate">
-                    {paint.name}
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900 truncate">{paint.name}</h3>
                   <div className="mt-2 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
                     <div className="mt-2 flex items-center text-sm text-gray-500">
                       <span className="font-medium">Brand:</span>
@@ -74,4 +72,4 @@ export function PaintList({ paints, onEdit, onDelete }: PaintListProps) {
       </ul>
     </div>
   );
-} 
+}
