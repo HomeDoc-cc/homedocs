@@ -1,0 +1,10 @@
+-- AlterTable
+ALTER TABLE "Home" ADD COLUMN     "images" TEXT[] DEFAULT ARRAY[]::TEXT[];
+
+-- AlterTable
+ALTER TABLE "Paint" ALTER COLUMN "brand" DROP NOT NULL,
+ALTER COLUMN "color" DROP NOT NULL,
+ALTER COLUMN "finish" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "Room" ADD COLUMN     "images" TEXT[] DEFAULT ARRAY[]::TEXT[];

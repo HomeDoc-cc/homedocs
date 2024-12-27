@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import { requireAuth } from '@/lib/session';
 import { createTask, getAllTasks } from '@/lib/task.utils';
@@ -15,7 +14,6 @@ export async function POST(request: NextRequest) {
   const session = await requireAuth();
   const json = await request.json();
 
-  // Convert string values to appropriate types
   const data = {
     ...json,
     isRecurring: Boolean(json.isRecurring),

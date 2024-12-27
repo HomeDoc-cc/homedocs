@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import { requireAuth } from '@/lib/session';
 import { deleteTask, updateTask } from '@/lib/task.utils';

@@ -9,6 +9,7 @@ interface HomeWithCounts {
   _count: {
     rooms: number;
     tasks: number;
+    items: number;
   };
 }
 
@@ -42,6 +43,7 @@ export function HomesOverview({ homes }: HomesOverviewProps) {
             <p className="text-gray-600 dark:text-gray-300 mb-4">{home.address}</p>
             <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
               <span>{home._count.rooms} Rooms</span>
+              <span>{home._count.items} Items</span>
               <span>{home._count.tasks} Tasks</span>
             </div>
           </Link>

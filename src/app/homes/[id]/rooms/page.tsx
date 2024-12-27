@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-interface RoomsPageProps {
+import { Home } from '@/types/prisma';
+
+interface PageProps {
   params: Promise<{
     id: string;
   }>;
@@ -21,13 +23,14 @@ interface Room {
   };
 }
 
-export default function RoomsPage({ params }: RoomsPageProps) {
+export default function RoomsPage({ params }: PageProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [id, setId] = useState<string | null>(null);
+  const [home, setHome] = useState<Home | null>(null);
 
   useEffect(() => {
     async function getParams() {
@@ -39,9 +42,23 @@ export default function RoomsPage({ params }: RoomsPageProps) {
 
   useEffect(() => {
     if (id) {
-      fetchRooms();
+      void fetchRooms();
+      void fetchHome();
     }
   }, [id]);
+
+  const fetchHome = async () => {
+    try {
+      const response = await fetch(`/api/homes/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch home');
+      }
+      const data = await response.json();
+      setHome(data);
+    } catch (error) {
+      console.error('Failed to fetch home:', error);
+    }
+  };
 
   async function fetchRooms() {
     try {
@@ -69,7 +86,9 @@ export default function RoomsPage({ params }: RoomsPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Rooms</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {home?.name || 'Loading...'} Rooms
+        </h1>
         <Link
           href={`/homes/${id}/rooms/new`}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"

@@ -78,7 +78,7 @@ export default function ItemPage({ params }: ItemPageProps) {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-red-500">{error}</div>
+        <div className="text-center text-red-500 dark:text-red-400">{error}</div>
       </div>
     );
   }
@@ -86,7 +86,7 @@ export default function ItemPage({ params }: ItemPageProps) {
   if (!item) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-gray-600 dark:text-gray-400">Loading...</div>
       </div>
     );
   }
@@ -94,16 +94,16 @@ export default function ItemPage({ params }: ItemPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <Link href={`/rooms/${item.room.id}`} className="text-blue-500 hover:text-blue-600">
+        <Link href={`/rooms/${item.room.id}`} className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
           ← Back to {item.room.name}
         </Link>
       </div>
 
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">{item.name}</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{item.name}</h1>
         <Link
           href={`/items/${item.id}/edit`}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
         >
           Edit Item
         </Link>
@@ -127,7 +127,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                     key={index}
                     onClick={() => setSelectedImage(image)}
                     className={`relative aspect-square ${
-                      selectedImage === image ? 'ring-2 ring-blue-500' : ''
+                      selectedImage === image ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''
                     }`}
                   >
                     <Image
@@ -142,45 +142,45 @@ export default function ItemPage({ params }: ItemPageProps) {
             )}
           </div>
         ) : (
-          <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-            <span className="text-gray-400">No images available</span>
+          <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+            <span className="text-gray-400 dark:text-gray-500">No images available</span>
           </div>
         )}
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Details</h2>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Details</h2>
             <dl className="space-y-2">
               {item.description && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Description</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{item.description}</dd>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">{item.description}</dd>
                 </div>
               )}
               <div>
-                <dt className="text-sm font-medium text-gray-500">Location</dt>
-                <dd className="mt-1 text-sm text-gray-900">
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Location</dt>
+                <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">
                   {item.room.home.name} - {item.room.name}
                 </dd>
               </div>
               {item.category && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Category</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{item.category}</dd>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Category</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">{item.category}</dd>
                 </div>
               )}
               {item.purchaseDate && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Purchase Date</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Purchase Date</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">
                     {new Date(item.purchaseDate).toLocaleDateString()}
                   </dd>
                 </div>
               )}
               {item.warrantyUntil && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Warranty Until</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Warranty Until</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">
                     {new Date(item.warrantyUntil).toLocaleDateString()}
                   </dd>
                 </div>
@@ -188,36 +188,36 @@ export default function ItemPage({ params }: ItemPageProps) {
             </dl>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-semibold mb-4">Product Information</h2>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Product Information</h2>
             <dl className="space-y-2">
               {item.manufacturer && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Manufacturer</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{item.manufacturer}</dd>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Manufacturer</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">{item.manufacturer}</dd>
                 </div>
               )}
               {item.modelNumber && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Model Number</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{item.modelNumber}</dd>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Model Number</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">{item.modelNumber}</dd>
                 </div>
               )}
               {item.serialNumber && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Serial Number</dt>
-                  <dd className="mt-1 text-sm text-gray-900">{item.serialNumber}</dd>
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Serial Number</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">{item.serialNumber}</dd>
                 </div>
               )}
               {item.manualUrl && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Manual</dt>
-                  <dd className="mt-1 text-sm text-gray-900">
+                  <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Manual</dt>
+                  <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">
                     <a
                       href={item.manualUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:text-blue-600"
+                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       View Manual
                     </a>
@@ -229,17 +229,17 @@ export default function ItemPage({ params }: ItemPageProps) {
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-semibold mb-2">Tasks</h2>
-            <p className="text-gray-600">View and manage tasks for this item</p>
+            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Tasks</h2>
+            <p className="text-gray-600 dark:text-gray-400">View and manage tasks for this item</p>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-2xl font-semibold text-gray-700">{item._count.tasks}</span>
+            <span className="text-2xl font-semibold text-gray-700 dark:text-gray-300">{item._count.tasks}</span>
             <Link
               href={`/tasks/new?itemId=${item.id}`}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
             >
               Add Task
             </Link>

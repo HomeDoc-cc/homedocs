@@ -3,6 +3,7 @@
 import { Menu, Transition } from '@headlessui/react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Fragment } from 'react';
 
 import { useTheme } from '@/contexts/theme-context';
@@ -14,6 +15,17 @@ function classNames(...classes: string[]) {
 export function Navbar() {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    if (path === '/dashboard') {
+      return pathname === '/dashboard';
+    }
+    if (path === '/tasks') {
+      return pathname.startsWith('/tasks');
+    }
+    return false;
+  };
 
   return (
     <nav className="bg-white dark:bg-gray-800 shadow">
@@ -29,13 +41,23 @@ export function Navbar() {
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 dark:text-white"
+                  className={classNames(
+                    isActive('/dashboard')
+                      ? 'border-blue-500 text-gray-900 dark:text-white'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:border-gray-300',
+                    'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium'
+                  )}
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/tasks"
-                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                  className={classNames(
+                    isActive('/tasks')
+                      ? 'border-blue-500 text-gray-900 dark:text-white'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:border-gray-300',
+                    'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium'
+                  )}
                 >
                   Tasks
                 </Link>
@@ -75,6 +97,19 @@ export function Navbar() {
                           )}
                         >
                           Profile
+                        </Link>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <Link
+                          href="/settings"
+                          className={classNames(
+                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                            'block px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
+                          )}
+                        >
+                          Settings
                         </Link>
                       )}
                     </Menu.Item>

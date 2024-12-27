@@ -2,12 +2,12 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 import { PaintList } from '@/components/paint/paint-list';
 import { PaintModal } from '@/components/paint/paint-modal';
 
-import { type Paint as PrismaPaint } from '.prisma/client';
+import { type Paint as PrismaPaint, type Room } from '.prisma/client';
 
 interface PaintPageProps {
   params: Promise<{
@@ -15,47 +15,63 @@ interface PaintPageProps {
   }>;
 }
 
-interface PaintFormData {
-  name: string;
-  brand: string;
-  color: string;
-  finish: string;
-  code?: string | null;
-  location?: string | null;
-  notes?: string | null;
-}
+type PaintFormData = Partial<
+  Omit<PrismaPaint, 'id' | 'createdAt' | 'updatedAt' | 'homeId' | 'roomId'>
+>;
 
 export default function PaintPage({ params }: PaintPageProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const { id } = use(params);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPaint, setSelectedPaint] = useState<PrismaPaint | undefined>(undefined);
   const [paints, setPaints] = useState<PrismaPaint[]>([]);
+  const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function getParams() {
-      const { id } = await params;
-      setId(id);
-    }
-    getParams();
-  }, [params]);
-
-  useEffect(() => {
-    if (id) {
-      fetchPaints();
-    }
+    void fetchRoom();
   }, [id]);
 
-  const fetchPaints = async () => {
+  useEffect(() => {
+    if (room?.homeId) {
+      void fetchPaints();
+    }
+  }, [id, room?.homeId]);
+
+  const fetchRoom = async () => {
     try {
-      const response = await fetch(`/api/rooms/${id}/paint`);
+      const response = await fetch(`/api/rooms/${id}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch paint');
+        throw new Error('Failed to fetch room');
       }
       const data = await response.json();
-      setPaints(data);
+      setRoom(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch room');
+    }
+  };
+
+  const fetchPaints = async () => {
+    if (!room?.homeId) return;
+
+    try {
+      // Fetch room-specific paints
+      const roomResponse = await fetch(`/api/rooms/${id}/paint`);
+      if (!roomResponse.ok) {
+        throw new Error('Failed to fetch room paint');
+      }
+      const roomPaints = await roomResponse.json();
+
+      // Fetch home paints
+      const homeResponse = await fetch(`/api/homes/${room.homeId}/paint`);
+      if (!homeResponse.ok) {
+        throw new Error('Failed to fetch home paint');
+      }
+      const homePaints = await homeResponse.json();
+
+      // Combine both sets of paints
+      setPaints([...roomPaints, ...homePaints.filter((paint: PrismaPaint) => !paint.roomId)]);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch paint');
     }
@@ -68,7 +84,10 @@ export default function PaintPage({ params }: PaintPageProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          roomId: id,
+        }),
       });
 
       if (!response.ok) {
@@ -79,6 +98,7 @@ export default function PaintPage({ params }: PaintPageProps) {
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error creating paint entry:', error);
+      throw error;
     }
   };
 
@@ -87,7 +107,7 @@ export default function PaintPage({ params }: PaintPageProps) {
 
     try {
       const response = await fetch(`/api/paint/${selectedPaint.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -103,6 +123,7 @@ export default function PaintPage({ params }: PaintPageProps) {
       setSelectedPaint(undefined);
     } catch (error) {
       console.error('Error updating paint entry:', error);
+      throw error;
     }
   };
 
@@ -137,7 +158,9 @@ export default function PaintPage({ params }: PaintPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Room Paint</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          {room?.name || 'Loading...'} Paint
+        </h1>
         <button
           onClick={() => handleOpenModal()}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -146,7 +169,12 @@ export default function PaintPage({ params }: PaintPageProps) {
         </button>
       </div>
 
-      <PaintList paints={paints} onEdit={handleOpenModal} onDelete={handleDeletePaint} />
+      <PaintList
+        paints={paints}
+        onEdit={handleOpenModal}
+        onDelete={handleDeletePaint}
+        roomName={room?.name}
+      />
 
       <PaintModal
         isOpen={isModalOpen}

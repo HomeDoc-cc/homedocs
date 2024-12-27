@@ -72,6 +72,7 @@ export async function getUserHomes(userId: string) {
         select: {
           rooms: true,
           tasks: true,
+          items: true,
         },
       },
     },
@@ -157,6 +158,7 @@ export async function getHomeById(homeId: string, userId: string) {
         select: {
           rooms: true,
           tasks: true,
+          items: true,
         },
       },
     },

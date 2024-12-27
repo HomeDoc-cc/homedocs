@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -15,9 +16,11 @@ interface Home {
   id: string;
   name: string;
   address: string;
+  images: string[];
   _count: {
     rooms: number;
     tasks: number;
+    items: number;
   };
   owner: {
     id: string;
@@ -88,6 +91,23 @@ export default function HomePage({ params }: HomePageProps) {
         </Link>
       </div>
 
+      {home.images && home.images.length > 0 && (
+        <div className="mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {home.images.map((url, index) => (
+              <div key={index} className="relative aspect-video">
+                <Image
+                  src={url}
+                  alt={`${home.name} - Image ${index + 1}`}
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Details</h2>
@@ -107,11 +127,17 @@ export default function HomePage({ params }: HomePageProps) {
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Quick Stats</h2>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-3 gap-4">
             <div>
               <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Rooms</dt>
               <dd className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">
                 {home._count.rooms}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Items</dt>
+              <dd className="mt-1 text-3xl font-semibold text-gray-900 dark:text-white">
+                {home._count.items}
               </dd>
             </div>
             <div>

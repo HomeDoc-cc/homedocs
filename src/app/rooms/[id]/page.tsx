@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -15,6 +16,7 @@ interface Room {
   id: string;
   name: string;
   description: string | null;
+  images: string[];
   _count: {
     items: number;
     tasks: number;
@@ -94,6 +96,23 @@ export default function RoomPage({ params }: RoomPageProps) {
           Edit Room
         </Link>
       </div>
+
+      {room.images && room.images.length > 0 && (
+        <div className="mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {room.images.map((url, index) => (
+              <div key={index} className="relative aspect-video">
+                <Image
+                  src={url}
+                  alt={`${room.name} - Image ${index + 1}`}
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {room.description && (
         <div className="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6">

@@ -5,6 +5,7 @@ import { prisma } from './db';
 export const roomSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
+  images: z.array(z.string()).optional(),
 });
 
 export type CreateRoomInput = z.infer<typeof roomSchema>;
@@ -120,7 +121,11 @@ export async function getRoomById(roomId: string, userId: string) {
         ],
       },
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      images: true,
       items: {
         orderBy: {
           createdAt: 'desc',
@@ -206,6 +211,7 @@ export async function updateRoom(roomId: string, userId: string, input: Partial<
       id: true,
       name: true,
       description: true,
+      images: true,
       _count: {
         select: {
           items: true,

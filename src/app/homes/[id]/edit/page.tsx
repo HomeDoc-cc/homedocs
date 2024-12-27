@@ -4,6 +4,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { ImageUpload } from '@/components/image-upload';
+
 interface EditHomePageProps {
   params: Promise<{
     id: string;
@@ -14,6 +16,7 @@ interface Home {
   id: string;
   name: string;
   address: string;
+  images: string[];
 }
 
 export default function EditHomePage({ params }: EditHomePageProps) {
@@ -24,6 +27,7 @@ export default function EditHomePage({ params }: EditHomePageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [id, setId] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
 
   useEffect(() => {
     async function getParams() {
@@ -47,6 +51,7 @@ export default function EditHomePage({ params }: EditHomePageProps) {
       }
       const data = await response.json();
       setHome(data);
+      setImages(data.images || []);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch home');
     }
@@ -61,6 +66,7 @@ export default function EditHomePage({ params }: EditHomePageProps) {
     const data = {
       name: formData.get('name') as string,
       address: formData.get('address') as string,
+      images,
     };
 
     try {
@@ -162,6 +168,8 @@ export default function EditHomePage({ params }: EditHomePageProps) {
               placeholder="e.g., 123 Ocean Drive"
             />
           </div>
+
+          <ImageUpload images={images} onImagesChange={setImages} />
 
           {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 

@@ -1,15 +1,15 @@
-import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
 import { Navbar } from '@/components/layout/navbar';
 import { Providers } from '@/components/providers';
 import { ThemeProvider } from '@/contexts/theme-context';
+import { QueryProvider } from '@/providers/query-provider';
 
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'HomeDocs',
   description: 'Document and manage your home',
 };
@@ -35,12 +35,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={inter.className}>
         <Providers>
-          <ThemeProvider>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-              <Navbar />
-              <main>{children}</main>
-            </div>
-          </ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider>
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <Navbar />
+                <main>{children}</main>
+              </div>
+            </ThemeProvider>
+          </QueryProvider>
         </Providers>
       </body>
     </html>

@@ -87,7 +87,7 @@ export default function RoomFlooringPage({ params }: RoomFlooringPageProps) {
 
     try {
       const response = await fetch(`/api/flooring/${selectedFlooring.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },

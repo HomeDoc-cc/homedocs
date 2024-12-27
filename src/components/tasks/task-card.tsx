@@ -1,6 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 import { Task } from '@/types/prisma';
 
@@ -8,6 +9,7 @@ interface TaskCardProps {
   task: Task;
   onEdit?: () => void;
   onDelete?: () => void;
+  onComplete?: () => void;
 }
 
 const priorityColors = {
@@ -24,7 +26,53 @@ const statusColors = {
   CANCELLED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
 };
 
-export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
+const unitDisplay = {
+  DAILY: 'day',
+  WEEKLY: 'week',
+  MONTHLY: 'month',
+  YEARLY: 'year',
+};
+
+function toUnitDisplay(count: number, unit: string) {
+  const display = `${unitDisplay[unit as keyof typeof unitDisplay]}`;
+  return count === 1 ? display : `${count} ${display}s`;
+}
+
+function LocationLink({ type, id, name }: { type: string; id: string; name: string }) {
+  return (
+    <Link
+      href={`/${type}s/${id}`}
+      className="hover:text-blue-600 dark:hover:text-blue-400"
+    >
+      {name}
+    </Link>
+  );
+}
+
+function getLocationLinks(task: Task) {
+  const parts = [];
+  if (task.item) {
+    parts.push(
+      <LocationLink key="item" type="item" id={task.item.id} name={task.item.name} />
+    );
+  }
+  if (task.room) {
+    parts.push(
+      <LocationLink key="room" type="room" id={task.room.id} name={task.room.name} />
+    );
+  }
+  if (task.home) {
+    parts.push(
+      <LocationLink key="home" type="home" id={task.home.id} name={task.home.name} />
+    );
+  }
+  return parts;
+}
+
+export function TaskCard({ task, onEdit, onDelete, onComplete }: TaskCardProps) {
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+  const locationLinks = getLocationLinks(task);
+
   return (
     <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div className="flex justify-between items-start">
@@ -33,8 +81,42 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
           {task.description && (
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{task.description}</p>
           )}
+          {locationLinks.length > 0 && (
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+              <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {locationLinks.reduce((prev, curr, i) => (
+                <>
+                  {prev}
+                  {i > 0 && <span className="mx-1">›</span>}
+                  {curr}
+                </>
+              ))}
+            </p>
+          )}
         </div>
         <div className="flex space-x-2">
+          {onComplete && task.status !== 'COMPLETED' && (
+            <button
+              onClick={onComplete}
+              className="text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400"
+              title="Mark as complete"
+            >
+              <span className="sr-only">Complete</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          )}
           {onEdit && (
             <button
               onClick={onEdit}
@@ -65,23 +147,33 @@ export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}
+          className={`hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            priorityColors[task.priority]
+          }`}
         >
           {task.priority}
         </span>
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[task.status]}`}
+          className={`hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            statusColors[task.status]
+          }`}
         >
           {task.status.replace('_', ' ')}
         </span>
         {task.dueDate && (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              isOverdue
+                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+            }`}
+          >
             Due {format(new Date(task.dueDate), 'MMM d, yyyy')}
           </span>
         )}
         {task.isRecurring && (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
-            Repeats every {task.interval} {task.unit}
+            Repeats every {toUnitDisplay(task.interval || 1, task.unit || 'DAY')}
           </span>
         )}
       </div>

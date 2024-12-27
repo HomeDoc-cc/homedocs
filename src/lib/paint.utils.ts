@@ -3,10 +3,10 @@ import { z } from 'zod';
 import { prisma } from './db';
 
 export const paintSchema = z.object({
-  name: z.string().min(1),
-  brand: z.string().min(1),
-  color: z.string().min(1),
-  finish: z.string().min(1),
+  name: z.string(),
+  brand: z.string().optional(),
+  color: z.string().optional(),
+  finish: z.string().optional(),
   code: z.string().optional(),
   location: z.string().min(1),
   notes: z.string().optional(),
@@ -73,9 +73,12 @@ export async function createPaint(
     }
   }
 
+  input.name = `${input.location} - ${input.brand} ${input.color}`;
+  const parsedInput = paintSchema.parse(input);
+
   const paint = await prisma.paint.create({
     data: {
-      ...paintSchema.parse(input),
+      ...parsedInput,
       ...(homeId ? { home: { connect: { id: homeId } } } : {}),
       ...(roomId ? { room: { connect: { id: roomId } } } : {}),
     },
@@ -108,7 +111,21 @@ export async function getPaintByHome(homeId: string, userId: string) {
 
   const paint = await prisma.paint.findMany({
     where: {
-      homeId,
+      OR: [
+        { homeId },
+        {
+          room: {
+            homeId,
+          },
+        },
+      ],
+    },
+    include: {
+      room: {
+        select: {
+          name: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',

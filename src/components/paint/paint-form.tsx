@@ -1,170 +1,323 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Combobox } from '@headlessui/react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+
+import { useBrands } from '@/hooks/useBrands';
 
 import { type Paint as PrismaPaint } from '.prisma/client';
 
-const paintSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  brand: z.string().min(1, 'Brand is required'),
-  color: z.string().min(1, 'Color is required'),
-  finish: z.string().min(1, 'Finish is required'),
-  code: z.string().optional(),
-  location: z.string().min(1, 'Location is required'),
-  notes: z.string().optional(),
-});
-
-type PaintFormData = z.infer<typeof paintSchema>;
-
-interface PaintFormProps {
-  paint?: PrismaPaint;
-  onSubmit: (data: PaintFormData) => void;
-  onCancel: () => void;
+interface ColorData {
+  code: string;
+  name: string;
+  brand: string;
+  hex: string;
+  rgbR: number;
+  rgbG: number;
+  rgbB: number;
 }
 
-export function PaintForm({ paint, onSubmit, onCancel }: PaintFormProps) {
+interface PaintFormData {
+  location: string;
+  brand: string;
+  color: string;
+  finish: string;
+  code: string;
+  notes: string;
+}
+
+interface PaintFormProps {
+  onSubmit: (data: PaintFormData) => void;
+  onCancel: () => void;
+  paint?: PrismaPaint | null;
+}
+
+export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
   } = useForm<PaintFormData>({
-    resolver: zodResolver(paintSchema),
-    defaultValues: paint
-      ? {
-          name: paint.name,
-          brand: paint.brand,
-          color: paint.color,
-          finish: paint.finish,
-          code: paint.code || undefined,
-          location: paint.location || '',
-          notes: paint.notes || undefined,
-        }
-      : undefined,
+    defaultValues: {
+      location: '',
+      brand: '',
+      color: '',
+      finish: '',
+      code: '',
+      notes: '',
+    },
   });
 
+  const { data: brands = [], isLoading: isBrandsLoading } = useBrands();
+  const [colorPreview, setColorPreview] = useState<ColorData | null>(null);
+  const [brandQuery, setBrandQuery] = useState('');
+  const code = watch('code');
+  const brand = watch('brand') || '';
+
+  const filteredBrands =
+    brandQuery === ''
+      ? brands
+      : brands.filter((brand) => brand.toLowerCase().includes(brandQuery.toLowerCase()));
+
+  useEffect(() => {
+    if (paint) {
+      reset({
+        location: paint.location || '',
+        brand: paint.brand || '',
+        color: paint.color || '',
+        finish: paint.finish || '',
+        code: paint.code || '',
+        notes: paint.notes || '',
+      });
+      setBrandQuery(paint.brand || '');
+    } else {
+      reset({
+        location: '',
+        brand: '',
+        color: '',
+        finish: '',
+        code: '',
+        notes: '',
+      });
+      setBrandQuery('');
+    }
+  }, [paint, reset]);
+
+  useEffect(() => {
+    // Function to fetch color data
+    const fetchColorData = async (colorCode: string) => {
+      console.log('Fetching color data for:', colorCode);
+      try {
+        const response = await fetch(`/api/colors/${colorCode}`);
+        console.log('API response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Color data received:', data);
+          // Transform the data to match ColorData interface
+          const colorData: ColorData = {
+            code: data.code,
+            name: data.name,
+            brand: data.brand,
+            hex: data.hex,
+            rgbR: data.rgb.r,
+            rgbG: data.rgb.g,
+            rgbB: data.rgb.b,
+          };
+          setColorPreview(colorData);
+
+          // Auto-fill brand and color name if they're empty
+          const currentBrand = watch('brand');
+          const currentColor = watch('color');
+
+          // Always fill in the color name when we get a match
+          setValue('color', colorData.name, { shouldValidate: true });
+
+          // Only fill in brand if it's empty
+          if (!currentBrand) {
+            setValue('brand', colorData.brand, { shouldValidate: true });
+            setBrandQuery(colorData.brand);
+          }
+        } else {
+          console.log('API error:', await response.text());
+          setColorPreview(null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch color data:', error);
+        setColorPreview(null);
+      }
+    };
+
+    const trimmedCode = code?.trim() || '';
+    console.log('Current code:', trimmedCode);
+
+    if (trimmedCode) {
+      void fetchColorData(trimmedCode);
+    } else {
+      setColorPreview(null);
+    }
+  }, [code, setValue, watch]);
+
+  const handleFormSubmit = async (data: PaintFormData) => {
+    try {
+      await onSubmit(data);
+      // Only reset form after successful submission
+      reset();
+      setBrandQuery('');
+    } catch (error) {
+      console.error('Failed to submit paint form:', error);
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          {...register('name')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        />
-        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
-      </div>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="location"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Location
+            </label>
+            <input
+              type="text"
+              {...register('location', { required: true })}
+              placeholder="e.g., Walls, Trim, Ceiling"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm"
+            />
+            {errors.location && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">Location is required</p>
+            )}
+          </div>
 
-      <div>
-        <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
-          Brand
-        </label>
-        <input
-          type="text"
-          id="brand"
-          {...register('brand')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        />
-        {errors.brand && <p className="mt-1 text-sm text-red-600">{errors.brand.message}</p>}
-      </div>
+          <div>
+            <label
+              htmlFor="brand"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Brand
+            </label>
+            <div className="relative mt-1">
+              <Combobox
+                value={brand}
+                onChange={(value: string) => {
+                  if (value) {
+                    setValue('brand', value, { shouldValidate: true });
+                    setBrandQuery(value);
+                  }
+                }}
+                disabled={isBrandsLoading}
+              >
+                <div className="relative">
+                  <Combobox.Input
+                    className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm"
+                    placeholder="e.g., Sherwin-Williams"
+                    displayValue={(value: string) => value}
+                    onChange={(event) => setBrandQuery(event.target.value)}
+                  />
+                  <input type="hidden" {...register('brand', { required: true })} />
+                </div>
+                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  {filteredBrands.map((brand) => (
+                    <Combobox.Option
+                      key={brand}
+                      value={brand}
+                      className={({ active }) =>
+                        `relative cursor-default select-none py-2 pl-3 pr-9 ${
+                          active ? 'bg-blue-600 text-white' : 'text-gray-900 dark:text-white'
+                        }`
+                      }
+                    >
+                      {brand}
+                    </Combobox.Option>
+                  ))}
+                </Combobox.Options>
+              </Combobox>
+            </div>
+            {errors.brand && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">Brand is required</p>
+            )}
+          </div>
 
-      <div>
-        <label htmlFor="color" className="block text-sm font-medium text-gray-700">
-          Color
-        </label>
-        <input
-          type="text"
-          id="color"
-          {...register('color')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        />
-        {errors.color && <p className="mt-1 text-sm text-red-600">{errors.color.message}</p>}
-      </div>
+          <div>
+            <label
+              htmlFor="code"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Code
+            </label>
+            <div className="relative mt-1 space-y-2">
+              <input
+                type="text"
+                id="code"
+                className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm"
+                placeholder="e.g., SW 7029"
+                {...register('code')}
+              />
+              {colorPreview && (
+                <div className="relative h-32 w-full rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                  <div className="absolute inset-0" style={{ backgroundColor: colorPreview.hex }} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="px-3 py-1 text-sm font-medium bg-black/30 text-white rounded">
+                      {colorPreview.name}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
-      <div>
-        <label htmlFor="finish" className="block text-sm font-medium text-gray-700">
-          Finish
-        </label>
-        <select
-          id="finish"
-          {...register('finish')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        >
-          <option value="">Select a finish</option>
-          <option value="Matte">Matte</option>
-          <option value="Eggshell">Eggshell</option>
-          <option value="Satin">Satin</option>
-          <option value="Semi-Gloss">Semi-Gloss</option>
-          <option value="Gloss">Gloss</option>
-        </select>
-        {errors.finish && <p className="mt-1 text-sm text-red-600">{errors.finish.message}</p>}
-      </div>
+          <div>
+            <label
+              htmlFor="color"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Color
+            </label>
+            <input
+              type="text"
+              {...register('color', { required: true })}
+              placeholder="e.g., Agreeable Gray"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm"
+            />
+            {errors.color && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">Color is required</p>
+            )}
+          </div>
 
-      <div>
-        <label htmlFor="code" className="block text-sm font-medium text-gray-700">
-          Paint Code
-        </label>
-        <input
-          type="text"
-          id="code"
-          {...register('code')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        />
-        {errors.code && <p className="mt-1 text-sm text-red-600">{errors.code.message}</p>}
-      </div>
+          <div>
+            <label
+              htmlFor="finish"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Finish
+            </label>
+            <input
+              type="text"
+              {...register('finish', { required: false })}
+              placeholder="e.g., Eggshell"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm"
+            />
+            {errors.finish && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">Finish is required</p>
+            )}
+          </div>
 
-      <div>
-        <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-          Location
-        </label>
-        <select
-          id="location"
-          {...register('location')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        >
-          <option value="">Select a location</option>
-          <option value="Walls">Walls</option>
-          <option value="Trim">Trim</option>
-          <option value="Ceiling">Ceiling</option>
-          <option value="Doors">Doors</option>
-          <option value="Cabinets">Cabinets</option>
-          <option value="Other">Other</option>
-        </select>
-        {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>}
-      </div>
+          <div>
+            <label
+              htmlFor="notes"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Notes
+            </label>
+            <textarea
+              {...register('notes')}
+              rows={3}
+              placeholder="e.g., Used in main living areas, matches well with oak trim"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm"
+            />
+          </div>
+        </div>
 
-      <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-          Notes
-        </label>
-        <textarea
-          id="notes"
-          rows={3}
-          {...register('notes')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-        />
-        {errors.notes && <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>}
-      </div>
-
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          {isSubmitting ? 'Saving...' : paint ? 'Update Paint' : 'Add Paint'}
-        </button>
+        <div className="flex justify-end space-x-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Save
+          </button>
+        </div>
       </div>
     </form>
   );

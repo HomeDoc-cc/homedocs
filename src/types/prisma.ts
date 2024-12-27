@@ -53,8 +53,8 @@ export interface Task {
   id: string;
   title: string;
   description: string | null;
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  priority: TaskPriority;
+  status: TaskStatus;
   dueDate: string | null;
 
   // Recurring task fields
@@ -89,10 +89,25 @@ export interface Task {
   room: {
     id: string;
     name: string;
+    homeId: string;
+    home: {
+      id: string;
+      name: string;
+    };
   } | null;
   item: {
     id: string;
     name: string;
+    roomId: string;
+    room: {
+      id: string;
+      name: string;
+      homeId: string;
+      home: {
+        id: string;
+        name: string;
+      };
+    };
   } | null;
   createdAt: Date;
   updatedAt: Date;

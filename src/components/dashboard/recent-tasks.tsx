@@ -3,15 +3,11 @@
 import Link from 'next/link';
 
 import { TaskList } from '@/components/tasks/task-list';
-import { Task } from '@/types/prisma';
+import { useTaskData } from '@/hooks/use-task-data';
 
-interface TaskWithRelations extends Task {}
+export function RecentTasks() {
+  const { tasks, users, isLoading, refetch } = useTaskData();
 
-interface RecentTasksProps {
-  tasks: TaskWithRelations[];
-}
-
-export function RecentTasks({ tasks }: RecentTasksProps) {
   return (
     <section className="mb-12">
       <div className="flex items-center justify-between mb-4">
@@ -24,9 +20,9 @@ export function RecentTasks({ tasks }: RecentTasksProps) {
         </Link>
       </div>
 
-      <TaskList tasks={tasks} />
+      <TaskList tasks={tasks} users={users} onTasksChange={refetch} isLoading={isLoading} />
 
-      {tasks.length === 0 && (
+      {tasks.length === 0 && !isLoading && (
         <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <p className="text-gray-600 dark:text-gray-300">You don't have any active tasks.</p>
           <Link
