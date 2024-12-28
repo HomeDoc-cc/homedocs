@@ -33,6 +33,8 @@ export default function RoomPage({ params }: RoomPageProps) {
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     async function getParams() {
@@ -47,6 +49,43 @@ export default function RoomPage({ params }: RoomPageProps) {
       fetchRoom();
     }
   }, [id]);
+
+  // Fetch signed URLs for all images
+  useEffect(() => {
+    async function fetchUrls() {
+      if (!room?.images) return;
+
+      const urls: Record<string, string> = {};
+      for (const key of room.images) {
+        if (!key) continue; // Skip undefined keys
+        try {
+          const response = await fetch(`/api/upload/url?key=${encodeURIComponent(key)}`);
+          if (response.ok) {
+            const { url } = await response.json();
+            urls[key] = url;
+          }
+        } catch (error) {
+          console.error('Error fetching URL:', error);
+        }
+      }
+      setImageUrls(prev => ({ ...prev, ...urls }));
+    }
+
+    if (room?.images.some(key => key && !imageUrls[key])) {
+      fetchUrls();
+    }
+  }, [room?.images, refreshKey]);
+
+  // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
+  useEffect(() => {
+    if (!room?.images?.length) return;
+
+    const interval = setInterval(() => {
+      setRefreshKey(key => key + 1);
+    }, 45 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [room?.images?.length]);
 
   async function fetchRoom() {
     try {
@@ -64,7 +103,7 @@ export default function RoomPage({ params }: RoomPageProps) {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-red-500">{error}</div>
+        <div className="text-center text-red-500 dark:text-red-400">{error}</div>
       </div>
     );
   }
@@ -72,7 +111,7 @@ export default function RoomPage({ params }: RoomPageProps) {
   if (!room) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading...</div>
+        <div className="text-center text-gray-600 dark:text-gray-400">Loading...</div>
       </div>
     );
   }
@@ -86,7 +125,7 @@ export default function RoomPage({ params }: RoomPageProps) {
             href={`/homes/${room.home.id}`}
             className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           >
-            {room.home.name}
+            ← {room.home.name}
           </Link>
         </div>
         <Link
@@ -100,14 +139,20 @@ export default function RoomPage({ params }: RoomPageProps) {
       {room.images && room.images.length > 0 && (
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {room.images.map((url, index) => (
-              <div key={index} className="relative aspect-video">
-                <Image
-                  src={url}
-                  alt={`${room.name} - Image ${index + 1}`}
-                  fill
-                  className="object-cover rounded-lg"
-                />
+            {room.images.filter(Boolean).map((key, index) => (
+              <div key={`${key}-${index}`} className="relative aspect-video">
+                {imageUrls[key] ? (
+                  <Image
+                    src={imageUrls[key]}
+                    alt={`${room.name} - Image ${index + 1}`}
+                    fill
+                    className="object-cover rounded-lg"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-400">Loading...</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>

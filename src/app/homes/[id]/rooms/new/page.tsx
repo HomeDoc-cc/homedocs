@@ -4,16 +4,20 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-interface HomeFormData {
-  name: string;
-  address: string;
+import { ImageUpload } from '@/components/image-upload';
+
+interface NewRoomPageProps {
+  params: Promise<{
+    id: string;
+  }>;
 }
 
-export default function NewHomePage() {
+export default function NewRoomPage({ params }: NewRoomPageProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -21,13 +25,15 @@ export default function NewHomePage() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const data: HomeFormData = {
+    const data = {
       name: formData.get('name') as string,
-      address: formData.get('address') as string,
+      description: formData.get('description') as string,
+      images,
     };
 
     try {
-      const response = await fetch('/api/homes', {
+      const { id: homeId } = await params;
+      const response = await fetch(`/api/homes/${homeId}/rooms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,27 +42,26 @@ export default function NewHomePage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create home');
+        throw new Error('Failed to create room');
       }
 
-      const home = await response.json();
-      router.push(`/homes/${home.id}`);
+      const room = await response.json();
+      router.push(`/rooms/${room.id}`);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to create home');
-    } finally {
+      setError(error instanceof Error ? error.message : 'Failed to create room');
       setIsLoading(false);
     }
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Add New Home</h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Add New Room</h1>
 
       <div className="max-w-2xl mx-auto">
         <form onSubmit={onSubmit} className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Home Name
+              Room Name
             </label>
             <input
               type="text"
@@ -64,25 +69,26 @@ export default function NewHomePage() {
               name="name"
               required
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="e.g., Beach House"
+              placeholder="e.g., Living Room"
             />
           </div>
 
           <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Address
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Description
             </label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              required
+            <textarea
+              id="description"
+              name="description"
+              rows={3}
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="e.g., 123 Ocean Drive"
+              placeholder="Add a description of the room..."
             />
           </div>
 
-          {error && <div className="text-red-500 dark:text-red-400 text-sm text-center">{error}</div>}
+          <ImageUpload images={images} onImagesChange={setImages} />
+
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
           <div className="flex justify-end space-x-4">
             <button
@@ -97,11 +103,11 @@ export default function NewHomePage() {
               disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isLoading ? 'Creating...' : 'Create Home'}
+              {isLoading ? 'Creating...' : 'Create Room'}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-}
+} 

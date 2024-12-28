@@ -6,6 +6,14 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 's3.hofker.org',
+      },
+    ],
+  },
 };
 
 module.exports = nextConfig; 

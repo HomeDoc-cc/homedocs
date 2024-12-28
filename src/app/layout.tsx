@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google';
 
 import { Navbar } from '@/components/layout/navbar';
+import { Footer } from '@/components/layout/footer';
 import { Providers } from '@/components/providers';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { QueryProvider } from '@/providers/query-provider';
@@ -37,9 +38,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <QueryProvider>
             <ThemeProvider>
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
                 <Navbar />
-                <main>{children}</main>
+                <main className="flex-grow">{children}</main>
+                <Footer />
               </div>
             </ThemeProvider>
           </QueryProvider>
