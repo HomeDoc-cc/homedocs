@@ -1,8 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { use, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 
 import { PaintList } from '@/components/paint/paint-list';
 import { PaintModal } from '@/components/paint/paint-modal';
@@ -20,8 +18,6 @@ type PaintFormData = Partial<
 >;
 
 export default function PaintPage({ params }: PaintPageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const { id } = use(params);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPaint, setSelectedPaint] = useState<PrismaPaint | undefined>(undefined);
@@ -29,17 +25,7 @@ export default function PaintPage({ params }: PaintPageProps) {
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    void fetchRoom();
-  }, [id]);
-
-  useEffect(() => {
-    if (room?.homeId) {
-      void fetchPaints();
-    }
-  }, [id, room?.homeId]);
-
-  const fetchRoom = async () => {
+  const fetchRoom = useCallback(async () => {
     try {
       const response = await fetch(`/api/rooms/${id}`);
       if (!response.ok) {
@@ -50,32 +36,39 @@ export default function PaintPage({ params }: PaintPageProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch room');
     }
-  };
+  }, [id]);
 
-  const fetchPaints = async () => {
+  useEffect(() => {
+    void fetchRoom();
+  }, [id, fetchRoom]);
+
+  const fetchPaints = useCallback(async () => {
     if (!room?.homeId) return;
 
     try {
-      // Fetch room-specific paints
       const roomResponse = await fetch(`/api/rooms/${id}/paint`);
       if (!roomResponse.ok) {
         throw new Error('Failed to fetch room paint');
       }
       const roomPaints = await roomResponse.json();
 
-      // Fetch home paints
       const homeResponse = await fetch(`/api/homes/${room.homeId}/paint`);
       if (!homeResponse.ok) {
         throw new Error('Failed to fetch home paint');
       }
       const homePaints = await homeResponse.json();
 
-      // Combine both sets of paints
       setPaints([...roomPaints, ...homePaints.filter((paint: PrismaPaint) => !paint.roomId)]);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch paint');
     }
-  };
+  }, [id, room?.homeId]);
+
+  useEffect(() => {
+    if (room?.homeId) {
+      void fetchPaints();
+    }
+  }, [id, room?.homeId, fetchPaints]);
 
   const handleCreatePaint = async (data: PaintFormData) => {
     try {
@@ -167,6 +160,7 @@ export default function PaintPage({ params }: PaintPageProps) {
         >
           Add Paint
         </button>
+        {error && <p className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</p>}
       </div>
 
       <PaintList

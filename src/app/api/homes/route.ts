@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import { createHome, getUserHomes } from '@/lib/home.utils';
 import { requireAuth } from '@/lib/session';

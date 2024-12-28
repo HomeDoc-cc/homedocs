@@ -7,12 +7,27 @@ import { Task, User } from '@/types/prisma';
 
 import { TaskForm } from './task-form';
 
+export type TaskFormData = {
+  status: Task['status'];
+  title: Task['title'];
+  priority: Task['priority'];
+  isRecurring: Task['isRecurring'];
+  description?: string | null;
+  dueDate?: string | null;
+  interval?: number | null;
+  unit?: Task['unit'] | null;
+  homeId?: string | null;
+  roomId?: string | null;
+  itemId?: string | null;
+  assigneeId?: string | null;
+};
+
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   task?: Task;
   users: User[];
-  onSubmit: (data: any) => void;
+  onSubmit: (data: TaskFormData) => void;
 }
 
 export function TaskModal({ isOpen, onClose, task, users, onSubmit }: TaskModalProps) {
@@ -54,7 +69,24 @@ export function TaskModal({ isOpen, onClose, task, users, onSubmit }: TaskModalP
                   {task ? 'Edit Task' : 'Create Task'}
                 </Dialog.Title>
                 <div className="mt-2">
-                  <TaskForm task={task} users={users} onSubmit={onSubmit} onCancel={onClose} />
+                  <TaskForm
+                    task={
+                      task as Task & {
+                        room?: { id: string; name: string; homeId: string } | undefined;
+                        item?:
+                          | {
+                              id: string;
+                              name: string;
+                              roomId: string;
+                              room: { id: string; name: string; homeId: string };
+                            }
+                          | undefined;
+                      }
+                    }
+                    users={users}
+                    onSubmit={onSubmit}
+                    onCancel={onClose}
+                  />
                 </div>
               </div>
             </div>

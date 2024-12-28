@@ -1,21 +1,6 @@
 import { useState } from 'react';
-
-import { Task, TaskPriority, TaskRecurrenceUnit, TaskStatus } from '@/types/prisma';
-
-interface TaskFormData {
-  title: string;
-  description?: string | null;
-  priority: TaskPriority;
-  status: TaskStatus;
-  dueDate?: string | null;
-  assigneeId?: string | null;
-  isRecurring: boolean;
-  interval?: number | null;
-  unit?: TaskRecurrenceUnit | null;
-  homeId?: string | null;
-  roomId?: string | null;
-  itemId?: string | null;
-}
+import { TaskStatus } from '@/types/prisma';
+import { TaskFormData } from '@/components/tasks/task-modal';
 
 export function useTaskActions(onTasksChange?: () => void) {
   const [isLoading, setIsLoading] = useState(false);

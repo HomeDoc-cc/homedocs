@@ -1,9 +1,7 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Home } from '@/types/prisma';
 
@@ -24,8 +22,6 @@ interface Room {
 }
 
 export default function RoomsPage({ params }: PageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,14 +36,7 @@ export default function RoomsPage({ params }: PageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      void fetchRooms();
-      void fetchHome();
-    }
-  }, [id]);
-
-  const fetchHome = async () => {
+  const fetchHome = useCallback(async () => {
     try {
       const response = await fetch(`/api/homes/${id}`);
       if (!response.ok) {
@@ -58,9 +47,9 @@ export default function RoomsPage({ params }: PageProps) {
     } catch (error) {
       console.error('Failed to fetch home:', error);
     }
-  };
+  }, [id]);
 
-  async function fetchRooms() {
+  const fetchRooms = useCallback(async () => {
     try {
       const response = await fetch(`/api/homes/${id}/rooms`);
       if (!response.ok) {
@@ -73,7 +62,14 @@ export default function RoomsPage({ params }: PageProps) {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      void fetchRooms();
+      void fetchHome();
+    }
+  }, [id, fetchRooms, fetchHome]);
 
   if (isLoading) {
     return (

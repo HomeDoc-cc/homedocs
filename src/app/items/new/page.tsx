@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -20,13 +19,11 @@ interface ItemFormData {
 }
 
 export default function NewItemPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const roomId = searchParams.get('roomId');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadingImages, setUploadingImages] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState<ItemFormData>({
     name: '',
@@ -252,7 +249,7 @@ export default function NewItemPage() {
             />
           </div>
 
-          <ImageUpload images={images} onImagesChange={setImages} />
+          <ImageUpload images={images} onImagesChange={setImages}  />
 
           {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
@@ -266,7 +263,7 @@ export default function NewItemPage() {
             </button>
             <button
               type="submit"
-              disabled={isLoading || uploadingImages}
+              disabled={isLoading}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               {isLoading ? 'Creating...' : 'Create Item'}

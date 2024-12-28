@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import { createItem, getItemsByRoom } from '@/lib/item.utils';
 import { requireAuth } from '@/lib/session';

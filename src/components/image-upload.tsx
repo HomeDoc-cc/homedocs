@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ImageUploadProps {
   images: string[]; // These are now storage keys, not URLs
@@ -20,7 +20,7 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
     async function fetchUrls() {
       const urls: Record<string, string> = {};
       for (const key of images) {
-        if (!key) continue; // Skip undefined keys
+        if (!key) continue;
         try {
           const response = await fetch(`/api/upload/url?key=${encodeURIComponent(key)}`);
           if (response.ok) {
@@ -31,21 +31,24 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
           console.error('Error fetching URL:', error);
         }
       }
-      setImageUrls(prev => ({ ...prev, ...urls }));
+      setImageUrls((prev) => ({ ...prev, ...urls }));
     }
 
-    if (images.some(key => key && !imageUrls[key])) {
+    if (images.some((key) => key && !imageUrls[key])) {
       fetchUrls();
     }
-  }, [images, refreshKey]);
+  }, [images, refreshKey, imageUrls]);
 
   // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
   useEffect(() => {
     if (images.length === 0) return;
 
-    const interval = setInterval(() => {
-      setRefreshKey(key => key + 1);
-    }, 45 * 60 * 1000);
+    const interval = setInterval(
+      () => {
+        setRefreshKey((key) => key + 1);
+      },
+      45 * 60 * 1000
+    );
 
     return () => clearInterval(interval);
   }, [images.length]);
@@ -105,7 +108,7 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
       }
 
       onImagesChange(images.filter((_, i) => i !== index));
-      setImageUrls(prev => {
+      setImageUrls((prev) => {
         const next = { ...prev };
         delete next[key];
         return next;
@@ -138,9 +141,7 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
       {uploadingImages && (
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Uploading images...</p>
       )}
-      {error && (
-        <p className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="mt-2 text-sm text-red-500 dark:text-red-400">{error}</p>}
       {images.length > 0 && (
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
           {images.filter(Boolean).map((key, index) => (

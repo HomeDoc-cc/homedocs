@@ -1,8 +1,14 @@
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+  S3ClientConfig,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
-import crypto from 'crypto';
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // Environment variables
 const STORAGE_TYPE = process.env.STORAGE_TYPE || 'cloud'; // 'local' or 'cloud'
@@ -31,7 +37,12 @@ class LocalStorageProvider implements StorageProvider {
     this.storagePath = storagePath;
   }
 
-  async uploadFile(file: Buffer, filename: string, mimetype: string, userId: string): Promise<string> {
+  async uploadFile(
+    file: Buffer,
+    filename: string,
+    mimetype: string,
+    userId: string
+  ): Promise<string> {
     // Create user-specific storage directory
     const userPath = path.join(this.storagePath, userId);
     await fs.mkdir(userPath, { recursive: true });
@@ -85,7 +96,7 @@ class CloudStorageProvider implements StorageProvider {
       throw new Error('Missing required S3 configuration');
     }
 
-    const clientConfig: any = {
+    const clientConfig: S3ClientConfig = {
       region: S3_REGION,
       credentials: {
         accessKeyId: S3_ACCESS_KEY,
@@ -116,7 +127,12 @@ class CloudStorageProvider implements StorageProvider {
     return getSignedUrl(this.s3Client, command, { expiresIn: this.urlExpiration });
   }
 
-  async uploadFile(file: Buffer, filename: string, mimetype: string, userId: string): Promise<string> {
+  async uploadFile(
+    file: Buffer,
+    filename: string,
+    mimetype: string,
+    userId: string
+  ): Promise<string> {
     // Generate unique filename with user-specific path
     const ext = path.extname(filename);
     const hash = crypto.randomBytes(8).toString('hex');
@@ -153,7 +169,7 @@ class CloudStorageProvider implements StorageProvider {
       await this.s3Client.send(command);
     } catch (error) {
       // Ignore if file doesn't exist
-      if ((error as any).name !== 'NoSuchKey') {
+      if ((error as { name: string }).name !== 'NoSuchKey') {
         throw error;
       }
     }
@@ -174,4 +190,4 @@ export function getStorageProvider(): StorageProvider {
     return new LocalStorageProvider(LOCAL_STORAGE_PATH);
   }
   return new CloudStorageProvider();
-} 
+}

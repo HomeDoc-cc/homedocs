@@ -1,9 +1,7 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ItemsPageProps {
   params: Promise<{
@@ -34,8 +32,6 @@ interface Room {
 }
 
 export default function ItemsPage({ params }: ItemsPageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -50,14 +46,7 @@ export default function ItemsPage({ params }: ItemsPageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchRoom();
-      fetchItems();
-    }
-  }, [id]);
-
-  async function fetchRoom() {
+  const fetchRoom = useCallback(async () => {
     try {
       const response = await fetch(`/api/rooms/${id}`);
       if (!response.ok) {
@@ -68,9 +57,9 @@ export default function ItemsPage({ params }: ItemsPageProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch room');
     }
-  }
+  }, [id]);
 
-  async function fetchItems() {
+  const fetchItems = useCallback(async () => {
     try {
       const response = await fetch(`/api/rooms/${id}/items`);
       if (!response.ok) {
@@ -84,7 +73,14 @@ export default function ItemsPage({ params }: ItemsPageProps) {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchRoom();
+      fetchItems();
+    }
+  }, [id, fetchRoom, fetchItems]);
 
   if (isLoading) {
     return (

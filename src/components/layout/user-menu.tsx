@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Menu, Transition } from '@headlessui/react';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
@@ -21,7 +22,7 @@ export function UserMenu({ user }: UserMenuProps) {
       <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
         <span className="sr-only">Open user menu</span>
         {user.image ? (
-          <img className="h-8 w-8 rounded-full" src={user.image} alt={user.name || 'User avatar'} />
+          <Image className="h-8 w-8 rounded-full" src={user.image} alt={user.name || 'User avatar'} />
         ) : (
           <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
             <span className="text-gray-500 font-medium">

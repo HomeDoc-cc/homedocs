@@ -1,10 +1,8 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface HomePageProps {
   params: Promise<{
@@ -30,8 +28,6 @@ interface Home {
 }
 
 export default function HomePage({ params }: HomePageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [home, setHome] = useState<Home | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
@@ -46,11 +42,24 @@ export default function HomePage({ params }: HomePageProps) {
     getParams();
   }, [params]);
 
+  const fetchHome = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/homes/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch home');
+      }
+      const data = await response.json();
+      setHome(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch home');
+    }
+  }, [id]);
+
   useEffect(() => {
     if (id) {
       fetchHome();
     }
-  }, [id]);
+  }, [id, fetchHome]);
 
   // Fetch signed URLs for all images
   useEffect(() => {
@@ -70,37 +79,27 @@ export default function HomePage({ params }: HomePageProps) {
           console.error('Error fetching URL:', error);
         }
       }
-      setImageUrls(prev => ({ ...prev, ...urls }));
+      setImageUrls((prev) => ({ ...prev, ...urls }));
     }
 
-    if (home?.images.some(key => key && !imageUrls[key])) {
+    if (home?.images.some((key) => key && !imageUrls[key])) {
       fetchUrls();
     }
-  }, [home?.images, refreshKey]);
+  }, [home?.images, refreshKey, imageUrls]);
 
   // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
   useEffect(() => {
     if (!home?.images?.length) return;
 
-    const interval = setInterval(() => {
-      setRefreshKey(key => key + 1);
-    }, 45 * 60 * 1000);
+    const interval = setInterval(
+      () => {
+        setRefreshKey((key) => key + 1);
+      },
+      45 * 60 * 1000
+    );
 
     return () => clearInterval(interval);
   }, [home?.images?.length]);
-
-  async function fetchHome() {
-    try {
-      const response = await fetch(`/api/homes/${id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch home');
-      }
-      const data = await response.json();
-      setHome(data);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch home');
-    }
-  }
 
   if (error) {
     return (

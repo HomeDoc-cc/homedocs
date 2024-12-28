@@ -1,5 +1,5 @@
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Task, User } from '@/types/prisma';
 
@@ -15,7 +15,7 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -33,7 +33,7 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [type, id]);
 
   const fetchUsers = async () => {
     try {
@@ -50,7 +50,7 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
     if ((!type && !id) || (type && id)) {
       fetchTasks();
     }
-  }, [type, id]);
+  }, [type, id, fetchTasks]);
 
   useEffect(() => {
     if (session) {

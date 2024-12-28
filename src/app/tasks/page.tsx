@@ -1,14 +1,9 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-
 import { TaskList } from '@/components/tasks/task-list';
 import { useTaskData } from '@/hooks/use-task-data';
 
 export default function TasksPage() {
-  const { data: session } = useSession();
-  const router = useRouter();
   const { tasks, users, isLoading, refetch } = useTaskData();
 
   return (

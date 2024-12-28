@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import { deletePaint, updatePaint } from '@/lib/paint.utils';
 import { requireAuth } from '@/lib/session';

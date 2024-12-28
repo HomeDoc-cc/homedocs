@@ -1,8 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { FlooringList } from '@/components/flooring/flooring-list';
 import { FlooringModal } from '@/components/flooring/flooring-modal';
@@ -26,8 +24,6 @@ interface FlooringFormData {
 }
 
 export default function RoomFlooringPage({ params }: RoomFlooringPageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFlooring, setSelectedFlooring] = useState<PrismaFlooring | undefined>(undefined);
   const [floorings, setFloorings] = useState<PrismaFlooring[]>([]);
@@ -35,20 +31,14 @@ export default function RoomFlooringPage({ params }: RoomFlooringPageProps) {
   const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
-    async function getParams() {
+    const getParams = async () => {
       const { id } = await params;
       setId(id);
-    }
+    };
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchFloorings();
-    }
-  }, [id]);
-
-  const fetchFloorings = async () => {
+  const fetchFloorings = useCallback(async () => {
     try {
       const response = await fetch(`/api/rooms/${id}/flooring`);
       if (!response.ok) {
@@ -59,7 +49,13 @@ export default function RoomFlooringPage({ params }: RoomFlooringPageProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch flooring');
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchFloorings();
+    }
+  }, [id, fetchFloorings]);
 
   const handleCreateFlooring = async (data: FlooringFormData) => {
     try {
@@ -145,6 +141,7 @@ export default function RoomFlooringPage({ params }: RoomFlooringPageProps) {
           Add Flooring
         </button>
       </div>
+      {error && <div className="text-red-500">{error}</div>}
 
       <FlooringList
         floorings={floorings}

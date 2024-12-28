@@ -1,8 +1,7 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ImageUpload } from '@/components/image-upload';
 
@@ -20,7 +19,6 @@ interface Home {
 }
 
 export default function EditHomePage({ params }: EditHomePageProps) {
-  const { data: session } = useSession();
   const router = useRouter();
   const [home, setHome] = useState<Home | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,13 +35,7 @@ export default function EditHomePage({ params }: EditHomePageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchHome();
-    }
-  }, [id]);
-
-  async function fetchHome() {
+  const fetchHome = useCallback(async () => {
     try {
       const response = await fetch(`/api/homes/${id}`);
       if (!response.ok) {
@@ -55,7 +47,13 @@ export default function EditHomePage({ params }: EditHomePageProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch home');
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchHome();
+    }
+  }, [id, fetchHome]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

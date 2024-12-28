@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/session';
@@ -9,7 +9,7 @@ function generateToken() {
   return randomBytes(32).toString('hex');
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const session = await requireAuth();
 
   const calendarToken = await prisma.calendarToken.findUnique({
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ token: calendarToken.token });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   const session = await requireAuth();
 
   // Generate a new token
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ token: calendarToken.token });
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   const session = await requireAuth();
 
   // Delete the calendar token
@@ -60,4 +60,4 @@ export async function DELETE(request: NextRequest) {
   });
 
   return new NextResponse(null, { status: 204 });
-} 
+}

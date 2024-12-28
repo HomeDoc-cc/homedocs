@@ -1,9 +1,7 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/dist/client/components/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
 import { ImageUpload } from '@/components/image-upload';
 
@@ -25,7 +23,6 @@ interface Room {
 }
 
 export default function EditRoomPage({ params }: EditRoomPageProps) {
-  const { data: session } = useSession();
   const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -42,13 +39,7 @@ export default function EditRoomPage({ params }: EditRoomPageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchRoom();
-    }
-  }, [id]);
-
-  async function fetchRoom() {
+  const fetchRoom = useCallback(async () => {
     try {
       const response = await fetch(`/api/rooms/${id}`);
       if (!response.ok) {
@@ -60,7 +51,13 @@ export default function EditRoomPage({ params }: EditRoomPageProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch room');
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchRoom();
+    }
+  }, [id, fetchRoom]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

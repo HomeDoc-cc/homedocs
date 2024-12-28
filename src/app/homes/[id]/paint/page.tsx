@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { use, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 
 import { PaintList } from '@/components/paint/paint-list';
 import { PaintModal } from '@/components/paint/paint-modal';
@@ -21,12 +21,7 @@ export default function Page({ params }: PageProps) {
   const [selectedPaint, setSelectedPaint] = useState<PrismaPaint>();
   const [paints, setPaints] = useState<PrismaPaint[]>([]);
 
-  // Fetch paints on component mount
-  useEffect(() => {
-    void fetchPaints();
-  }, [id]);
-
-  const fetchPaints = async () => {
+  const fetchPaints = useCallback(async () => {
     try {
       const response = await fetch(`/api/homes/${id}/paint`);
       if (!response.ok) {
@@ -37,7 +32,12 @@ export default function Page({ params }: PageProps) {
     } catch (error) {
       console.error('Failed to fetch paint:', error);
     }
-  };
+  }, [id]);
+
+  // Fetch paints on component mount
+  useEffect(() => {
+    void fetchPaints();
+  }, [id, fetchPaints]);
 
   const handleSubmit = async (data: Partial<PrismaPaint>) => {
     try {

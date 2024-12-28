@@ -35,7 +35,7 @@ export default function SignInPage() {
 
       router.push(callbackUrl);
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      setError(error instanceof Error ? error.message : 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -10,7 +9,6 @@ interface HomeFormData {
 }
 
 export default function NewHomePage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,9 +51,15 @@ export default function NewHomePage() {
       <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Add New Home</h1>
 
       <div className="max-w-2xl mx-auto">
-        <form onSubmit={onSubmit} className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <form
+          onSubmit={onSubmit}
+          className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow"
+        >
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Home Name
             </label>
             <input
@@ -69,7 +73,10 @@ export default function NewHomePage() {
           </div>
 
           <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Address
             </label>
             <input
@@ -82,7 +89,9 @@ export default function NewHomePage() {
             />
           </div>
 
-          {error && <div className="text-red-500 dark:text-red-400 text-sm text-center">{error}</div>}
+          {error && (
+            <div className="text-red-500 dark:text-red-400 text-sm text-center">{error}</div>
+          )}
 
           <div className="flex justify-end space-x-4">
             <button

@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -43,7 +42,6 @@ interface Item {
 }
 
 export default function NewTaskPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const homeId = searchParams.get('homeId');
@@ -63,7 +61,7 @@ export default function NewTaskPage() {
     if (!homeId && !roomId && !itemId) {
       fetchHomes();
     }
-  }, []);
+  }, [homeId, roomId, itemId]);
 
   useEffect(() => {
     if (homeId) {

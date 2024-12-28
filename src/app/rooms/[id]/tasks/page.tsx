@@ -1,7 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { TaskList } from '@/components/tasks/task-list';
@@ -14,8 +12,6 @@ interface TasksPageProps {
 }
 
 export default function TasksPage({ params }: TasksPageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {

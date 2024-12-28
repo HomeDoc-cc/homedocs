@@ -6,7 +6,7 @@ import { useTaskActions } from '@/hooks/use-task-actions';
 import { Task, User } from '@/types/prisma';
 
 import { TaskCard } from './task-card';
-import { TaskModal } from './task-modal';
+import { TaskFormData, TaskModal } from './task-modal';
 
 interface TaskListProps {
   tasks: Task[];
@@ -32,7 +32,7 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
     setIsModalOpen(false);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: TaskFormData) => {
     const success = selectedTask ? await updateTask(selectedTask.id, data) : await createTask(data);
 
     if (success) {

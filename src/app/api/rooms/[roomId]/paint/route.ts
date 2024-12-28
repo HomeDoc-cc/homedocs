@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 import { createPaint, getPaintByRoom } from '@/lib/paint.utils';
 import { requireAuth } from '@/lib/session';

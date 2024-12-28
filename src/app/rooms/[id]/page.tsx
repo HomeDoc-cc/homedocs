@@ -1,10 +1,8 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface RoomPageProps {
   params: Promise<{
@@ -28,8 +26,6 @@ interface Room {
 }
 
 export default function RoomPage({ params }: RoomPageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
@@ -44,11 +40,23 @@ export default function RoomPage({ params }: RoomPageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchRoom();
+  const fetchRoom = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/rooms/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch room');
+      }
+      const data = await response.json();
+      setRoom(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch room');
     }
   }, [id]);
+  useEffect(() => {
+    if (id) {
+      void fetchRoom();
+    }
+  }, [id, fetchRoom]);
 
   // Fetch signed URLs for all images
   useEffect(() => {
@@ -68,37 +76,27 @@ export default function RoomPage({ params }: RoomPageProps) {
           console.error('Error fetching URL:', error);
         }
       }
-      setImageUrls(prev => ({ ...prev, ...urls }));
+      setImageUrls((prev) => ({ ...prev, ...urls }));
     }
 
-    if (room?.images.some(key => key && !imageUrls[key])) {
+    if (room?.images.some((key) => key && !imageUrls[key])) {
       fetchUrls();
     }
-  }, [room?.images, refreshKey]);
+  }, [room?.images, refreshKey, imageUrls]);
 
   // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
   useEffect(() => {
     if (!room?.images?.length) return;
 
-    const interval = setInterval(() => {
-      setRefreshKey(key => key + 1);
-    }, 45 * 60 * 1000);
+    const interval = setInterval(
+      () => {
+        setRefreshKey((key) => key + 1);
+      },
+      45 * 60 * 1000
+    );
 
     return () => clearInterval(interval);
   }, [room?.images?.length]);
-
-  async function fetchRoom() {
-    try {
-      const response = await fetch(`/api/rooms/${id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch room');
-      }
-      const data = await response.json();
-      setRoom(data);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch room');
-    }
-  }
 
   if (error) {
     return (

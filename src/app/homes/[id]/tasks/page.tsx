@@ -1,8 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { TaskList } from '@/components/tasks/task-list';
 import { useTaskData } from '@/hooks/use-task-data';
@@ -14,17 +12,18 @@ interface TasksPageProps {
 }
 
 export default function TasksPage({ params }: TasksPageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [id, setId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function getParams() {
-      const { id } = await params;
-      setId(id);
-    }
-    getParams();
+  const getParams = useCallback(async () => {
+    const { id } = await params;
+    setId(id);
   }, [params]);
+
+  useEffect(() => {
+    if (id) {
+      getParams();
+    }
+  }, [id, getParams]);
 
   const { tasks, users, isLoading, refetch } = useTaskData({
     type: 'home',

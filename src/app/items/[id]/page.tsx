@@ -1,10 +1,8 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ItemPageProps {
   params: Promise<{
@@ -38,8 +36,6 @@ interface Item {
 }
 
 export default function ItemPage({ params }: ItemPageProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageKey, setSelectedImageKey] = useState<string | null>(null);
@@ -55,50 +51,7 @@ export default function ItemPage({ params }: ItemPageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchItem();
-    }
-  }, [id]);
-
-  // Fetch signed URLs for all images
-  useEffect(() => {
-    async function fetchUrls() {
-      if (!item?.images) return;
-
-      const urls: Record<string, string> = {};
-      for (const key of item.images) {
-        if (!key) continue; // Skip undefined keys
-        try {
-          const response = await fetch(`/api/upload/url?key=${encodeURIComponent(key)}`);
-          if (response.ok) {
-            const { url } = await response.json();
-            urls[key] = url;
-          }
-        } catch (error) {
-          console.error('Error fetching URL:', error);
-        }
-      }
-      setImageUrls(prev => ({ ...prev, ...urls }));
-    }
-
-    if (item?.images.some(key => key && !imageUrls[key])) {
-      fetchUrls();
-    }
-  }, [item?.images, refreshKey]);
-
-  // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
-  useEffect(() => {
-    if (!item?.images?.length) return;
-
-    const interval = setInterval(() => {
-      setRefreshKey(key => key + 1);
-    }, 45 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [item?.images?.length]);
-
-  async function fetchItem() {
+  const fetchItem = useCallback(async () => {
     try {
       const response = await fetch(`/api/items/${id}`);
       if (!response.ok) {
@@ -112,7 +65,53 @@ export default function ItemPage({ params }: ItemPageProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch item');
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchItem();
+    }
+  }, [id, fetchItem]);
+
+  // Fetch signed URLs for all images
+  useEffect(() => {
+    async function fetchUrls() {
+      if (!item?.images) return;
+
+      const urls: Record<string, string> = {};
+      for (const key of item.images) {
+        if (!key) continue;
+        try {
+          const response = await fetch(`/api/upload/url?key=${encodeURIComponent(key)}`);
+          if (response.ok) {
+            const { url } = await response.json();
+            urls[key] = url;
+          }
+        } catch (error) {
+          console.error('Error fetching URL:', error);
+        }
+      }
+      setImageUrls((prev) => ({ ...prev, ...urls }));
+    }
+
+    if (item?.images.some((key) => key && !imageUrls[key])) {
+      fetchUrls();
+    }
+  }, [item?.images, refreshKey, imageUrls]);
+
+  // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
+  useEffect(() => {
+    if (!item?.images?.length) return;
+
+    const interval = setInterval(
+      () => {
+        setRefreshKey((key) => key + 1);
+      },
+      45 * 60 * 1000
+    );
+
+    return () => clearInterval(interval);
+  }, [item?.images?.length]);
 
   if (error) {
     return (

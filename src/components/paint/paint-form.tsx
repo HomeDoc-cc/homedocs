@@ -111,7 +111,6 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
 
           // Auto-fill brand and color name if they're empty
           const currentBrand = watch('brand');
-          const currentColor = watch('color');
 
           // Always fill in the color name when we get a match
           setValue('color', colorData.name, { shouldValidate: true });

@@ -1,9 +1,8 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface EditItemPageProps {
   params: Promise<{
@@ -22,7 +21,6 @@ interface Item {
 }
 
 export default function EditItemPage({ params }: EditItemPageProps) {
-  const { data: session } = useSession();
   const router = useRouter();
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,13 +37,7 @@ export default function EditItemPage({ params }: EditItemPageProps) {
     getParams();
   }, [params]);
 
-  useEffect(() => {
-    if (id) {
-      fetchItem();
-    }
-  }, [id]);
-
-  async function fetchItem() {
+  const fetchItem = useCallback(async () => {
     try {
       const response = await fetch(`/api/items/${id}`);
       if (!response.ok) {
@@ -57,7 +49,13 @@ export default function EditItemPage({ params }: EditItemPageProps) {
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch item');
     }
-  }
+  }, [id]);
+  
+  useEffect(() => {
+    if (id) {
+      fetchItem();
+    }
+  }, [id, fetchItem]);
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     if (!event.target.files?.length) return;

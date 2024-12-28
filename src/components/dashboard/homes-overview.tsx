@@ -51,7 +51,7 @@ export function HomesOverview({ homes }: HomesOverviewProps) {
 
         {homes.length === 0 && (
           <div className="col-span-full text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <p className="text-gray-600 dark:text-gray-300">You haven't added any homes yet.</p>
+            <p className="text-gray-600 dark:text-gray-300">You haven&apos;t added any homes yet.</p>
             <Link
               href="/homes/new"
               className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 mt-2 inline-block"
