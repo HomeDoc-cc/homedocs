@@ -1,9 +1,11 @@
-import { prisma } from "./db";
-import { z } from "zod";
+import { z } from 'zod';
+
+import { prisma } from './db';
 
 export const roomSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
+  images: z.array(z.string()).optional(),
 });
 
 export type CreateRoomInput = z.infer<typeof roomSchema>;
@@ -19,7 +21,7 @@ export async function createRoom(homeId: string, userId: string, input: CreateRo
           shares: {
             some: {
               userId,
-              role: "WRITE",
+              role: 'WRITE',
             },
           },
         },
@@ -28,7 +30,7 @@ export async function createRoom(homeId: string, userId: string, input: CreateRo
   });
 
   if (!home) {
-    throw new Error("Home not found or insufficient permissions");
+    throw new Error('Home not found or insufficient permissions');
   }
 
   const { name, description } = roomSchema.parse(input);
@@ -76,7 +78,7 @@ export async function getRoomsByHome(homeId: string, userId: string) {
   });
 
   if (!home) {
-    throw new Error("Home not found or insufficient permissions");
+    throw new Error('Home not found or insufficient permissions');
   }
 
   const rooms = await prisma.room.findMany({
@@ -95,7 +97,7 @@ export async function getRoomsByHome(homeId: string, userId: string) {
       },
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
@@ -123,20 +125,34 @@ export async function getRoomById(roomId: string, userId: string) {
       id: true,
       name: true,
       description: true,
+      images: true,
       items: {
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       },
       tasks: {
         where: {
-          OR: [
-            { status: "PENDING" },
-            { status: "IN_PROGRESS" },
-          ],
+          OR: [{ status: 'PENDING' }, { status: 'IN_PROGRESS' }],
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
         take: 5,
       },
@@ -158,17 +174,13 @@ export async function getRoomById(roomId: string, userId: string) {
   });
 
   if (!room) {
-    throw new Error("Room not found");
+    throw new Error('Room not found');
   }
 
   return room;
 }
 
-export async function updateRoom(
-  roomId: string,
-  userId: string,
-  input: Partial<CreateRoomInput>
-) {
+export async function updateRoom(roomId: string, userId: string, input: Partial<CreateRoomInput>) {
   const room = await prisma.room.findFirst({
     where: {
       id: roomId,
@@ -179,7 +191,7 @@ export async function updateRoom(
             shares: {
               some: {
                 userId,
-                role: "WRITE",
+                role: 'WRITE',
               },
             },
           },
@@ -189,7 +201,7 @@ export async function updateRoom(
   });
 
   if (!room) {
-    throw new Error("Room not found or insufficient permissions");
+    throw new Error('Room not found or insufficient permissions');
   }
 
   const updatedRoom = await prisma.room.update({
@@ -199,6 +211,7 @@ export async function updateRoom(
       id: true,
       name: true,
       description: true,
+      images: true,
       _count: {
         select: {
           items: true,
@@ -222,7 +235,7 @@ export async function deleteRoom(roomId: string, userId: string) {
             shares: {
               some: {
                 userId,
-                role: "WRITE",
+                role: 'WRITE',
               },
             },
           },
@@ -232,7 +245,7 @@ export async function deleteRoom(roomId: string, userId: string) {
   });
 
   if (!room) {
-    throw new Error("Room not found or insufficient permissions");
+    throw new Error('Room not found or insufficient permissions');
   }
 
   await prisma.room.delete({
@@ -240,4 +253,4 @@ export async function deleteRoom(roomId: string, userId: string) {
   });
 
   return true;
-} 
+}

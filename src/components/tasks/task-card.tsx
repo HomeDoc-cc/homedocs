@@ -1,130 +1,199 @@
 'use client';
 
-import { Task } from "@/types/prisma";
-import { formatDistanceToNow } from "date-fns";
+import { format } from 'date-fns';
+import Link from 'next/link';
+
+import { Task } from '@/types/prisma';
 
 interface TaskCardProps {
   task: Task;
   onEdit?: () => void;
   onDelete?: () => void;
+  onComplete?: () => void;
 }
 
 const priorityColors = {
-  LOW: "bg-gray-100 text-gray-800",
-  MEDIUM: "bg-blue-100 text-blue-800",
-  HIGH: "bg-orange-100 text-orange-800",
-  URGENT: "bg-red-100 text-red-800",
-} as const;
+  LOW: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+  MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+  HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+  URGENT: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+};
 
 const statusColors = {
-  PENDING: "bg-yellow-100 text-yellow-800",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  COMPLETED: "bg-green-100 text-green-800",
-  CANCELLED: "bg-gray-100 text-gray-800",
-} as const;
+  PENDING: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+  IN_PROGRESS: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  COMPLETED: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+  CANCELLED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+};
 
-function formatDueDate(dueDate: string | Date | null | undefined) {
-  if (!dueDate) return null;
-  try {
-    return formatDistanceToNow(new Date(dueDate));
-  } catch (error) {
-    console.error("Error formatting due date:", error);
-    return null;
-  }
+const unitDisplay = {
+  DAILY: 'day',
+  WEEKLY: 'week',
+  MONTHLY: 'month',
+  YEARLY: 'year',
+};
+
+function toUnitDisplay(count: number, unit: string) {
+  const display = `${unitDisplay[unit as keyof typeof unitDisplay]}`;
+  return count === 1 ? display : `${count} ${display}s`;
 }
 
-export function TaskCard({ task, onEdit, onDelete }: TaskCardProps) {
-  const formattedDueDate = formatDueDate(task.dueDate);
+function LocationLink({ type, id, name }: { type: string; id: string; name: string }) {
+  return (
+    <Link
+      href={`/${type}s/${id}`}
+      className="hover:text-blue-600 dark:hover:text-blue-400"
+    >
+      {name}
+    </Link>
+  );
+}
+
+function getLocationLinks(task: Task) {
+  const parts = [];
+  if (task.item) {
+    parts.push(
+      <LocationLink key="item" type="item" id={task.item.id} name={task.item.name} />
+    );
+  }
+  if (task.room) {
+    parts.push(
+      <LocationLink key="room" type="room" id={task.room.id} name={task.room.name} />
+    );
+  }
+  if (task.home) {
+    parts.push(
+      <LocationLink key="home" type="home" id={task.home.id} name={task.home.name} />
+    );
+  }
+  return parts;
+}
+
+export function TaskCard({ task, onEdit, onDelete, onComplete }: TaskCardProps) {
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
+  const locationLinks = getLocationLinks(task);
 
   return (
-    <div className="bg-white shadow rounded-lg p-4 space-y-4">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div className="flex justify-between items-start">
-        <h3 className="text-lg font-medium text-gray-900">{task.title}</h3>
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{task.title}</h3>
+          {task.description && (
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{task.description}</p>
+          )}
+          {locationLinks.length > 0 && (
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+              <svg className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {locationLinks.reduce((prev, curr, i) => (
+                <>
+                  {prev}
+                  {i > 0 && <span className="mx-1">›</span>}
+                  {curr}
+                </>
+              ))}
+            </p>
+          )}
+        </div>
         <div className="flex space-x-2">
+          {onComplete && task.status !== 'COMPLETED' && (
+            <button
+              onClick={onComplete}
+              className="text-gray-400 hover:text-green-500 dark:text-gray-500 dark:hover:text-green-400"
+              title="Mark as complete"
+            >
+              <span className="sr-only">Complete</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          )}
           {onEdit && (
             <button
               onClick={onEdit}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
+              <span className="sr-only">Edit</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
               </svg>
             </button>
           )}
           {onDelete && (
             <button
               onClick={onDelete}
-              className="text-gray-400 hover:text-red-500"
+              className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <span className="sr-only">Delete</span>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  fillRule="evenodd"
+                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                  clipRule="evenodd"
                 />
               </svg>
             </button>
           )}
         </div>
       </div>
-
-      {task.description && (
-        <p className="text-gray-500 text-sm">{task.description}</p>
-      )}
-
-      <div className="flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            priorityColors[task.priority as keyof typeof priorityColors]
+          className={`hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            priorityColors[task.priority]
           }`}
         >
           {task.priority}
         </span>
         <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            statusColors[task.status as keyof typeof statusColors]
+          className={`hidden inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            statusColors[task.status]
           }`}
         >
-          {task.status}
+          {task.status.replace('_', ' ')}
         </span>
-      </div>
-
-      <div className="flex justify-between items-center text-sm text-gray-500">
-        {formattedDueDate && (
-          <div className="flex items-center space-x-1">
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span>Due {formattedDueDate} from now</span>
-          </div>
+        {task.dueDate && (
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              isOverdue
+                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Due {format(new Date(task.dueDate), 'MMM d, yyyy')}
+          </span>
+        )}
+        {task.isRecurring && (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
+            Repeats every {toUnitDisplay(task.interval || 1, task.unit || 'DAY')}
+          </span>
         )}
       </div>
+      {task.assignee && (
+        <div className="mt-4 flex items-center">
+          <div className="flex-shrink-0">
+            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                {task.assignee.name?.[0] || task.assignee.email?.[0] || '?'}
+              </span>
+            </div>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
+              {task.assignee.name || task.assignee.email}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Assigned to</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

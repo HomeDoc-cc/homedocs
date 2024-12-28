@@ -1,54 +1,26 @@
-import { createTask, getAllTasks } from "@/lib/task.utils";
-import { requireAuth } from "@/lib/session";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextRequest, NextResponse } from 'next/server';
+
+import { requireAuth } from '@/lib/session';
+import { createTask, getAllTasks } from '@/lib/task.utils';
 
 export async function GET() {
-  try {
-    const user = await requireAuth();
-    const tasks = await getAllTasks(user.id);
-    
-    return NextResponse.json(tasks);
-  } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
+  const session = await requireAuth();
+  const tasks = await getAllTasks(session.id);
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(tasks);
 }
 
-export async function POST(request: Request) {
-  try {
-    const user = await requireAuth();
-    const json = await request.json();
-    const task = await createTask(user.id, json);
-    
-    return NextResponse.json(task, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input data" },
-        { status: 400 }
-      );
-    }
+export async function POST(request: NextRequest) {
+  const session = await requireAuth();
+  const json = await request.json();
 
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
-    }
+  const data = {
+    ...json,
+    isRecurring: Boolean(json.isRecurring),
+    interval: json.interval ? parseInt(json.interval) : undefined,
+  };
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-} 
+  const task = await createTask(session.id, data);
+
+  return NextResponse.json(task, { status: 201 });
+}

@@ -1,15 +1,22 @@
+export enum TaskRecurrenceUnit {
+  DAILY = 'DAILY',
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}
+
 export enum TaskStatus {
-  PENDING = "PENDING",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-  CANCELLED = "CANCELLED",
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum TaskPriority {
-  LOW = "LOW",
-  MEDIUM = "MEDIUM",
-  HIGH = "HIGH",
-  URGENT = "URGENT",
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT',
 }
 
 export interface Paint {
@@ -45,30 +52,75 @@ export interface Flooring {
 export interface Task {
   id: string;
   title: string;
-  description?: string | null;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-  dueDate?: Date | null;
-  cronPattern?: string | null;
-  homeId?: string | null;
-  roomId?: string | null;
-  itemId?: string | null;
+  description: string | null;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dueDate: string | null;
+
+  // Recurring task fields
+  isRecurring: boolean;
+  interval: number | null;
+  unit: TaskRecurrenceUnit | null;
+  lastCompleted: string | null;
+  nextDueDate: string | null;
+  parentTaskId: string | null;
+  parentTask?: Task | null;
+  childTasks?: Task[];
+
+  assigneeId: string | null;
+  assignee: {
+    id: string;
+    name: string | null;
+    email: string | null;
+  } | null;
+  homeId: string | null;
+  roomId: string | null;
+  itemId: string | null;
   creatorId: string;
-  assigneeId?: string | null;
+  creator: {
+    id: string;
+    name: string | null;
+    email: string | null;
+  };
+  home: {
+    id: string;
+    name: string;
+  } | null;
+  room: {
+    id: string;
+    name: string;
+    homeId: string;
+    home: {
+      id: string;
+      name: string;
+    };
+  } | null;
+  item: {
+    id: string;
+    name: string;
+    roomId: string;
+    room: {
+      id: string;
+      name: string;
+      homeId: string;
+      home: {
+        id: string;
+        name: string;
+      };
+    };
+  } | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface User {
   id: string;
-  name?: string | null;
-  email?: string | null;
-  emailVerified?: Date | null;
-  image?: string | null;
-  ownedHomes?: Home[];
-  sharedHomes?: HomeShare[];
-  createdTasks?: Task[];
-  assignedTasks?: Task[];
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  emailVerified: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Home {
@@ -123,4 +175,4 @@ export interface HomeShare {
   userId: string;
   role: 'READ' | 'WRITE';
   createdAt: Date;
-} 
+}

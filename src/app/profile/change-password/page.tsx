@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface PasswordFormData {
   currentPassword: string;
@@ -25,28 +25,28 @@ export default function ChangePasswordPage() {
 
     const formData = new FormData(event.currentTarget);
     const data: PasswordFormData = {
-      currentPassword: formData.get("currentPassword") as string,
-      newPassword: formData.get("newPassword") as string,
-      confirmPassword: formData.get("confirmPassword") as string,
+      currentPassword: formData.get('currentPassword') as string,
+      newPassword: formData.get('newPassword') as string,
+      confirmPassword: formData.get('confirmPassword') as string,
     };
 
     if (data.newPassword !== data.confirmPassword) {
-      setError("New passwords do not match");
+      setError('New passwords do not match');
       setIsLoading(false);
       return;
     }
 
     if (data.newPassword.length < 8) {
-      setError("New password must be at least 8 characters long");
+      setError('New password must be at least 8 characters long');
       setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch("/api/user/change-password", {
-        method: "POST",
+      const response = await fetch('/api/user/change-password', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           currentPassword: data.currentPassword,
@@ -56,22 +56,22 @@ export default function ChangePasswordPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to change password");
+        throw new Error(errorData.error || 'Failed to change password');
       }
 
-      setSuccessMessage("Password changed successfully");
-      
+      setSuccessMessage('Password changed successfully');
+
       // Clear the form
       event.currentTarget.reset();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Failed to change password");
+      setError(error instanceof Error ? error.message : 'Failed to change password');
     } finally {
       setIsLoading(false);
     }
   }
 
   if (!session) {
-    router.push("/auth/signin");
+    router.push('/auth/signin');
     return null;
   }
 
@@ -79,7 +79,7 @@ export default function ChangePasswordPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/profile')}
           className="text-blue-500 hover:text-blue-600"
         >
           ← Back to Profile
@@ -115,9 +115,7 @@ export default function ChangePasswordPage() {
               minLength={8}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
-            <p className="mt-1 text-sm text-gray-500">
-              Must be at least 8 characters long
-            </p>
+            <p className="mt-1 text-sm text-gray-500">Must be at least 8 characters long</p>
           </div>
 
           <div>
@@ -134,9 +132,7 @@ export default function ChangePasswordPage() {
             />
           </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
-          )}
+          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 
           {successMessage && (
             <div className="text-green-500 text-sm text-center">{successMessage}</div>
@@ -148,11 +144,11 @@ export default function ChangePasswordPage() {
               disabled={isLoading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isLoading ? "Changing Password..." : "Change Password"}
+              {isLoading ? 'Changing Password...' : 'Change Password'}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

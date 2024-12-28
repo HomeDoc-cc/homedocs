@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from '@prisma/client';
 
 export type Task = Prisma.TaskGetPayload<{
   include: {
@@ -33,5 +33,5 @@ export type Paint = Prisma.PaintGetPayload<{
   };
 }>;
 
-export type TaskStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
-export type TaskPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT"; 
+export type TaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';

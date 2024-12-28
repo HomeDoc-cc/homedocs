@@ -1,6 +1,7 @@
-import { hash } from "bcryptjs";
-import { prisma } from "./db";
-import { z } from "zod";
+import { hash } from 'bcryptjs';
+import { z } from 'zod';
+
+import { prisma } from './db';
 
 export const userSchema = z.object({
   email: z.string().email(),
@@ -12,13 +13,13 @@ export type CreateUserInput = z.infer<typeof userSchema>;
 
 export async function createUser(input: CreateUserInput) {
   const { email, password, name } = userSchema.parse(input);
-  
+
   const exists = await prisma.user.findUnique({
     where: { email },
   });
 
   if (exists) {
-    throw new Error("User already exists");
+    throw new Error('User already exists');
   }
 
   const hashedPassword = await hash(password, 12);
@@ -65,4 +66,4 @@ export async function getUserByEmail(email: string) {
   });
 
   return user;
-} 
+}

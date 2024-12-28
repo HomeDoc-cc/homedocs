@@ -1,6 +1,8 @@
 import { getTestUserToken } from "../src/lib/test.utils";
+import { TaskPriority, TaskStatus, TaskRecurrenceUnit } from "@/types/prisma";
 
 async function main() {
+  // Get test token
   const token = await getTestUserToken();
   console.log("Test token:", token);
 
@@ -17,15 +19,25 @@ async function main() {
     }),
   });
 
+  if (!createHomeResponse.ok) {
+    console.error("Failed to create home:", await createHomeResponse.text());
+    process.exit(1);
+  }
+
   const home = await createHomeResponse.json();
   console.log("Created home:", home);
 
-  // Test getting homes
+  // Test getting all homes
   const getHomesResponse = await fetch("http://localhost:3000/api/homes", {
     headers: {
       Cookie: `next-auth.session-token=${token}`,
     },
   });
+
+  if (!getHomesResponse.ok) {
+    console.error("Failed to get homes:", await getHomesResponse.text());
+    process.exit(1);
+  }
 
   const homes = await getHomesResponse.json();
   console.log("All homes:", homes);
@@ -39,6 +51,11 @@ async function main() {
       },
     }
   );
+
+  if (!getHomeResponse.ok) {
+    console.error("Failed to get home:", await getHomeResponse.text());
+    process.exit(1);
+  }
 
   const singleHome = await getHomeResponse.json();
   console.log("Single home:", singleHome);
@@ -54,15 +71,20 @@ async function main() {
       },
       body: JSON.stringify({
         name: "Living Room",
-        description: "The main living area"
+        description: "The main living area",
       }),
     }
   );
 
+  if (!createRoomResponse.ok) {
+    console.error("Failed to create room:", await createRoomResponse.text());
+    process.exit(1);
+  }
+
   const room = await createRoomResponse.json();
   console.log("Created room:", room);
 
-  // Test getting rooms for a home
+  // Test getting all rooms
   const getRoomsResponse = await fetch(
     `http://localhost:3000/api/homes/${home.id}/rooms`,
     {
@@ -71,6 +93,11 @@ async function main() {
       },
     }
   );
+
+  if (!getRoomsResponse.ok) {
+    console.error("Failed to get rooms:", await getRoomsResponse.text());
+    process.exit(1);
+  }
 
   const rooms = await getRoomsResponse.json();
   console.log("All rooms:", rooms);
@@ -84,6 +111,11 @@ async function main() {
       },
     }
   );
+
+  if (!getRoomResponse.ok) {
+    console.error("Failed to get room:", await getRoomResponse.text());
+    process.exit(1);
+  }
 
   const singleRoom = await getRoomResponse.json();
   console.log("Single room:", singleRoom);
@@ -99,10 +131,15 @@ async function main() {
       },
       body: JSON.stringify({
         name: "Updated Living Room",
-        description: "Updated main living area"
+        description: "Updated main living area",
       }),
     }
   );
+
+  if (!updateRoomResponse.ok) {
+    console.error("Failed to update room:", await updateRoomResponse.text());
+    process.exit(1);
+  }
 
   const updatedRoom = await updateRoomResponse.json();
   console.log("Updated room:", updatedRoom);
@@ -124,16 +161,23 @@ async function main() {
         modelNumber: "OLED65C1",
         serialNumber: "123456789",
         purchaseDate: new Date().toISOString(),
-        warrantyUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        warrantyUntil: new Date(
+          Date.now() + 365 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         manualUrl: "https://www.lg.com/manual.pdf",
       }),
     }
   );
 
+  if (!createItemResponse.ok) {
+    console.error("Failed to create item:", await createItemResponse.text());
+    process.exit(1);
+  }
+
   const item = await createItemResponse.json();
   console.log("Created item:", item);
 
-  // Test getting items for a room
+  // Test getting all items
   const getItemsResponse = await fetch(
     `http://localhost:3000/api/rooms/${room.id}/items`,
     {
@@ -142,6 +186,11 @@ async function main() {
       },
     }
   );
+
+  if (!getItemsResponse.ok) {
+    console.error("Failed to get items:", await getItemsResponse.text());
+    process.exit(1);
+  }
 
   const items = await getItemsResponse.json();
   console.log("All items:", items);
@@ -155,6 +204,11 @@ async function main() {
       },
     }
   );
+
+  if (!getItemResponse.ok) {
+    console.error("Failed to get item:", await getItemResponse.text());
+    process.exit(1);
+  }
 
   const singleItem = await getItemResponse.json();
   console.log("Single item:", singleItem);
@@ -174,6 +228,11 @@ async function main() {
       }),
     }
   );
+
+  if (!updateItemResponse.ok) {
+    console.error("Failed to update item:", await updateItemResponse.text());
+    process.exit(1);
+  }
 
   const updatedItem = await updateItemResponse.json();
   console.log("Updated item:", updatedItem);
@@ -199,6 +258,14 @@ async function main() {
     }
   );
 
+  if (!createHomePaintResponse.ok) {
+    console.error(
+      "Failed to create home paint:",
+      await createHomePaintResponse.text()
+    );
+    process.exit(1);
+  }
+
   const homePaint = await createHomePaintResponse.json();
   console.log("Created home paint:", homePaint);
 
@@ -211,6 +278,14 @@ async function main() {
       },
     }
   );
+
+  if (!getHomePaintResponse.ok) {
+    console.error(
+      "Failed to get home paint:",
+      await getHomePaintResponse.text()
+    );
+    process.exit(1);
+  }
 
   const homePaints = await getHomePaintResponse.json();
   console.log("All home paints:", homePaints);
@@ -236,6 +311,14 @@ async function main() {
     }
   );
 
+  if (!createRoomPaintResponse.ok) {
+    console.error(
+      "Failed to create room paint:",
+      await createRoomPaintResponse.text()
+    );
+    process.exit(1);
+  }
+
   const roomPaint = await createRoomPaintResponse.json();
   console.log("Created room paint:", roomPaint);
 
@@ -248,6 +331,14 @@ async function main() {
       },
     }
   );
+
+  if (!getRoomPaintResponse.ok) {
+    console.error(
+      "Failed to get room paint:",
+      await getRoomPaintResponse.text()
+    );
+    process.exit(1);
+  }
 
   const roomPaints = await getRoomPaintResponse.json();
   console.log("All room paints:", roomPaints);
@@ -267,6 +358,11 @@ async function main() {
     }
   );
 
+  if (!updatePaintResponse.ok) {
+    console.error("Failed to update paint:", await updatePaintResponse.text());
+    process.exit(1);
+  }
+
   const updatedPaint = await updatePaintResponse.json();
   console.log("Updated paint:", updatedPaint);
 
@@ -280,16 +376,24 @@ async function main() {
         Cookie: `next-auth.session-token=${token}`,
       },
       body: JSON.stringify({
-        name: "Main Floor Hardwood",
+        name: "Living Room Floor",
         type: "Hardwood",
         material: "Oak",
         brand: "Bruce",
         color: "Natural",
-        pattern: "Traditional Strip",
+        pattern: "Plank",
         notes: "3/4 inch solid hardwood",
       }),
     }
   );
+
+  if (!createHomeFlooringResponse.ok) {
+    console.error(
+      "Failed to create home flooring:",
+      await createHomeFlooringResponse.text()
+    );
+    process.exit(1);
+  }
 
   const homeFlooring = await createHomeFlooringResponse.json();
   console.log("Created home flooring:", homeFlooring);
@@ -304,6 +408,14 @@ async function main() {
     }
   );
 
+  if (!getHomeFlooringResponse.ok) {
+    console.error(
+      "Failed to get home flooring:",
+      await getHomeFlooringResponse.text()
+    );
+    process.exit(1);
+  }
+
   const homeFloorings = await getHomeFlooringResponse.json();
   console.log("All home floorings:", homeFloorings);
 
@@ -317,16 +429,24 @@ async function main() {
         Cookie: `next-auth.session-token=${token}`,
       },
       body: JSON.stringify({
-        name: "Living Room Carpet",
-        type: "Carpet",
-        material: "Nylon",
-        brand: "Shaw",
-        color: "Pewter",
-        pattern: "Textured Loop",
-        notes: "Stain-resistant treatment applied",
+        name: "Living Room Floor",
+        type: "Hardwood",
+        material: "Oak",
+        brand: "Bruce",
+        color: "Natural",
+        pattern: "Plank",
+        notes: "3/4 inch solid hardwood",
       }),
     }
   );
+
+  if (!createRoomFlooringResponse.ok) {
+    console.error(
+      "Failed to create room flooring:",
+      await createRoomFlooringResponse.text()
+    );
+    process.exit(1);
+  }
 
   const roomFlooring = await createRoomFlooringResponse.json();
   console.log("Created room flooring:", roomFlooring);
@@ -340,6 +460,14 @@ async function main() {
       },
     }
   );
+
+  if (!getRoomFlooringResponse.ok) {
+    console.error(
+      "Failed to get room flooring:",
+      await getRoomFlooringResponse.text()
+    );
+    process.exit(1);
+  }
 
   const roomFloorings = await getRoomFlooringResponse.json();
   console.log("All room floorings:", roomFloorings);
@@ -359,6 +487,14 @@ async function main() {
     }
   );
 
+  if (!updateFlooringResponse.ok) {
+    console.error(
+      "Failed to update flooring:",
+      await updateFlooringResponse.text()
+    );
+    process.exit(1);
+  }
+
   const updatedFlooring = await updateFlooringResponse.json();
   console.log("Updated flooring:", updatedFlooring);
 
@@ -374,11 +510,21 @@ async function main() {
       body: JSON.stringify({
         title: "Paint Living Room",
         description: "Paint the living room walls with the new color",
-        priority: "HIGH",
+        priority: TaskPriority.HIGH,
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        status: TaskStatus.PENDING,
+        homeId: home.id,
       }),
     }
   );
+
+  if (!createHomeTaskResponse.ok) {
+    console.error(
+      "Failed to create home task:",
+      await createHomeTaskResponse.text()
+    );
+    process.exit(1);
+  }
 
   const homeTask = await createHomeTaskResponse.json();
   console.log("Created home task:", homeTask);
@@ -392,6 +538,14 @@ async function main() {
       },
     }
   );
+
+  if (!getHomeTasksResponse.ok) {
+    console.error(
+      "Failed to get home tasks:",
+      await getHomeTasksResponse.text()
+    );
+    process.exit(1);
+  }
 
   const homeTasks = await getHomeTasksResponse.json();
   console.log("All home tasks:", homeTasks);
@@ -408,11 +562,21 @@ async function main() {
       body: JSON.stringify({
         title: "Clean Windows",
         description: "Clean all windows in the living room",
-        priority: "MEDIUM",
+        priority: TaskPriority.MEDIUM,
         dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        status: TaskStatus.PENDING,
+        roomId: room.id,
       }),
     }
   );
+
+  if (!createRoomTaskResponse.ok) {
+    console.error(
+      "Failed to create room task:",
+      await createRoomTaskResponse.text()
+    );
+    process.exit(1);
+  }
 
   const roomTask = await createRoomTaskResponse.json();
   console.log("Created room task:", roomTask);
@@ -426,6 +590,14 @@ async function main() {
       },
     }
   );
+
+  if (!getRoomTasksResponse.ok) {
+    console.error(
+      "Failed to get room tasks:",
+      await getRoomTasksResponse.text()
+    );
+    process.exit(1);
+  }
 
   const roomTasks = await getRoomTasksResponse.json();
   console.log("All room tasks:", roomTasks);
@@ -442,11 +614,21 @@ async function main() {
       body: JSON.stringify({
         title: "Clean TV Screen",
         description: "Clean the TV screen with appropriate cleaner",
-        priority: "LOW",
+        priority: TaskPriority.LOW,
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        status: TaskStatus.PENDING,
+        itemId: item.id,
       }),
     }
   );
+
+  if (!createItemTaskResponse.ok) {
+    console.error(
+      "Failed to create item task:",
+      await createItemTaskResponse.text()
+    );
+    process.exit(1);
+  }
 
   const itemTask = await createItemTaskResponse.json();
   console.log("Created item task:", itemTask);
@@ -461,6 +643,14 @@ async function main() {
     }
   );
 
+  if (!getItemTasksResponse.ok) {
+    console.error(
+      "Failed to get item tasks:",
+      await getItemTasksResponse.text()
+    );
+    process.exit(1);
+  }
+
   const itemTasks = await getItemTasksResponse.json();
   console.log("All item tasks:", itemTasks);
 
@@ -474,11 +664,16 @@ async function main() {
         Cookie: `next-auth.session-token=${token}`,
       },
       body: JSON.stringify({
-        status: "IN_PROGRESS",
+        status: TaskStatus.IN_PROGRESS,
         description: "Clean all windows in the living room thoroughly",
       }),
     }
   );
+
+  if (!updateTaskResponse.ok) {
+    console.error("Failed to update task:", await updateTaskResponse.text());
+    process.exit(1);
+  }
 
   const updatedTask = await updateTaskResponse.json();
   console.log("Updated task:", updatedTask);
@@ -494,7 +689,94 @@ async function main() {
     }
   );
 
+  if (!deleteTaskResponse.ok) {
+    console.error("Failed to delete task:", await deleteTaskResponse.text());
+    process.exit(1);
+  }
+
   console.log("Delete task response status:", deleteTaskResponse.status);
+
+  // Test creating a recurring task
+  const createRecurringTaskResponse = await fetch(
+    `http://localhost:3000/api/tasks`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `next-auth.session-token=${token}`,
+      },
+      body: JSON.stringify({
+        title: "Weekly Room Cleaning",
+        description: "Regular cleaning of the living room",
+        priority: TaskPriority.MEDIUM,
+        status: TaskStatus.PENDING,
+        dueDate: new Date().toISOString(),
+        roomId: room.id,
+        isRecurring: true,
+        interval: 1,
+        unit: TaskRecurrenceUnit.WEEKLY,
+      }),
+    }
+  );
+
+  if (!createRecurringTaskResponse.ok) {
+    console.error(
+      "Failed to create recurring task:",
+      await createRecurringTaskResponse.text()
+    );
+    process.exit(1);
+  }
+
+  const recurringTask = await createRecurringTaskResponse.json();
+  console.log("Created recurring task:", recurringTask);
+
+  // Test completing a recurring task (should create next occurrence)
+  const completeTaskResponse = await fetch(
+    `http://localhost:3000/api/tasks/${recurringTask.id}/complete`,
+    {
+      method: "POST",
+      headers: {
+        Cookie: `next-auth.session-token=${token}`,
+      },
+    }
+  );
+
+  if (!completeTaskResponse.ok) {
+    console.error(
+      "Failed to complete task:",
+      await completeTaskResponse.text()
+    );
+    process.exit(1);
+  }
+
+  const completedTask = await completeTaskResponse.json();
+  console.log("Completed task:", completedTask);
+
+  // Test getting all tasks
+  const getAllTasksResponse = await fetch(
+    `http://localhost:3000/api/tasks`,
+    {
+      headers: {
+        Cookie: `next-auth.session-token=${token}`,
+      },
+    }
+  );
+
+  if (!getAllTasksResponse.ok) {
+    console.error(
+      "Failed to get all tasks:",
+      await getAllTasksResponse.text()
+    );
+    process.exit(1);
+  }
+
+  const allTasks = await getAllTasksResponse.json();
+  console.log("All tasks:", allTasks);
+
+  console.log("All tests completed successfully!");
 }
 
-main().catch(console.error); 
+main().catch((error) => {
+  console.error("Test failed:", error);
+  process.exit(1);
+}); 

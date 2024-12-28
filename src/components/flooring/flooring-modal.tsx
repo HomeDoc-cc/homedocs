@@ -1,7 +1,8 @@
-import { Fragment, useEffect } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-import { useForm } from "react-hook-form";
-import { type Flooring as PrismaFlooring } from ".prisma/client";
+import { Dialog, Transition } from '@headlessui/react';
+import { Fragment, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+
+import { type Flooring as PrismaFlooring } from '.prisma/client';
 
 interface FlooringModalProps {
   isOpen: boolean;
@@ -20,12 +21,7 @@ interface FlooringFormData {
   notes?: string | null;
 }
 
-export function FlooringModal({
-  isOpen,
-  onClose,
-  flooring,
-  onSubmit,
-}: FlooringModalProps) {
+export function FlooringModal({ isOpen, onClose, flooring, onSubmit }: FlooringModalProps) {
   const {
     register,
     handleSubmit,
@@ -33,13 +29,13 @@ export function FlooringModal({
     formState: { errors },
   } = useForm<FlooringFormData>({
     defaultValues: {
-      name: "",
-      type: "",
-      material: "",
-      brand: "",
-      color: "",
-      pattern: "",
-      notes: "",
+      name: '',
+      type: '',
+      material: '',
+      brand: '',
+      color: '',
+      pattern: '',
+      notes: '',
     },
   });
 
@@ -50,19 +46,19 @@ export function FlooringModal({
         type: flooring.type,
         material: flooring.material,
         brand: flooring.brand,
-        color: flooring.color || "",
-        pattern: flooring.pattern || "",
-        notes: flooring.notes || "",
+        color: flooring.color || '',
+        pattern: flooring.pattern || '',
+        notes: flooring.notes || '',
       });
     } else {
       reset({
-        name: "",
-        type: "",
-        material: "",
-        brand: "",
-        color: "",
-        pattern: "",
-        notes: "",
+        name: '',
+        type: '',
+        material: '',
+        brand: '',
+        color: '',
+        pattern: '',
+        notes: '',
       });
     }
   }, [flooring, reset]);
@@ -103,51 +99,41 @@ export function FlooringModal({
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-lg font-medium leading-6 text-gray-900">
-                        {flooring ? "Edit Flooring" : "Add Flooring"}
+                        {flooring ? 'Edit Flooring' : 'Add Flooring'}
                       </h3>
                       <p className="mt-1 text-sm text-gray-500">
                         {flooring
-                          ? "Update the flooring details below"
-                          : "Enter the flooring details below"}
+                          ? 'Update the flooring details below'
+                          : 'Enter the flooring details below'}
                       </p>
                     </div>
 
                     <div className="space-y-4">
                       <div>
-                        <label
-                          htmlFor="name"
-                          className="block text-sm font-medium text-gray-700"
-                        >
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                           Name
                         </label>
                         <input
                           type="text"
-                          {...register("name", { required: true })}
+                          {...register('name', { required: true })}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         />
                         {errors.name && (
-                          <p className="mt-1 text-sm text-red-600">
-                            Name is required
-                          </p>
+                          <p className="mt-1 text-sm text-red-600">Name is required</p>
                         )}
                       </div>
 
                       <div>
-                        <label
-                          htmlFor="type"
-                          className="block text-sm font-medium text-gray-700"
-                        >
+                        <label htmlFor="type" className="block text-sm font-medium text-gray-700">
                           Type
                         </label>
                         <input
                           type="text"
-                          {...register("type", { required: true })}
+                          {...register('type', { required: true })}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         />
                         {errors.type && (
-                          <p className="mt-1 text-sm text-red-600">
-                            Type is required
-                          </p>
+                          <p className="mt-1 text-sm text-red-600">Type is required</p>
                         )}
                       </div>
 
@@ -160,45 +146,35 @@ export function FlooringModal({
                         </label>
                         <input
                           type="text"
-                          {...register("material", { required: true })}
+                          {...register('material', { required: true })}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         />
                         {errors.material && (
-                          <p className="mt-1 text-sm text-red-600">
-                            Material is required
-                          </p>
+                          <p className="mt-1 text-sm text-red-600">Material is required</p>
                         )}
                       </div>
 
                       <div>
-                        <label
-                          htmlFor="brand"
-                          className="block text-sm font-medium text-gray-700"
-                        >
+                        <label htmlFor="brand" className="block text-sm font-medium text-gray-700">
                           Brand
                         </label>
                         <input
                           type="text"
-                          {...register("brand", { required: true })}
+                          {...register('brand', { required: true })}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         />
                         {errors.brand && (
-                          <p className="mt-1 text-sm text-red-600">
-                            Brand is required
-                          </p>
+                          <p className="mt-1 text-sm text-red-600">Brand is required</p>
                         )}
                       </div>
 
                       <div>
-                        <label
-                          htmlFor="color"
-                          className="block text-sm font-medium text-gray-700"
-                        >
+                        <label htmlFor="color" className="block text-sm font-medium text-gray-700">
                           Color
                         </label>
                         <input
                           type="text"
-                          {...register("color")}
+                          {...register('color')}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         />
                       </div>
@@ -212,20 +188,17 @@ export function FlooringModal({
                         </label>
                         <input
                           type="text"
-                          {...register("pattern")}
+                          {...register('pattern')}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         />
                       </div>
 
                       <div>
-                        <label
-                          htmlFor="notes"
-                          className="block text-sm font-medium text-gray-700"
-                        >
+                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
                           Notes
                         </label>
                         <textarea
-                          {...register("notes")}
+                          {...register('notes')}
                           rows={3}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                         />
@@ -245,7 +218,7 @@ export function FlooringModal({
                       type="submit"
                       className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                      {flooring ? "Update" : "Create"}
+                      {flooring ? 'Update' : 'Create'}
                     </button>
                   </div>
                 </form>
@@ -256,4 +229,4 @@ export function FlooringModal({
       </Dialog>
     </Transition.Root>
   );
-} 
+}
