@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import packageJson from '../../../package.json';
 
 interface GitHubRelease {
@@ -15,7 +16,9 @@ export function VersionCheck() {
   useEffect(() => {
     async function checkVersion() {
       try {
-        const response = await fetch('https://api.github.com/repos/jhofker/homedocs/releases/latest');
+        const response = await fetch(
+          'https://api.github.com/repos/jhofker/homedocs/releases/latest'
+        );
         if (response.ok) {
           const data = await response.json();
           setLatestVersion(data);
@@ -28,7 +31,20 @@ export function VersionCheck() {
     checkVersion();
   }, []);
 
-  if (!latestVersion) return null;
+  if (!latestVersion) {
+    return (
+      <span className="">
+        <a
+          href="https://github.com/jhofker/homedocs"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-green-600 dark:text-green-400 text-sm ml-2"
+        >
+          v{currentVersion}
+        </a>
+      </span>
+    );
+  }
 
   const isOutdated = latestVersion.tag_name.replace('v', '') !== currentVersion;
 
@@ -43,6 +59,6 @@ export function VersionCheck() {
       v{currentVersion} ({latestVersion.tag_name} available)
     </a>
   ) : (
-    <span className="text-green-600 dark:text-green-400 text-sm ml-2">v{currentVersion}</span>
+    ''
   );
-} 
+}
