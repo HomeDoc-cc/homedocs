@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
+
 import { authOptions } from '@/lib/auth';
 import { getStorageProvider } from '@/lib/storage';
-import sharp from 'sharp';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,15 +28,21 @@ export async function POST(request: NextRequest) {
 
     // Resize image
     const resizedBuffer = await sharp(buffer)
-      .resize(1920, 1080, { // Max dimensions while maintaining aspect ratio
+      .resize(1920, 1080, {
+        // Max dimensions while maintaining aspect ratio
         fit: 'inside',
-        withoutEnlargement: true
+        withoutEnlargement: true,
       })
       .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
       .toBuffer();
 
     const storageProvider = getStorageProvider();
-    const key = await storageProvider.uploadFile(resizedBuffer, file.name, 'image/jpeg', session.user.id);
+    const key = await storageProvider.uploadFile(
+      resizedBuffer,
+      file.name,
+      'image/jpeg',
+      session.user.id
+    );
 
     return NextResponse.json({ key });
   } catch (error) {
@@ -48,7 +55,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const session = await requireAuth();
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const { key } = await request.json();
@@ -57,7 +67,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const storageProvider = getStorageProvider();
-    await storageProvider.deleteFile(key, session.id);
+    await storageProvider.deleteFile(key, session.user.id);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
@@ -68,4 +78,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-
