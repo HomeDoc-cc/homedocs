@@ -4,9 +4,21 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+function isInBuildPhase() {
+  return (
+    process.env.NEXT_PHASE === 'phase-production-build' || // Next.js build
+    process.env.CI === 'true' // CI environment
+  );
+}
+
 export async function checkAndRunMigrations() {
   if (process.env.NODE_ENV === 'development') {
     console.log('Skipping auto-migrations in development');
+    return;
+  }
+
+  if (isInBuildPhase()) {
+    console.log('Skipping auto-migrations during build phase');
     return;
   }
 
