@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { checkAndRunMigrations } from './db-migrate';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -9,4 +10,16 @@ export const prisma = global.prisma || new PrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
   global.prisma = prisma;
+}
+
+// Initialize database and run migrations if needed
+export async function initializeDatabase() {
+  try {
+    await checkAndRunMigrations();
+    await prisma.$connect();
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    throw error;
+  }
 }
