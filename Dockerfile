@@ -42,10 +42,15 @@ RUN npm ci --only=production
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts/start.sh ./start.sh
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
+
+# Set permissions for the startup script
+RUN chmod +x ./start.sh
+RUN chown nextjs:nodejs ./start.sh
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -53,11 +58,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 RUN npx prisma generate
-
-# Copy and set up the startup script
-COPY scripts/start.sh ./start.sh
-RUN chmod +x ./start.sh
-RUN chown nextjs:nodejs ./start.sh
 
 USER nextjs
 
