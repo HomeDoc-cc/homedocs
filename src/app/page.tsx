@@ -22,8 +22,8 @@ export default async function HomePage() {
               <span className="block text-blue-600 dark:text-blue-400">home maintenance</span>
             </h1>
             <p className="mx-auto mt-3 max-w-md text-base text-gray-500 dark:text-gray-400 sm:text-lg md:mt-5 md:max-w-3xl md:text-xl">
-              Keep track of your home&apos;s maintenance tasks, appliances, and important documents in one
-              place. Never forget a maintenance task again.
+              Keep track of your home&apos;s maintenance tasks, appliances, and important documents
+              in one place. Never forget a maintenance task again.
             </p>
             <div className="mx-auto mt-5 max-w-md sm:flex sm:justify-center md:mt-8">
               <div className="rounded-md shadow">
