@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { ShareHomeDialog } from '@/components/share-home-dialog';
 
 interface HomePageProps {
   params: Promise<{
@@ -33,6 +34,7 @@ export default function HomePage({ params }: HomePageProps) {
   const [id, setId] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   useEffect(() => {
     async function getParams() {
@@ -121,13 +123,31 @@ export default function HomePage({ params }: HomePageProps) {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{home.name}</h1>
-        <Link
-          href={`/homes/${home.id}/edit`}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-        >
-          Edit Home
-        </Link>
+        <div className="flex space-x-4">
+          <button
+            onClick={() => setIsShareDialogOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+          >
+            Share
+          </button>
+          <Link
+            href={`/homes/${home.id}/edit`}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          >
+            Edit Home
+          </Link>
+        </div>
       </div>
+
+      <ShareHomeDialog
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        homeId={home.id}
+        onShare={() => {
+          // Optionally refresh the home data to show updated sharing status
+          fetchHome();
+        }}
+      />
 
       {home.images && home.images.length > 0 && (
         <div className="mb-8">
