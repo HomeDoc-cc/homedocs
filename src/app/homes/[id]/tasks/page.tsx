@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TaskList } from '@/components/tasks/task-list';
 import { useTaskData } from '@/hooks/use-task-data';
@@ -14,16 +14,9 @@ interface TasksPageProps {
 export default function TasksPage({ params }: TasksPageProps) {
   const [id, setId] = useState<string | null>(null);
 
-  const getParams = useCallback(async () => {
-    const { id } = await params;
-    setId(id);
-  }, [params]);
-
   useEffect(() => {
-    if (id) {
-      getParams();
-    }
-  }, [id, getParams]);
+    params.then(({ id }) => setId(id));
+  }, [params]);
 
   const { tasks, users, isLoading, refetch } = useTaskData({
     type: 'home',
