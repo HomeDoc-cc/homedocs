@@ -1,7 +1,6 @@
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import bcrypt from 'bcryptjs';
 import { NextAuthOptions } from 'next-auth';
-import { Adapter } from 'next-auth/adapters';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { z } from 'zod';
@@ -14,7 +13,7 @@ const credentialsSchema = z.object({
 });
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as Adapter,
+  adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
   },
@@ -35,11 +34,20 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        if (!credentials) return null;
+        
         try {
           const { email, password } = credentialsSchema.parse(credentials);
 
           const user = await prisma.user.findUnique({
             where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              image: true,
+              password: true,
+            },
           });
 
           if (!user || !user.password) {
@@ -66,8 +74,8 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async session({ session, token }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub;
+      if (session.user) {
+        session.user.id = token.sub!;
       }
       return session;
     },
