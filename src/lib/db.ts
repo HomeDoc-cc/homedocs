@@ -17,7 +17,6 @@ export async function initializeDatabase() {
   try {
     await checkAndRunMigrations();
     await prisma.$connect();
-    console.log('Database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);
     throw error;
