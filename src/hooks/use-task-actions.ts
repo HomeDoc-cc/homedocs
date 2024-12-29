@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { TaskStatus } from '@/types/prisma';
+
 import { TaskFormData } from '@/components/tasks/task-modal';
+import { TaskStatus } from '@/types/prisma';
 
 export function useTaskActions(onTasksChange?: () => void) {
   const [isLoading, setIsLoading] = useState(false);

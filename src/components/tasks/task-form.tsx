@@ -1,12 +1,12 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useEffect } from 'react';
 
-import { Task, TaskPriority, TaskRecurrenceUnit, TaskStatus, User } from '@/types/prisma';
 import { useLocationOptions } from '@/hooks/use-location-options';
+import { Task, TaskPriority, TaskRecurrenceUnit, TaskStatus, User } from '@/types/prisma';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -106,13 +106,13 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
 
       // Set room if it exists and belongs to the selected home
       const roomId = task.roomId || task.item?.roomId;
-      if (roomId && rooms.some(room => room.id === roomId && room.homeId === homeId)) {
+      if (roomId && rooms.some((room) => room.id === roomId && room.homeId === homeId)) {
         setValue('roomId', roomId);
       }
 
       // Set item if it exists and belongs to the selected room
       const itemId = task.itemId;
-      if (itemId && items.some(item => item.id === itemId && item.roomId === roomId)) {
+      if (itemId && items.some((item) => item.id === itemId && item.roomId === roomId)) {
         setValue('itemId', itemId);
       }
     }

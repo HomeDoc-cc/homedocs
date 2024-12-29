@@ -1,5 +1,6 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+
 import { Home, Item, Room } from '@/types/prisma';
 
 interface LocationOptions {
@@ -57,8 +58,12 @@ export function useLocationOptions() {
         ]);
 
         setHomes(homesData.map((home: Home) => ({ id: home.id, name: home.name })));
-        setRooms(roomsData.map((room: Room) => ({ id: room.id, name: room.name, homeId: room.homeId })));
-        setItems(itemsData.map((item: Item) => ({ id: item.id, name: item.name, roomId: item.roomId })));
+        setRooms(
+          roomsData.map((room: Room) => ({ id: room.id, name: room.name, homeId: room.homeId }))
+        );
+        setItems(
+          itemsData.map((item: Item) => ({ id: item.id, name: item.name, roomId: item.roomId }))
+        );
       } catch (error) {
         console.error('Error fetching location options:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch location options');
@@ -77,4 +82,4 @@ export function useLocationOptions() {
     isLoading,
     error,
   };
-} 
+}

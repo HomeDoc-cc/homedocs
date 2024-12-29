@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getRequestContext, logger } from '@/lib/logger';
 import { createRoom, getRoomsByHome } from '@/lib/room.utils';
-import { logger, getRequestContext } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
 export async function POST(
@@ -40,7 +40,10 @@ export async function POST(
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ homeId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ homeId: string }> }
+) {
   try {
     const session = await requireAuth();
     logger.info('Fetching rooms for home', {

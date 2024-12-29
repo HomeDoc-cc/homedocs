@@ -2,7 +2,7 @@ import { randomBytes } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/db';
-import { logger, getRequestContext } from '@/lib/logger';
+import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
 // Generate a secure random token

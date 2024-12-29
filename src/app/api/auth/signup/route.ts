@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { createUser } from '@/lib/auth.utils';
-import { logger, getRequestContext } from '@/lib/logger';
+import { getRequestContext, logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   logger.info('Processing signup request', {
@@ -27,9 +27,6 @@ export async function POST(request: NextRequest) {
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

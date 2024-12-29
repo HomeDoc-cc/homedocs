@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { createHome, getUserHomes } from '@/lib/home.utils';
-import { logger, getRequestContext } from '@/lib/logger';
+import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
 export async function POST(request: NextRequest) {

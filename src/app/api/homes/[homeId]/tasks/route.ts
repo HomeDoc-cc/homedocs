@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 import { createTask, getTasksByHome } from '@/lib/task.utils';
-import { logger, getRequestContext } from '@/lib/logger';
 
 export async function POST(
   request: NextRequest,
@@ -40,7 +40,10 @@ export async function POST(
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ homeId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ homeId: string }> }
+) {
   try {
     const session = await requireAuth();
     logger.info('Fetching tasks for home', {

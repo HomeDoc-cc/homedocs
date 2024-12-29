@@ -7,11 +7,19 @@ import { prisma } from './db';
 
 export const taskSchema = z.object({
   title: z.string().min(1),
-  description: z.string().nullable().optional().transform(val => val || ''),
+  description: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => val || ''),
   status: z.nativeEnum(TaskStatus).default(TaskStatus.PENDING),
   priority: z.nativeEnum(TaskPriority).default(TaskPriority.MEDIUM),
   dueDate: z.string().datetime().nullable().optional(),
-  assigneeId: z.string().nullable().optional().transform(val => val || undefined),
+  assigneeId: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => val || undefined),
   homeId: z.string().nullable().optional(),
   roomId: z.string().nullable().optional(),
   itemId: z.string().nullable().optional(),
@@ -120,7 +128,7 @@ export async function getRecentTasks(userId: string) {
 export async function createTask(userId: string, input: CreateTaskInput) {
   // Determine the most specific location ID
   let locationId: { itemId?: string; roomId?: string; homeId?: string } = {};
-  
+
   if (input.itemId) {
     const item = await prisma.item.findFirst({
       where: {
@@ -234,16 +242,12 @@ export async function createTask(userId: string, input: CreateTaskInput) {
         OR: [
           {
             ownedHomes: {
-              some: locationId.homeId
-                ? { id: locationId.homeId }
-                : undefined,
+              some: locationId.homeId ? { id: locationId.homeId } : undefined,
             },
           },
           {
             sharedHomes: {
-              some: locationId.homeId
-                ? { homeId: locationId.homeId }
-                : undefined,
+              some: locationId.homeId ? { homeId: locationId.homeId } : undefined,
             },
           },
         ],
@@ -439,7 +443,7 @@ export async function updateTask(taskId: string, userId: string, input: Partial<
 
   // Handle location updates
   let locationId: { itemId?: string; roomId?: string; homeId?: string } = {};
-  
+
   if ('itemId' in input || 'roomId' in input || 'homeId' in input) {
     if (input.itemId) {
       const item = await prisma.item.findFirst({
@@ -544,18 +548,20 @@ export async function updateTask(taskId: string, userId: string, input: Partial<
     const assignee = await prisma.user.findFirst({
       where: {
         id: input.assigneeId,
-        OR: targetHomeId ? [
-          {
-            ownedHomes: {
-              some: { id: targetHomeId },
-            },
-          },
-          {
-            sharedHomes: {
-              some: { homeId: targetHomeId },
-            },
-          },
-        ] : undefined,
+        OR: targetHomeId
+          ? [
+              {
+                ownedHomes: {
+                  some: { id: targetHomeId },
+                },
+              },
+              {
+                sharedHomes: {
+                  some: { homeId: targetHomeId },
+                },
+              },
+            ]
+          : undefined,
       },
     });
 

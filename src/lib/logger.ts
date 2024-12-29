@@ -12,7 +12,9 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 // Get minimum log level from environment variable, default to 'info'
 const MIN_LOG_LEVEL = (process.env.LOG_LEVEL || 'info').toLowerCase() as LogLevel;
 if (!LOG_LEVELS.hasOwnProperty(MIN_LOG_LEVEL)) {
-  console.warn(`Invalid LOG_LEVEL environment variable: ${process.env.LOG_LEVEL}. Defaulting to 'info'`);
+  console.warn(
+    `Invalid LOG_LEVEL environment variable: ${process.env.LOG_LEVEL}. Defaulting to 'info'`
+  );
 }
 const MIN_LOG_LEVEL_VALUE = LOG_LEVELS[MIN_LOG_LEVEL] || LOG_LEVELS.info;
 
@@ -53,7 +55,7 @@ function log(level: LogLevel, message: string, context: LogContext = {}) {
   }
 
   const formattedLog = formatLog(level, message, context);
-  
+
   switch (level) {
     case 'debug':
       console.debug(formattedLog);
@@ -93,4 +95,4 @@ export function getServerContext(userId?: string, action?: string) {
     action,
     serverComponent: true,
   };
-} 
+}

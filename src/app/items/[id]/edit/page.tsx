@@ -50,7 +50,7 @@ export default function EditItemPage({ params }: EditItemPageProps) {
       setError(error instanceof Error ? error.message : 'Failed to fetch item');
     }
   }, [id]);
-  
+
   useEffect(() => {
     if (id) {
       fetchItem();

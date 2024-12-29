@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import { NextRequest } from 'next/server';
 
 import { authOptions } from '@/lib/auth';
-import { logger, getRequestContext } from '@/lib/logger';
+import { getRequestContext, logger } from '@/lib/logger';
 
 async function handler(request: NextRequest) {
   try {

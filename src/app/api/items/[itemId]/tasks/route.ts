@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 import { createTask, getTasksByItem } from '@/lib/task.utils';
@@ -31,10 +32,7 @@ export async function POST(
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
@@ -65,9 +63,6 @@ export async function GET(
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

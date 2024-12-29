@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/db';
-import { logger, getRequestContext } from '@/lib/logger';
+import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
@@ -49,4 +49,4 @@ export async function GET(request: NextRequest) {
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

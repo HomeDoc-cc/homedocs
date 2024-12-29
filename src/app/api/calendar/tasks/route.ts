@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 
@@ -28,10 +29,7 @@ export async function GET(request: NextRequest) {
     // Get tasks for user
     const tasks = await prisma.task.findMany({
       where: {
-        OR: [
-          { creatorId: calendarToken.userId },
-          { assigneeId: calendarToken.userId },
-        ],
+        OR: [{ creatorId: calendarToken.userId }, { assigneeId: calendarToken.userId }],
         isRecurring: true,
       },
       include: {
@@ -55,9 +53,6 @@ export async function GET(request: NextRequest) {
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

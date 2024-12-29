@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+
 import { checkAndRunMigrations } from './db-migrate';
 
 declare global {

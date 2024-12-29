@@ -1,7 +1,8 @@
 // Code already follows logging best practices - no changes needed
 import { NextResponse } from 'next/server';
-import { logger } from '@/lib/logger';
+
 import { prisma } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
 export async function GET() {
@@ -49,9 +50,6 @@ export async function GET() {
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

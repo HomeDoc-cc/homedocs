@@ -6,7 +6,7 @@ import { QuickStats } from '@/components/dashboard/quick-stats';
 import { RecentTasks } from '@/components/dashboard/recent-tasks';
 import { authOptions } from '@/lib/auth';
 import { getUserHomes } from '@/lib/home.utils';
-import { logger, getServerContext } from '@/lib/logger';
+import { getServerContext, logger } from '@/lib/logger';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);

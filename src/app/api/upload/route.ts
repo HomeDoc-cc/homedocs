@@ -2,8 +2,8 @@ import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { authOptions } from '@/lib/auth';
-import { getStorageProvider } from '@/lib/storage';
 import { logger } from '@/lib/logger';
+import { getStorageProvider } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   logger.info('Upload request received');
@@ -55,10 +55,7 @@ export async function POST(request: NextRequest) {
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
@@ -102,9 +99,6 @@ export async function DELETE(request: NextRequest) {
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

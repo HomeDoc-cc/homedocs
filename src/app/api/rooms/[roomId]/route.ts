@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getRequestContext, logger } from '@/lib/logger';
 import { deleteRoom, getRoomById, updateRoom } from '@/lib/room.utils';
-import { logger, getRequestContext } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ roomId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
+) {
   try {
     const session = await requireAuth();
     logger.info('Fetching room details', {
@@ -70,7 +73,10 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ roomId: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ roomId: string }> }
+) {
   try {
     const session = await requireAuth();
     logger.info('Deleting room', {

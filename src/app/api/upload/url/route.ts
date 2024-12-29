@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getStorageProvider } from '@/lib/storage';
+import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
-import { logger, getRequestContext } from '@/lib/logger';
+import { getStorageProvider } from '@/lib/storage';
 
 export async function GET(request: NextRequest) {
   logger.info('Starting upload URL generation', {
@@ -46,9 +46,6 @@ export async function GET(request: NextRequest) {
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
-} 
+}

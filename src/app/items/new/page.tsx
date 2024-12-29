@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ImageUpload } from '@/components/image-upload';
 
@@ -47,7 +47,7 @@ export default function NewItemPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -55,7 +55,7 @@ export default function NewItemPage() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    
+
     if (!roomId) {
       setError('No room selected. Please select a room first.');
       return;
@@ -66,8 +66,12 @@ export default function NewItemPage() {
 
     const data: ItemFormData = {
       ...formData,
-      purchaseDate: formData.purchaseDate ? new Date(formData.purchaseDate).toISOString() : undefined,
-      warrantyUntil: formData.warrantyUntil ? new Date(formData.warrantyUntil).toISOString() : undefined,
+      purchaseDate: formData.purchaseDate
+        ? new Date(formData.purchaseDate).toISOString()
+        : undefined,
+      warrantyUntil: formData.warrantyUntil
+        ? new Date(formData.warrantyUntil).toISOString()
+        : undefined,
       images,
     };
 
@@ -108,9 +112,15 @@ export default function NewItemPage() {
       <h1 className="text-3xl font-bold mb-8">Add New Item</h1>
 
       <div className="max-w-2xl mx-auto">
-        <form onSubmit={onSubmit} className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <form
+          onSubmit={onSubmit}
+          className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow"
+        >
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Item Name *
             </label>
             <input
@@ -126,7 +136,10 @@ export default function NewItemPage() {
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Description
             </label>
             <textarea
@@ -142,7 +155,10 @@ export default function NewItemPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="category"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Category
               </label>
               <input
@@ -157,7 +173,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label htmlFor="manufacturer" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="manufacturer"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Manufacturer
               </label>
               <input
@@ -174,7 +193,10 @@ export default function NewItemPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="modelNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="modelNumber"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Model Number
               </label>
               <input
@@ -189,7 +211,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label htmlFor="serialNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="serialNumber"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Serial Number
               </label>
               <input
@@ -206,7 +231,10 @@ export default function NewItemPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="purchaseDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="purchaseDate"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Purchase Date
               </label>
               <input
@@ -220,7 +248,10 @@ export default function NewItemPage() {
             </div>
 
             <div>
-              <label htmlFor="warrantyUntil" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="warrantyUntil"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Warranty Until
               </label>
               <input
@@ -235,7 +266,10 @@ export default function NewItemPage() {
           </div>
 
           <div>
-            <label htmlFor="manualUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="manualUrl"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Manual URL
             </label>
             <input
@@ -249,7 +283,7 @@ export default function NewItemPage() {
             />
           </div>
 
-          <ImageUpload images={images} onImagesChange={setImages}  />
+          <ImageUpload images={images} onImagesChange={setImages} />
 
           {error && <div className="text-red-500 text-sm text-center">{error}</div>}
 

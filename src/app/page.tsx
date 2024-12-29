@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { authOptions } from '@/lib/auth';
-import { logger, getServerContext } from '@/lib/logger';
+import { getServerContext, logger } from '@/lib/logger';
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);

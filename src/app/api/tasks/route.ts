@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 import { createTask, getAllTasks } from '@/lib/task.utils';
-import { logger, getRequestContext } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {

@@ -40,10 +40,7 @@ function toUnitDisplay(count: number, unit: string) {
 
 function LocationLink({ type, id, name }: { type: string; id: string; name: string }) {
   return (
-    <Link
-      href={`/${type}s/${id}`}
-      className="hover:text-blue-600 dark:hover:text-blue-400"
-    >
+    <Link href={`/${type}s/${id}`} className="hover:text-blue-600 dark:hover:text-blue-400">
       {name}
     </Link>
   );
@@ -52,19 +49,13 @@ function LocationLink({ type, id, name }: { type: string; id: string; name: stri
 function getLocationLinks(task: Task) {
   const parts = [];
   if (task.item) {
-    parts.push(
-      <LocationLink key="item" type="item" id={task.item.id} name={task.item.name} />
-    );
+    parts.push(<LocationLink key="item" type="item" id={task.item.id} name={task.item.name} />);
   }
   if (task.room) {
-    parts.push(
-      <LocationLink key="room" type="room" id={task.room.id} name={task.room.name} />
-    );
+    parts.push(<LocationLink key="room" type="room" id={task.room.id} name={task.room.name} />);
   }
   if (task.home) {
-    parts.push(
-      <LocationLink key="home" type="home" id={task.home.id} name={task.home.name} />
-    );
+    parts.push(<LocationLink key="home" type="home" id={task.home.id} name={task.home.name} />);
   }
   return parts;
 }

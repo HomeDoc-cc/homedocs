@@ -6,7 +6,7 @@ import { useTaskActions } from '@/hooks/use-task-actions';
 import { Task, User } from '@/types/prisma';
 
 import { TaskCard } from './task-card';
-import { TaskModal, TaskFormData } from './task-modal';
+import { TaskFormData, TaskModal } from './task-modal';
 
 interface TaskListProps {
   tasks: Task[];

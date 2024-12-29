@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 
-import { logger, getRequestContext } from '@/lib/logger';
+import { getRequestContext, logger } from '@/lib/logger';
 
 const LOCAL_STORAGE_PATH = process.env.LOCAL_STORAGE_PATH || './uploads';
 
@@ -64,9 +64,6 @@ export async function GET(
       error: errorObject,
     });
 
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
