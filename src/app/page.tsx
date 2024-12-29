@@ -3,13 +3,21 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { authOptions } from '@/lib/auth';
+import { logger, getServerContext } from '@/lib/logger';
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
 
   if (session?.user) {
+    logger.info('Authenticated user visiting landing page, redirecting to dashboard', {
+      ...getServerContext(session.user.id, 'landing.redirect'),
+    });
     redirect('/dashboard');
   }
+
+  logger.info('Visitor accessing landing page', {
+    ...getServerContext(undefined, 'landing.view'),
+  });
 
   return (
     <div className="min-h-screen">

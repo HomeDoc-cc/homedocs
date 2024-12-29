@@ -3,14 +3,30 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export default function ProfilePage() {
   const { data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (!session) {
-      router.push('/auth/signin');
+    try {
+      logger.info('Profile page access attempt', { userId: session?.user?.id });
+
+      if (!session) {
+        logger.info('Redirecting unauthenticated user to signin');
+        router.push('/auth/signin');
+      } else {
+        logger.info('Profile page loaded successfully', { userId: session.user.id });
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorObject = error instanceof Error ? error : new Error(errorMessage);
+
+      logger.error('Error loading profile page', {
+        userId: session?.user?.id,
+        error: errorObject,
+      });
     }
   }, [session, router]);
 

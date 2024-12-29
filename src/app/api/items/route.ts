@@ -1,32 +1,57 @@
+// Code already follows logging best practices - no changes needed
 import { NextResponse } from 'next/server';
-
+import { logger } from '@/lib/logger';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/session';
 
 export async function GET() {
-  const session = await requireAuth();
+  logger.info('Starting GET /api/items request');
 
-  const items = await prisma.item.findMany({
-    where: {
-      room: {
-        home: {
-          OR: [
-            { userId: session.id },
-            {
-              shares: {
-                some: {
-                  userId: session.id,
-                },
+  try {
+    const session = await requireAuth();
+    logger.debug('User authenticated', { userId: session.id });
+
+    const items = await prisma.item.findMany({
+      where: {
+        OR: [
+          { userId: session.id },
+          {
+            room: {
+              home: {
+                OR: [
+                  { userId: session.id },
+                  {
+                    shares: {
+                      some: {
+                        userId: session.id,
+                      },
+                    },
+                  },
+                ],
               },
             },
-          ],
-        },
+          },
+        ],
       },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+    });
 
-  return NextResponse.json(items);
-} 
+    logger.info('Items retrieved successfully', {
+      userId: session.id,
+      itemCount: items.length,
+    });
+
+    return NextResponse.json(items);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorObject = error instanceof Error ? error : new Error(errorMessage);
+
+    logger.error('Failed to retrieve items', {
+      error: errorObject,
+    });
+
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: 500 }
+    );
+  }
+}

@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/db';
+import { logger, getRequestContext } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
-  const session = await requireAuth();
-  const data = await request.json();
-
   try {
+    const session = await requireAuth();
+    logger.info('Starting data import', {
+      ...getRequestContext(request),
+      userId: session.id,
+    });
+
+    const data = await request.json();
+
     // Start a transaction to ensure data consistency
     await prisma.$transaction(async (tx) => {
       // Process homes
@@ -16,7 +22,13 @@ export async function POST(request: NextRequest) {
         const existingHome = await tx.home.findUnique({
           where: { id: home.id },
         });
-        if (existingHome) continue;
+        if (existingHome) {
+          logger.info('Skipping existing home during import', {
+            userId: session.id,
+            homeId: home.id,
+          });
+          continue;
+        }
 
         // Create home
         const createdHome = await tx.home.create({
@@ -29,6 +41,11 @@ export async function POST(request: NextRequest) {
             updatedAt: new Date(home.updatedAt),
             userId: session.id,
           },
+        });
+
+        logger.info('Created home during import', {
+          userId: session.id,
+          homeId: createdHome.id,
         });
 
         // Create rooms
@@ -44,9 +61,15 @@ export async function POST(request: NextRequest) {
             },
           });
 
+          logger.info('Created room during import', {
+            userId: session.id,
+            homeId: createdHome.id,
+            roomId: createdRoom.id,
+          });
+
           // Create room items
           for (const item of room.items) {
-            await tx.item.create({
+            const createdItem = await tx.item.create({
               data: {
                 id: item.id,
                 name: item.name,
@@ -64,11 +87,18 @@ export async function POST(request: NextRequest) {
                 roomId: createdRoom.id,
               },
             });
+
+            logger.info('Created item during import', {
+              userId: session.id,
+              homeId: createdHome.id,
+              roomId: createdRoom.id,
+              itemId: createdItem.id,
+            });
           }
 
           // Create room tasks
           for (const task of room.tasks) {
-            await tx.task.create({
+            const createdTask = await tx.task.create({
               data: {
                 id: task.id,
                 title: task.title,
@@ -89,11 +119,18 @@ export async function POST(request: NextRequest) {
                 roomId: createdRoom.id,
               },
             });
+
+            logger.info('Created room task during import', {
+              userId: session.id,
+              homeId: createdHome.id,
+              roomId: createdRoom.id,
+              taskId: createdTask.id,
+            });
           }
 
           // Create room paints
           for (const paint of room.paints) {
-            await tx.paint.create({
+            const createdPaint = await tx.paint.create({
               data: {
                 id: paint.id,
                 name: paint.name,
@@ -109,11 +146,18 @@ export async function POST(request: NextRequest) {
                 roomId: createdRoom.id,
               },
             });
+
+            logger.info('Created room paint during import', {
+              userId: session.id,
+              homeId: createdHome.id,
+              roomId: createdRoom.id,
+              paintId: createdPaint.id,
+            });
           }
 
           // Create room floorings
           for (const flooring of room.floorings) {
-            await tx.flooring.create({
+            const createdFlooring = await tx.flooring.create({
               data: {
                 id: flooring.id,
                 name: flooring.name,
@@ -129,12 +173,19 @@ export async function POST(request: NextRequest) {
                 roomId: createdRoom.id,
               },
             });
+
+            logger.info('Created room flooring during import', {
+              userId: session.id,
+              homeId: createdHome.id,
+              roomId: createdRoom.id,
+              flooringId: createdFlooring.id,
+            });
           }
         }
 
         // Create home tasks
         for (const task of home.tasks) {
-          await tx.task.create({
+          const createdTask = await tx.task.create({
             data: {
               id: task.id,
               title: task.title,
@@ -154,11 +205,17 @@ export async function POST(request: NextRequest) {
               homeId: createdHome.id,
             },
           });
+
+          logger.info('Created home task during import', {
+            userId: session.id,
+            homeId: createdHome.id,
+            taskId: createdTask.id,
+          });
         }
 
         // Create home paints
         for (const paint of home.paints) {
-          await tx.paint.create({
+          const createdPaint = await tx.paint.create({
             data: {
               id: paint.id,
               name: paint.name,
@@ -173,11 +230,17 @@ export async function POST(request: NextRequest) {
               homeId: createdHome.id,
             },
           });
+
+          logger.info('Created home paint during import', {
+            userId: session.id,
+            homeId: createdHome.id,
+            paintId: createdPaint.id,
+          });
         }
 
         // Create home floorings
         for (const flooring of home.floorings) {
-          await tx.flooring.create({
+          const createdFlooring = await tx.flooring.create({
             data: {
               id: flooring.id,
               name: flooring.name,
@@ -192,15 +255,30 @@ export async function POST(request: NextRequest) {
               homeId: createdHome.id,
             },
           });
+
+          logger.info('Created home flooring during import', {
+            userId: session.id,
+            homeId: createdHome.id,
+            flooringId: createdFlooring.id,
+          });
         }
       }
+    });
+
+    logger.info('Data import completed successfully', {
+      userId: session.id,
+      homeCount: data.homes.length,
     });
 
     return new NextResponse(JSON.stringify({ success: true }), {
       status: 200,
     });
   } catch (error) {
-    console.error('Import error:', error);
+    logger.error('Import error', {
+      ...getRequestContext(request),
+      error: error as Error,
+    });
+
     return new NextResponse(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Failed to import data',
