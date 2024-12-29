@@ -11,10 +11,8 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/homedocs?schema=public
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=your-development-secret-change-me-in-production
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -23,10 +21,8 @@ services:
     image: postgres:16-alpine
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=homedocs
+    env_file:
+      - .env
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
     healthcheck:

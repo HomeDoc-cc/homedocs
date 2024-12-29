@@ -1,16 +1,10 @@
-version: '3.8'
-
 services:
   app:
-    build:
-      context: .
-      target: runner
+    image: ghcr.io/jhofker/homedocs:latest
     ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/homedocs?schema=public
-      - NEXTAUTH_URL=https://your-production-domain.com # Change this
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET} # Set this in production
+      - '3000:3000'
+    env_file:
+      - .env
     depends_on:
       - db
     restart: always
@@ -18,14 +12,12 @@ services:
   db:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD} # Set this in production
-      - POSTGRES_DB=homedocs
+      - '5432:5432'
+    env_file:
+      - .env
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     restart: always
 
 volumes:
-  postgres_data_prod: 
+  postgres_data_prod:
