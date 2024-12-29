@@ -165,15 +165,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSubscribeToCalendar = () => {
-    if (!calendarToken) return;
-
-    window.open(
-      `webcal://${window.location.host}/api/calendar/tasks?token=${calendarToken}`,
-      '_blank'
-    );
-  };
-
   const getCalendarUrl = () => {
     if (!calendarToken) return '';
     return `${window.location.origin}/api/calendar/tasks?token=${calendarToken}`;
@@ -306,12 +297,12 @@ export default function SettingsPage() {
                       </button>
                     </div>
                     <div className="flex space-x-4">
-                      <button
-                        onClick={handleSubscribeToCalendar}
+                      <a
+                        href={`webcal://${window.location.host}/api/calendar/tasks?token=${calendarToken}`}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         Subscribe in Calendar
-                      </button>
+                      </a>
                       <button
                         onClick={handleRevokeToken}
                         disabled={isGeneratingToken}
