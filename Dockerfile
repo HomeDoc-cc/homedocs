@@ -36,7 +36,12 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Install only production dependencies
+COPY --from=builder /app/package.json /app/package-lock.json ./
+RUN npm ci --only=production
+
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
@@ -52,7 +57,9 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT 3000
-# set hostname to localhost
 ENV HOSTNAME "0.0.0.0"
+
+# Generate Prisma client in production
+RUN npx prisma generate
 
 CMD ["node", "server.js"] 
