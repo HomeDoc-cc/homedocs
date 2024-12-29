@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-import { ItemForm } from '@/components/items/item-form';
+import { ItemForm, ItemFormData } from '@/components/items/item-form';
 
 export default function NewItemPage() {
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function NewItemPage() {
     );
   }
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: ItemFormData) => {
     setIsLoading(true);
     setError(null);
 
