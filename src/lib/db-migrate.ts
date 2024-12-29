@@ -14,6 +14,9 @@ function isInBuildPhase() {
 
 export async function checkAndRunMigrations() {
   if (process.env.NODE_ENV === 'development') {
+    console.log(
+      'Skipping auto-migrations in development mode. Make sure you run `npm run prisma:migrate` manually.'
+    );
     return;
   }
 

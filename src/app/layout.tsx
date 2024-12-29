@@ -4,7 +4,6 @@ import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
 import { Providers } from '@/components/providers';
 import { ThemeProvider } from '@/contexts/theme-context';
-import { initializeDatabase } from '@/lib/db';
 import { QueryProvider } from '@/providers/query-provider';
 
 import './globals.css';
@@ -15,9 +14,6 @@ export const metadata = {
   title: 'HomeDocs',
   description: 'Document and manage your home',
 };
-
-// Initialize database on app startup
-initializeDatabase().catch(console.error);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
