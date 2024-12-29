@@ -7,29 +7,12 @@ import { requireAuth } from '@/lib/session';
 export async function GET(request: NextRequest) {
   try {
     const session = await requireAuth();
-    logger.info('Searching for users', {
+    logger.info('Fetching users', {
       ...getRequestContext(request),
       userId: session.id,
     });
 
-    const searchTerm = request.nextUrl.searchParams.get('search');
-    if (!searchTerm) {
-      logger.warn('User search attempted without search term', {
-        userId: session.id,
-      });
-      return NextResponse.json({ error: 'Search term is required' }, { status: 400 });
-    }
-
     const users = await prisma.user.findMany({
-      where: {
-        OR: [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { email: { contains: searchTerm, mode: 'insensitive' } },
-        ],
-        NOT: {
-          id: session.id,
-        },
-      },
       select: {
         id: true,
         name: true,
@@ -38,15 +21,14 @@ export async function GET(request: NextRequest) {
       take: 5,
     });
 
-    logger.info('Users search completed', {
+    logger.info('Users fetched', {
       userId: session.id,
       count: users.length,
-      searchTerm,
     });
 
     return NextResponse.json(users);
   } catch (error) {
-    logger.error('Failed to search users', {
+    logger.error('Failed to fetch users', {
       ...getRequestContext(request),
       error: error as Error,
     });
