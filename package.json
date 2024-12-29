@@ -21,10 +21,10 @@
     "docker:db": "docker-compose -f docker-compose.dev.yml up db",
     "docker:app": "docker-compose -f docker-compose.dev.yml up app",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
-    "release:patch": "npm version patch && git push origin v$npm_package_version",
-    "release:minor": "npm version minor && git push origin v$npm_package_version",
-    "release:major": "npm version major && git push origin v$npm_package_version",
-    "release": "git push origin v$npm_package_version"
+    "release:patch": "npm version patch && git push && git push origin v$npm_package_version",
+    "release:minor": "npm version minor && git push && git push origin v$npm_package_version",
+    "release:major": "npm version major && git push && git push origin v$npm_package_version",
+    "release": "git push && git push origin v$npm_package_version"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.0",
