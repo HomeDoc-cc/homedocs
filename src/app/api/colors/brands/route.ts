@@ -4,7 +4,6 @@ import { prisma } from '@/server/db';
 
 export async function GET() {
   try {
-    // Get distinct brands from the Color table
     const brands = await prisma.color.findMany({
       distinct: ['brand'],
       select: {

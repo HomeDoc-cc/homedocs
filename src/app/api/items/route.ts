@@ -1,4 +1,3 @@
-// Code already follows logging best practices - no changes needed
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/db';
@@ -14,25 +13,20 @@ export async function GET() {
 
     const items = await prisma.item.findMany({
       where: {
-        OR: [
-          { userId: session.id },
-          {
-            room: {
-              home: {
-                OR: [
-                  { userId: session.id },
-                  {
-                    shares: {
-                      some: {
-                        userId: session.id,
-                      },
-                    },
+        room: {
+          home: {
+            OR: [
+              { userId: session.id },
+              {
+                shares: {
+                  some: {
+                    userId: session.id,
                   },
-                ],
+                },
               },
-            },
+            ],
           },
-        ],
+        },
       },
     });
 

@@ -1,11 +1,11 @@
 {
   "name": "homedocs",
-  "version": "0.1.12",
+  "version": "0.1.14",
   "private": true,
   "repository": "https://github.com/jhofker/homedocs",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "set PHASE=build && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:check": "eslint .",

@@ -93,7 +93,6 @@ export async function GET(request: NextRequest) {
       return new NextResponse('User not found', { status: 404 });
     }
 
-    // Format the data for export
     const exportData = {
       user: {
         id: userData.id,
@@ -102,7 +101,6 @@ export async function GET(request: NextRequest) {
         createdAt: userData.createdAt,
       },
       homes: [
-        // Owned homes
         ...userData.ownedHomes.map((home) => ({
           id: home.id,
           name: home.name,
@@ -161,7 +159,6 @@ export async function GET(request: NextRequest) {
           paints: home.paints,
           floorings: home.floorings,
         })),
-        // Shared homes
         ...userData.sharedHomes.map((share) => ({
           id: share.home.id,
           name: share.home.name,

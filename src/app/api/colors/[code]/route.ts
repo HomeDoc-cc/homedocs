@@ -4,10 +4,8 @@ import { prisma } from '@/server/db';
 
 export async function GET(request: Request, { params }: { params: Promise<{ code: string }> }) {
   try {
-    // Clean up the color code by removing extra spaces
     const cleanCode = (await params).code.trim().toUpperCase().replace(/\s+/g, ' ');
 
-    // Find the color in the database
     const color = await prisma.color.findUnique({
       where: {
         code: cleanCode,

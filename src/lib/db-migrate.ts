@@ -6,6 +6,7 @@ const execAsync = promisify(exec);
 
 function isInBuildPhase() {
   return (
+    process.env.PHASE === 'build' ||
     process.env.NEXT_PHASE === 'phase-production-build' || // Next.js build
     process.env.CI === 'true' // CI environment
   );
