@@ -68,6 +68,14 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
             Create Task
           </button>
         </div>
+
+        <TaskModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          task={selectedTask}
+          users={users}
+          onSubmit={handleSubmit}
+        />
       </div>
     );
   }
