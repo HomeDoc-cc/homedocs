@@ -12,10 +12,12 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchTasks = useCallback(async () => {
+    if (!session) return;
+    
     try {
       setIsLoading(true);
       setError(null);
@@ -33,9 +35,11 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [type, id]);
+  }, [type, id, session]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    if (!session) return;
+    
     try {
       const response = await fetch('/api/users');
       const data = await response.json();
@@ -44,19 +48,22 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
       console.error('Error fetching users:', error);
       setUsers([]);
     }
-  };
+  }, [session]);
 
   useEffect(() => {
-    if ((!type && !id) || (type && id)) {
+    // Only fetch if we have a session and either:
+    // 1. No type/id specified (fetch all tasks)
+    // 2. Both type and id are specified (fetch specific tasks)
+    if (session && (!type || (type && id))) {
       fetchTasks();
     }
-  }, [type, id, fetchTasks]);
+  }, [type, id, session, fetchTasks]);
 
   useEffect(() => {
     if (session) {
       fetchUsers();
     }
-  }, [session]);
+  }, [session, fetchUsers]);
 
   return {
     tasks,
