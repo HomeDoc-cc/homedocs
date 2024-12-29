@@ -31,7 +31,7 @@ export function Footer() {
             </a>
           </div>
           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-            Made with ❤️ | Grown in Nebraska |
+            Made with 💙 | Grown in Nebraska 🌽 |
             <VersionCheck />
           </div>
         </div>
