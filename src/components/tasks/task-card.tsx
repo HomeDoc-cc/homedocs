@@ -2,6 +2,8 @@
 
 import { format } from 'date-fns';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { Task } from '@/types/prisma';
 
@@ -70,7 +72,9 @@ export function TaskCard({ task, onEdit, onDelete, onComplete }: TaskCardProps) 
         <div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">{task.title}</h3>
           {task.description && (
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{task.description}</p>
+            <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 prose dark:prose-invert max-w-none prose-sm">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{task.description}</ReactMarkdown>
+            </div>
           )}
           {locationLinks.length > 0 && (
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center">

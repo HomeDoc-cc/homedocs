@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
+import { MarkdownContent } from '@/components/markdown-content';
+
 interface ItemPageProps {
   params: Promise<{
     id: string;
@@ -211,7 +213,7 @@ export default function ItemPage({ params }: ItemPageProps) {
                     Description
                   </dt>
                   <dd className="mt-1 text-sm text-gray-900 dark:text-gray-300">
-                    {item.description}
+                    <MarkdownContent content={item.description} />
                   </dd>
                 </div>
               )}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
+import { MarkdownContent } from '@/components/markdown-content';
 import { Home } from '@/types/prisma';
 
 interface PageProps {
@@ -108,9 +109,9 @@ export default function RoomsPage({ params }: PageProps) {
                   {room.name}
                 </h3>
                 {room.description && (
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                    {room.description}
-                  </p>
+                  <div className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                    <MarkdownContent content={room.description} />
+                  </div>
                 )}
               </div>
             </div>

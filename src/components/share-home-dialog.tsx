@@ -119,9 +119,7 @@ export function ShareHomeDialog({ isOpen, onClose, homeId, onShare }: ShareHomeD
                       </select>
                     </div>
 
-                    {error && (
-                      <div className="text-sm text-red-600 dark:text-red-400">{error}</div>
-                    )}
+                    {error && <div className="text-sm text-red-600 dark:text-red-400">{error}</div>}
 
                     <div className="mt-6 flex justify-end space-x-3">
                       <button
@@ -148,4 +146,4 @@ export function ShareHomeDialog({ isOpen, onClose, homeId, onShare }: ShareHomeD
       </Dialog>
     </Transition>
   );
-} 
+}

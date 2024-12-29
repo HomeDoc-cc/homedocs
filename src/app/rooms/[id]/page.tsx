@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
+import { MarkdownContent } from '@/components/markdown-content';
+
 interface RoomPageProps {
   params: Promise<{
     id: string;
@@ -160,7 +162,9 @@ export default function RoomPage({ params }: RoomPageProps) {
       {room.description && (
         <div className="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Description</h2>
-          <p className="text-gray-600 dark:text-gray-300">{room.description}</p>
+          <div className="text-gray-600 dark:text-gray-300">
+            <MarkdownContent content={room.description} />
+          </div>
         </div>
       )}
 

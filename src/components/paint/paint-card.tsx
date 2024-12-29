@@ -1,5 +1,6 @@
 'use client';
 
+import { MarkdownContent } from '@/components/markdown-content';
 import { Paint } from '@/types/prisma';
 
 interface PaintCardProps {
@@ -68,7 +69,9 @@ export function PaintCard({ paint, onEdit, onDelete }: PaintCardProps) {
       {paint.notes && (
         <div>
           <p className="text-sm font-medium text-gray-500">Notes</p>
-          <p className="mt-1 text-sm text-gray-600">{paint.notes}</p>
+          <div className="mt-1 text-sm text-gray-600">
+            <MarkdownContent content={paint.notes} />
+          </div>
         </div>
       )}
     </div>

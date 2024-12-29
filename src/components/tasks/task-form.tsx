@@ -76,6 +76,9 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
           priority: TaskPriority.LOW,
           status: TaskStatus.PENDING,
           isRecurring: false,
+          dueDate: new Date().toISOString().split('T')[0],
+          interval: 1,
+          unit: TaskRecurrenceUnit.WEEKLY,
         },
   });
 
@@ -173,19 +176,29 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
           className="block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           Description
+          <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+            (Supports markdown: **bold**, *italic*, - lists, etc.)
+          </span>
         </label>
         <textarea
           id="description"
-          rows={3}
+          rows={5}
+          placeholder="Task description using markdown...
+Example:
+**Important notes:**
+- First item
+- Second item
+
+Visit https://example.com"
           {...register('description')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white font-mono"
         />
         {errors.description && (
           <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className={task ? 'grid grid-cols-2 gap-4' : 'space-y-4'}>
         <div>
           <label
             htmlFor="priority"
@@ -208,25 +221,27 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
           )}
         </div>
 
-        <div>
-          <label
-            htmlFor="status"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
-            Status
-          </label>
-          <select
-            id="status"
-            {...register('status')}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-          >
-            <option value={TaskStatus.PENDING}>Pending</option>
-            <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
-            <option value={TaskStatus.COMPLETED}>Completed</option>
-            <option value={TaskStatus.CANCELLED}>Cancelled</option>
-          </select>
-          {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>}
-        </div>
+        {task && (
+          <div>
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Status
+            </label>
+            <select
+              id="status"
+              {...register('status')}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            >
+              <option value={TaskStatus.PENDING}>Pending</option>
+              <option value={TaskStatus.IN_PROGRESS}>In Progress</option>
+              <option value={TaskStatus.COMPLETED}>Completed</option>
+              <option value={TaskStatus.CANCELLED}>Cancelled</option>
+            </select>
+            {errors.status && <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>}
+          </div>
+        )}
       </div>
 
       <div>
@@ -243,30 +258,6 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
         />
         {errors.dueDate && <p className="mt-1 text-sm text-red-600">{errors.dueDate.message}</p>}
-      </div>
-
-      <div>
-        <label
-          htmlFor="assigneeId"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          Assignee
-        </label>
-        <select
-          id="assigneeId"
-          {...register('assigneeId')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        >
-          <option value="">Select an assignee</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.name || user.email}
-            </option>
-          ))}
-        </select>
-        {errors.assigneeId && (
-          <p className="mt-1 text-sm text-red-600">{errors.assigneeId.message}</p>
-        )}
       </div>
 
       <div className="flex items-center">
@@ -327,6 +318,30 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
           </div>
         </div>
       )}
+
+      <div>
+        <label
+          htmlFor="assigneeId"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
+          Assignee
+        </label>
+        <select
+          id="assigneeId"
+          {...register('assigneeId')}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+        >
+          <option value="">Select an assignee</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.name || user.email}
+            </option>
+          ))}
+        </select>
+        {errors.assigneeId && (
+          <p className="mt-1 text-sm text-red-600">{errors.assigneeId.message}</p>
+        )}
+      </div>
 
       <div className="grid grid-cols-3 gap-4">
         <div>

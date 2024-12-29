@@ -292,12 +292,21 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               Notes
+              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                (Supports markdown: **bold**, *italic*, - lists, etc.)
+              </span>
             </label>
             <textarea
               {...register('notes')}
               rows={3}
-              placeholder="e.g., Used in main living areas, matches well with oak trim"
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm"
+              placeholder={`Example:
+**Specifications:**
+- Base: ProMar 200
+- Coverage: 2 coats needed
+- Primer: Not required on previously painted surfaces
+
+*Note: Keep extra paint in garage for touch-ups*`}
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:text-white sm:text-sm font-mono"
             />
           </div>
         </div>

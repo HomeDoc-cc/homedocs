@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
+import { MarkdownContent } from '@/components/markdown-content';
+
 interface ItemsPageProps {
   params: Promise<{
     id: string;
@@ -148,7 +150,9 @@ export default function ItemsPage({ params }: ItemsPageProps) {
                 {item.name}
               </h3>
               {item.description && (
-                <p className="text-gray-600 dark:text-gray-300 mb-4">{item.description}</p>
+                <div className="text-gray-600 dark:text-gray-300 mb-4">
+                  <MarkdownContent content={item.description} />
+                </div>
               )}
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 {item.category && (

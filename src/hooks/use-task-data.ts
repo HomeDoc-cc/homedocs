@@ -17,7 +17,7 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
 
   const fetchTasks = useCallback(async () => {
     if (!session) return;
-    
+
     try {
       setIsLoading(true);
       setError(null);
@@ -39,7 +39,7 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
 
   const fetchUsers = useCallback(async () => {
     if (!session) return;
-    
+
     try {
       const response = await fetch('/api/users');
       const data = await response.json();

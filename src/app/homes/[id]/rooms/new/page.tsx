@@ -83,13 +83,22 @@ export default function NewRoomPage({ params }: NewRoomPageProps) {
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               Description
+              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                (Supports markdown: **bold**, *italic*, - lists, etc.)
+              </span>
             </label>
             <textarea
               id="description"
               name="description"
               rows={3}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Add a description of the room..."
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono"
+              placeholder="Add a description of the room using markdown...
+Example:
+**Key features:**
+- Feature 1
+- Feature 2
+
+Visit https://example.com"
             />
           </div>
 

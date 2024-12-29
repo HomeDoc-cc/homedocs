@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials) return null;
-        
+
         try {
           const { email, password } = credentialsSchema.parse(credentials);
 

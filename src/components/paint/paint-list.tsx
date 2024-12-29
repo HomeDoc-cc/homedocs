@@ -1,5 +1,6 @@
 'use client';
 
+import { MarkdownContent } from '@/components/markdown-content';
 import { useColor } from '@/hooks/useColor';
 
 import { type Paint as PrismaPaint } from '.prisma/client';
@@ -77,7 +78,9 @@ function PaintItem({
               {paint.notes && (
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-medium">Notes:</span>
-                  <span className="ml-2">{paint.notes}</span>
+                  <span className="ml-2">
+                    <MarkdownContent content={paint.notes} />
+                  </span>
                 </p>
               )}
             </div>
