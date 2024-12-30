@@ -43,6 +43,9 @@ RUN npm ci --only=production
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts/start.sh ./start.sh
+COPY --from=builder /app/next.config.js ./next.config.js
+COPY --from=builder /app/tailwind.config.js ./tailwind.config.js
+COPY --from=builder /app/postcss.config.js ./postcss.config.js
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
