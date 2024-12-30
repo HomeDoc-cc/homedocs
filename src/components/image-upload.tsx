@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
+import { ImageModal } from './image-modal';
+
 interface ImageUploadProps {
   images: string[]; // These are now storage keys, not URLs
   onImagesChange: (images: string[]) => void;
@@ -14,6 +16,7 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
   const [error, setError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Fetch signed URLs for all images
   useEffect(() => {
@@ -147,12 +150,23 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
           {images.filter(Boolean).map((key, index) => (
             <div key={`${key}-${index}`} className="relative aspect-square">
               {imageUrls[key] ? (
-                <Image
-                  src={imageUrls[key]}
-                  alt={`Image ${index + 1}`}
-                  fill
-                  className="object-cover rounded-lg"
-                />
+                <button
+                  type="button"
+                  onClick={() => setSelectedImage(imageUrls[key])}
+                  className="group relative w-full h-full"
+                >
+                  <Image
+                    src={imageUrls[key]}
+                    alt={`Image ${index + 1}`}
+                    fill
+                    className="object-cover rounded-lg transition-opacity group-hover:opacity-75"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
+                      View
+                    </span>
+                  </div>
+                </button>
               ) : (
                 <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
                   <span className="text-gray-400">Loading...</span>
@@ -180,6 +194,11 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
           ))}
         </div>
       )}
+      <ImageModal
+        isOpen={!!selectedImage}
+        onClose={() => setSelectedImage(null)}
+        imageUrl={selectedImage || ''}
+      />
     </div>
   );
 }

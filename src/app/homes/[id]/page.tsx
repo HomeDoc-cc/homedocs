@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
 import { ShareHomeDialog } from '@/components/share-home-dialog';
+import { ImageModal } from '@/components/image-modal';
 
 interface HomePageProps {
   params: Promise<{
@@ -35,6 +36,7 @@ export default function HomePage({ params }: HomePageProps) {
   const [id, setId] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -140,28 +142,29 @@ export default function HomePage({ params }: HomePageProps) {
         </div>
       </div>
 
-      <ShareHomeDialog
-        isOpen={isShareDialogOpen}
-        onClose={() => setIsShareDialogOpen(false)}
-        homeId={home.id}
-        onShare={() => {
-          // Optionally refresh the home data to show updated sharing status
-          fetchHome();
-        }}
-      />
-
       {home.images && home.images.length > 0 && (
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {home.images.filter(Boolean).map((key, index) => (
               <div key={`${key}-${index}`} className="relative aspect-video">
                 {imageUrls[key] ? (
-                  <Image
-                    src={imageUrls[key]}
-                    alt={`${home.name} - Image ${index + 1}`}
-                    fill
-                    className="object-cover rounded-lg"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedImage(imageUrls[key])}
+                    className="group relative w-full h-full"
+                  >
+                    <Image
+                      src={imageUrls[key]}
+                      alt={`${home.name} - Image ${index + 1}`}
+                      fill
+                      className="object-cover rounded-lg transition-opacity group-hover:opacity-75"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
+                        View
+                      </span>
+                    </div>
+                  </button>
                 ) : (
                   <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
                     <span className="text-gray-400">Loading...</span>
@@ -240,6 +243,21 @@ export default function HomePage({ params }: HomePageProps) {
           <p className="text-gray-600 dark:text-gray-300">Track paint colors and finishes</p>
         </Link>
       </div>
+
+      <ShareHomeDialog
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        homeId={home?.id}
+      />
+
+      {selectedImage && (
+        <ImageModal
+          isOpen={true}
+          onClose={() => setSelectedImage(null)}
+          imageUrl={selectedImage}
+          alt={home?.name}
+        />
+      )}
     </div>
   );
 }

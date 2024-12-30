@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
+import { ImageModal } from '@/components/image-modal';
 import { MarkdownContent } from '@/components/markdown-content';
 
 interface ItemPageProps {
@@ -41,6 +42,7 @@ export default function ItemPage({ params }: ItemPageProps) {
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageKey, setSelectedImageKey] = useState<string | null>(null);
+  const [selectedModalImage, setSelectedModalImage] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [refreshKey, setRefreshKey] = useState(0);
   const [id, setId] = useState<string | null>(null);
@@ -99,21 +101,7 @@ export default function ItemPage({ params }: ItemPageProps) {
     if (item?.images.some((key) => key && !imageUrls[key])) {
       fetchUrls();
     }
-  }, [item?.images, refreshKey, imageUrls]);
-
-  // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
-  useEffect(() => {
-    if (!item?.images?.length) return;
-
-    const interval = setInterval(
-      () => {
-        setRefreshKey((key) => key + 1);
-      },
-      45 * 60 * 1000
-    );
-
-    return () => clearInterval(interval);
-  }, [item?.images?.length]);
+  }, [item?.images, imageUrls]);
 
   if (error) {
     return (
@@ -151,18 +139,33 @@ export default function ItemPage({ params }: ItemPageProps) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-4">
           {item.images.length > 0 ? (
             <>
               <div className="relative aspect-square">
                 {selectedImageKey && imageUrls[selectedImageKey] ? (
-                  <Image
-                    src={imageUrls[selectedImageKey]}
-                    alt={item.name}
-                    fill
-                    className="object-cover rounded-lg"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedModalImage(imageUrls[selectedImageKey])}
+                    className="group relative w-full h-full"
+                  >
+                    <Image
+                      src={imageUrls[selectedImageKey]}
+                      alt={item.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      priority
+                      className="object-cover rounded-lg transition-opacity group-hover:opacity-75"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4eHRseHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/2wBDAR4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
+                        View
+                      </span>
+                    </div>
+                  </button>
                 ) : (
                   <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
                     <span className="text-gray-400">Loading...</span>
@@ -326,6 +329,15 @@ export default function ItemPage({ params }: ItemPageProps) {
           </div>
         </div>
       </div>
+
+      {selectedModalImage && (
+        <ImageModal
+          isOpen={true}
+          onClose={() => setSelectedModalImage(null)}
+          imageUrl={selectedModalImage}
+          alt={item?.name}
+        />
+      )}
     </div>
   );
 }
