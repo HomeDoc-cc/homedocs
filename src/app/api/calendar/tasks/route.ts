@@ -4,8 +4,6 @@ import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
-  logger.info('Calendar tasks request received');
-
   try {
     // Get token from URL
     const token = request.nextUrl.searchParams.get('token');
@@ -42,6 +40,7 @@ export async function GET(request: NextRequest) {
     logger.info('Calendar tasks fetched successfully', {
       userId: calendarToken.userId,
       count: tasks.length,
+      userAgent: request.headers.get('user-agent'),
     });
 
     return NextResponse.json(tasks);
