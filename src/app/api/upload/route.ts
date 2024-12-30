@@ -1,9 +1,38 @@
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
+import heicConvert from 'heic-convert';
+import sharp from 'sharp';
 
 import { authOptions } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { getStorageProvider } from '@/lib/storage';
+
+async function processImage(buffer: Buffer, mimeType: string): Promise<{ buffer: Buffer; mimeType: string }> {
+  // Convert HEIC to JPEG
+  if (mimeType.toLowerCase() === 'image/heic') {
+    logger.info('Converting HEIC to JPEG');
+    try {
+      const jpegBuffer = await heicConvert({
+        buffer,
+        format: 'JPEG',
+        quality: 0.85
+      });
+      
+      // Use sharp for any additional processing (like rotation)
+      const processedBuffer = await sharp(jpegBuffer)
+        .rotate() // Preserve rotation
+        .toBuffer();
+        
+      return { buffer: processedBuffer, mimeType: 'image/jpeg' };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorObject = error instanceof Error ? error : new Error(errorMessage);
+      logger.error('Error converting HEIC', { error: errorObject });
+      throw errorObject;
+    }
+  }
+  return { buffer, mimeType };
+}
 
 export async function POST(request: NextRequest) {
   logger.info('Upload request received');
@@ -37,13 +66,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 });
     }
 
-    const storage = getStorageProvider();
     const buffer = Buffer.from(await file.arrayBuffer());
-    const key = await storage.uploadFile(buffer, file.name, file.type, session.user.id);
+    const { buffer: processedBuffer, mimeType } = await processImage(buffer, file.type);
+    
+    const storage = getStorageProvider();
+    // Update filename extension if the format changed
+    const filename = mimeType === 'image/jpeg' && !file.name.toLowerCase().endsWith('.jpg') 
+      ? `${file.name.split('.')[0]}.jpg`
+      : file.name;
+      
+    const key = await storage.uploadFile(processedBuffer, filename, mimeType, session.user.id);
 
     logger.info('File uploaded successfully', {
       userId: session.user.id,
       key,
+      originalType: file.type,
+      convertedType: mimeType,
     });
 
     return NextResponse.json({ key });
