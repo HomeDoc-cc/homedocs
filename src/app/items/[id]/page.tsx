@@ -44,7 +44,6 @@ export default function ItemPage({ params }: ItemPageProps) {
   const [selectedImageKey, setSelectedImageKey] = useState<string | null>(null);
   const [selectedModalImage, setSelectedModalImage] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
-  const [refreshKey, setRefreshKey] = useState(0);
   const [id, setId] = useState<string | null>(null);
 
   useEffect(() => {
