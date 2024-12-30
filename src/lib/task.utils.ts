@@ -356,11 +356,69 @@ export async function getTasksByRoom(roomId: string, userId: string) {
 
   const tasks = await prisma.task.findMany({
     where: {
-      roomId,
+      OR: [
+        { roomId },
+        {
+          item: {
+            roomId,
+          },
+        },
+      ],
     },
     include: {
-      creator: true,
-      assignee: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      home: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      room: {
+        select: {
+          id: true,
+          name: true,
+          homeId: true,
+          home: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+      item: {
+        select: {
+          id: true,
+          name: true,
+          roomId: true,
+          room: {
+            select: {
+              id: true,
+              name: true,
+              homeId: true,
+              home: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',

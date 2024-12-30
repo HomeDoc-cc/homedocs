@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { JSX } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -49,7 +50,7 @@ function LocationLink({ type, id, name }: { type: string; id: string; name: stri
 }
 
 function getLocationLinks(task: Task) {
-  const parts = [];
+  const parts: JSX.Element[] = [];
   if (task.item) {
     parts.push(<LocationLink key="item" type="item" id={task.item.id} name={task.item.name} />);
   }
