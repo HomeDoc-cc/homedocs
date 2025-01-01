@@ -1,0 +1,874 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "Account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the account"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of the account (e.g., oauth, email)"
+        },
+        "provider": {
+          "type": "string",
+          "description": "OAuth provider name (e.g., google, github)"
+        },
+        "providerAccountId": {
+          "type": "string",
+          "description": "Unique identifier from the OAuth provider"
+        },
+        "refresh_token": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "access_token": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expires_at": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "token_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id_token": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "session_state": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "Session": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the session"
+        },
+        "sessionToken": {
+          "type": "string"
+        },
+        "expires": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "User's display name"
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "User's email address"
+        },
+        "emailVerified": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "password": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "image": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "URL to user's profile image"
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Account"
+          }
+        },
+        "sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Session"
+          }
+        },
+        "ownedHomes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Home"
+          },
+          "description": "Homes owned by the user"
+        },
+        "sharedHomes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HomeShare"
+          },
+          "description": "Homes shared with the user"
+        },
+        "createdTasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          },
+          "description": "Tasks created by the user"
+        },
+        "assignedTasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          },
+          "description": "Tasks assigned to the user"
+        },
+        "calendarToken": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/CalendarToken"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Home": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the home"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the home/property"
+        },
+        "address": {
+          "type": "string",
+          "description": "Physical address of the home"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Additional details about the home"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of image URLs for the home"
+        },
+        "owner": {
+          "$ref": "#/definitions/User"
+        },
+        "shares": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HomeShare"
+          }
+        },
+        "rooms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Room"
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Item"
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "paints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Paint"
+          }
+        },
+        "floorings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Flooring"
+          }
+        }
+      }
+    },
+    "HomeShare": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "default": "READ",
+          "enum": [
+            "READ",
+            "WRITE"
+          ],
+          "description": "Access level for the shared user (READ or WRITE)"
+        },
+        "home": {
+          "$ref": "#/definitions/Home"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Room": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the room"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Additional details about the room"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of image URLs for the room"
+        },
+        "home": {
+          "$ref": "#/definitions/Home"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Item"
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "paints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Paint"
+          }
+        },
+        "floorings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Flooring"
+          }
+        }
+      }
+    },
+    "Item": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the item"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the item"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Additional details about the item"
+        },
+        "category": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Category of the item (e.g., appliance, furniture)"
+        },
+        "manufacturer": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Manufacturer/brand of the item"
+        },
+        "modelNumber": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Model number of the item"
+        },
+        "serialNumber": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Serial number of the item"
+        },
+        "purchaseDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "Date the item was purchased"
+        },
+        "warrantyUntil": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "Warranty expiration date"
+        },
+        "manualUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "URL to the item's manual"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Array of image URLs for the item"
+        },
+        "home": {
+          "$ref": "#/definitions/Home"
+        },
+        "room": {
+          "$ref": "#/definitions/Room"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the task"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the task"
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Detailed description of the task"
+        },
+        "status": {
+          "type": "string",
+          "default": "PENDING",
+          "enum": [
+            "PENDING",
+            "IN_PROGRESS",
+            "COMPLETED",
+            "CANCELLED"
+          ],
+          "description": "Current status of the task"
+        },
+        "priority": {
+          "type": "string",
+          "default": "MEDIUM",
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "URGENT"
+          ],
+          "description": "Priority level of the task"
+        },
+        "dueDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "Due date for the task"
+        },
+        "isRecurring": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this is a recurring task"
+        },
+        "interval": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Frequency interval for recurring tasks"
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "DAILY",
+            "WEEKLY",
+            "MONTHLY",
+            "YEARLY"
+          ],
+          "description": "Time unit for recurring tasks (DAILY, WEEKLY, etc.)"
+        },
+        "lastCompleted": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When the task was last completed"
+        },
+        "nextDueDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "Next scheduled due date for recurring tasks"
+        },
+        "parentTask": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Task"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "childTasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "home": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Home"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "room": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Room"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "item": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Item"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "creator": {
+          "$ref": "#/definitions/User"
+        },
+        "assignee": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/User"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Paint": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the paint"
+        },
+        "brand": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Brand of the paint"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Color name or description"
+        },
+        "finish": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Paint finish (e.g., matte, satin)"
+        },
+        "code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Paint color code"
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Where the paint was used"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Additional notes about the paint"
+        },
+        "home": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Home"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "room": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Room"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Flooring": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the flooring"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of flooring (e.g., hardwood, tile)"
+        },
+        "material": {
+          "type": "string",
+          "description": "Material of the flooring"
+        },
+        "brand": {
+          "type": "string",
+          "description": "Brand of the flooring"
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Color of the flooring"
+        },
+        "pattern": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Pattern of the flooring"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Additional notes about the flooring"
+        },
+        "home": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Home"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "room": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Room"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Color": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "code": {
+          "type": "string",
+          "description": "Unique color code"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the color"
+        },
+        "brand": {
+          "type": "string",
+          "description": "Brand of the paint"
+        },
+        "hex": {
+          "type": "string",
+          "description": "Hexadecimal color value"
+        },
+        "rgbR": {
+          "type": "integer",
+          "description": "Red component (0-255)"
+        },
+        "rgbG": {
+          "type": "integer",
+          "description": "Green component (0-255)"
+        },
+        "rgbB": {
+          "type": "integer",
+          "description": "Blue component (0-255)"
+        }
+      }
+    },
+    "CalendarToken": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "token": {
+          "type": "string",
+          "description": "Unique token for calendar access"
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "account": {
+      "$ref": "#/definitions/Account"
+    },
+    "session": {
+      "$ref": "#/definitions/Session"
+    },
+    "user": {
+      "$ref": "#/definitions/User"
+    },
+    "home": {
+      "$ref": "#/definitions/Home"
+    },
+    "homeShare": {
+      "$ref": "#/definitions/HomeShare"
+    },
+    "room": {
+      "$ref": "#/definitions/Room"
+    },
+    "item": {
+      "$ref": "#/definitions/Item"
+    },
+    "task": {
+      "$ref": "#/definitions/Task"
+    },
+    "paint": {
+      "$ref": "#/definitions/Paint"
+    },
+    "flooring": {
+      "$ref": "#/definitions/Flooring"
+    },
+    "color": {
+      "$ref": "#/definitions/Color"
+    },
+    "calendarToken": {
+      "$ref": "#/definitions/CalendarToken"
+    }
+  }
+}

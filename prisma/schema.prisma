@@ -13,12 +13,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Auth Models
+/// User account information from OAuth providers
 model Account {
+  /// Unique identifier for the account
   id                String  @id @default(cuid())
+  /// Reference to the user who owns this account
   userId            String
+  /// Type of the account (e.g., oauth, email)
   type              String
+  /// OAuth provider name (e.g., google, github)
   provider          String
+  /// Unique identifier from the OAuth provider
   providerAccountId String
   refresh_token     String? @db.Text
   access_token      String? @db.Text
@@ -33,7 +38,9 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+/// User session information
 model Session {
+  /// Unique identifier for the session
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
@@ -41,35 +48,48 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+/// User profile and authentication information
 model User {
+  /// Unique identifier for the user
   id            String    @id @default(cuid())
+  /// User's display name
   name          String?
+  /// User's email address
   email         String?   @unique
   emailVerified DateTime?
   password      String?
+  /// URL to user's profile image
   image         String?
   accounts      Account[]
   sessions      Session[]
 
-  // App relations
-  ownedHomes    Home[]      @relation("HomeOwner")
+  /// Homes owned by the user
+  ownedHomes    Home[]         @relation("HomeOwner")
+  /// Homes shared with the user
   sharedHomes   HomeShare[]
-  createdTasks  Task[]      @relation("TaskCreator")
-  assignedTasks Task[]      @relation("TaskAssignee")
+  /// Tasks created by the user
+  createdTasks  Task[]         @relation("TaskCreator")
+  /// Tasks assigned to the user
+  assignedTasks Task[]         @relation("TaskAssignee")
   calendarToken CalendarToken?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
-// App Models
+/// Information about a home/property
 model Home {
+  /// Unique identifier for the home
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Name of the home/property
   name        String
+  /// Physical address of the home
   address     String
+  /// Additional details about the home
   description String?
+  /// Array of image URLs for the home
   images      String[] @default([])
 
   owner  User   @relation("HomeOwner", fields: [userId], references: [id], onDelete: Cascade)
@@ -83,10 +103,12 @@ model Home {
   floorings Flooring[]
 }
 
+/// Access sharing configuration for a home
 model HomeShare {
   id        String    @id @default(cuid())
   homeId    String
   userId    String
+  /// Access level for the shared user (READ or WRITE)
   role      ShareRole @default(READ)
   home      Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -95,13 +117,17 @@ model HomeShare {
   @@unique([homeId, userId])
 }
 
+/// Room within a home
 model Room {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Name of the room
   name        String
+  /// Additional details about the room
   description String?
+  /// Array of image URLs for the room
   images      String[] @default([])
 
   home   Home   @relation(fields: [homeId], references: [id], onDelete: Cascade)
@@ -113,17 +139,29 @@ model Room {
   floorings Flooring[]
 }
 
+/// Item or appliance within a room
 model Item {
+  /// Unique identifier for the item
   id            String    @id @default(cuid())
+  /// Name of the item
   name          String
+  /// Additional details about the item
   description   String?
+  /// Category of the item (e.g., appliance, furniture)
   category      String?
+  /// Manufacturer/brand of the item
   manufacturer  String?
+  /// Model number of the item
   modelNumber   String?
+  /// Serial number of the item
   serialNumber  String?
+  /// Date the item was purchased
   purchaseDate  DateTime?
+  /// Warranty expiration date
   warrantyUntil DateTime?
+  /// URL to the item's manual
   manualUrl     String?
+  /// Array of image URLs for the item
   images        String[]  @default([])
 
   homeId String
@@ -136,25 +174,36 @@ model Item {
   updatedAt DateTime @updatedAt
 }
 
+/// Maintenance or todo task
 model Task {
+  /// Unique identifier for the task
   id          String       @id @default(cuid())
+  /// Title of the task
   title       String
+  /// Detailed description of the task
   description String?
+  /// Current status of the task
   status      TaskStatus   @default(PENDING)
+  /// Priority level of the task
   priority    TaskPriority @default(MEDIUM)
+  /// Due date for the task
   dueDate     DateTime?
 
-  // Recurring task fields
+  /// Whether this is a recurring task
   isRecurring   Boolean             @default(false)
-  interval      Int? // The number of units (e.g., 2 for "every 2 weeks")
-  unit          TaskRecurrenceUnit? // "DAILY", "WEEKLY", "MONTHLY", "YEARLY"
-  lastCompleted DateTime? // Track when the task was last completed
-  nextDueDate   DateTime? // The next occurrence date
-  parentTaskId  String? // Reference to the original recurring task
+  /// Frequency interval for recurring tasks
+  interval      Int?
+  /// Time unit for recurring tasks (DAILY, WEEKLY, etc.)
+  unit          TaskRecurrenceUnit?
+  /// When the task was last completed
+  lastCompleted DateTime?
+  /// Next scheduled due date for recurring tasks
+  nextDueDate   DateTime?
+  /// Reference to the original recurring task
+  parentTaskId  String?
   parentTask    Task?               @relation("RecurringTasks", fields: [parentTaskId], references: [id])
   childTasks    Task[]              @relation("RecurringTasks")
 
-  // Relations
   homeId String?
   home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
   roomId String?
@@ -171,43 +220,69 @@ model Task {
   updatedAt DateTime @updatedAt
 }
 
+/// Access level for shared homes
 enum ShareRole {
+  /// Read-only access
   READ
+  /// Read and write access
   WRITE
 }
 
+/// Status options for tasks
 enum TaskStatus {
+  /// Task is waiting to be started
   PENDING
+  /// Task is currently being worked on
   IN_PROGRESS
+  /// Task has been finished
   COMPLETED
+  /// Task has been cancelled
   CANCELLED
 }
 
+/// Priority levels for tasks
 enum TaskPriority {
+  /// Low priority task
   LOW
+  /// Medium priority task
   MEDIUM
+  /// High priority task
   HIGH
+  /// Urgent priority task
   URGENT
 }
 
+/// Time units for recurring tasks
 enum TaskRecurrenceUnit {
+  /// Recurs daily
   DAILY
+  /// Recurs weekly
   WEEKLY
+  /// Recurs monthly
   MONTHLY
+  /// Recurs yearly
   YEARLY
 }
 
+/// Paint information for a room or home
 model Paint {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Name of the paint
   name     String
+  /// Brand of the paint
   brand    String?
+  /// Color name or description
   color    String?
+  /// Paint finish (e.g., matte, satin)
   finish   String?
+  /// Paint color code
   code     String?
+  /// Where the paint was used
   location String?
+  /// Additional notes about the paint
   notes    String?
 
   home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
@@ -219,17 +294,25 @@ model Paint {
   @@unique([homeId, roomId])
 }
 
+/// Flooring information for a room or home
 model Flooring {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Name of the flooring
   name     String
+  /// Type of flooring (e.g., hardwood, tile)
   type     String
+  /// Material of the flooring
   material String
+  /// Brand of the flooring
   brand    String
+  /// Color of the flooring
   color    String?
+  /// Pattern of the flooring
   pattern  String?
+  /// Additional notes about the flooring
   notes    String?
 
   home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
@@ -241,23 +324,32 @@ model Flooring {
   @@unique([homeId, roomId])
 }
 
+/// Paint color information
 model Color {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Unique color code
   code  String @unique
+  /// Name of the color
   name  String
+  /// Brand of the paint
   brand String
+  /// Hexadecimal color value
   hex   String
+  /// Red component (0-255)
   rgbR  Int
+  /// Green component (0-255)
   rgbG  Int
+  /// Blue component (0-255)
   rgbB  Int
-
 }
 
+/// Token for calendar integration
 model CalendarToken {
   id        String   @id @default(cuid())
+  /// Unique token for calendar access
   token     String   @unique
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -265,4 +357,9 @@ model CalendarToken {
   updatedAt DateTime @updatedAt
 
   @@index([token])
+}
+
+generator jsonSchema {
+  provider = "prisma-json-schema-generator"
+  output   = "../static/schemas"
 }
