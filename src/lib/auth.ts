@@ -26,6 +26,24 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      async profile(profile) {
+        // Check if user exists and is disabled
+        const user = await prisma.user.findUnique({
+          where: { email: profile.email },
+          select: { isDisabled: true },
+        });
+
+        if (user?.isDisabled) {
+          throw new Error('Account is disabled');
+        }
+
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
     }),
     CredentialsProvider({
       name: 'credentials',
@@ -47,11 +65,16 @@ export const authOptions: NextAuthOptions = {
               name: true,
               image: true,
               password: true,
+              isDisabled: true,
             },
           });
 
           if (!user || !user.password) {
             return null;
+          }
+
+          if (user.isDisabled) {
+            throw new Error('Account is disabled');
           }
 
           const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -76,6 +99,18 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub!;
+        // Fetch user role and disabled status
+        const user = await prisma.user.findUnique({
+          where: { id: token.sub! },
+          select: { role: true, isDisabled: true },
+        });
+
+        // If user is disabled, end their session
+        if (user?.isDisabled) {
+          throw new Error('Account is disabled');
+        }
+
+        session.user.role = user?.role;
       }
       return session;
     },

@@ -113,6 +113,21 @@ export function Navbar() {
                         </Link>
                       )}
                     </Menu.Item>
+                    {session.user.role === 'ADMIN' && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            href="/admin"
+                            className={classNames(
+                              active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                              'block px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
+                            )}
+                          >
+                            Admin Dashboard
+                          </Link>
+                        )}
+                      </Menu.Item>
+                    )}
                     <Menu.Item>
                       {({ active }) => (
                         <button
