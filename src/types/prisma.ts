@@ -113,15 +113,17 @@ export interface Task {
   updatedAt: Date;
 }
 
-export interface User {
+export type User = {
   id: string;
   name: string | null;
   email: string | null;
+  emailVerified: Date | null;
   image: string | null;
-  emailVerified: string | null;
+  role: 'USER' | 'ADMIN';
+  isDisabled: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
+};
 
 export interface Home {
   id: string;
