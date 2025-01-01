@@ -49,40 +49,27 @@ interface TaskFormProps {
 }
 
 export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
+  const { homes, rooms, items, isLoading } = useLocationOptions();
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    defaultValues: task
-      ? {
-          title: task.title,
-          description: task.description || undefined,
-          priority: task.priority,
-          status: task.status,
-          dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
-          assigneeId: task.assigneeId || undefined,
-          isRecurring: task.isRecurring,
-          interval: task.interval || undefined,
-          unit: task.unit || undefined,
-          homeId: task.homeId || task.room?.homeId || task.item?.room?.homeId || undefined,
-          roomId: task.roomId || task.item?.roomId || undefined,
-          itemId: task.itemId || undefined,
-        }
-      : {
-          priority: TaskPriority.LOW,
-          status: TaskStatus.PENDING,
-          isRecurring: false,
-          dueDate: new Date().toISOString().split('T')[0],
-          interval: 1,
-          unit: TaskRecurrenceUnit.WEEKLY,
-        },
+    defaultValues: {
+      priority: TaskPriority.LOW,
+      status: TaskStatus.PENDING,
+      isRecurring: false,
+      dueDate: new Date().toISOString().split('T')[0],
+      interval: 1,
+      unit: TaskRecurrenceUnit.WEEKLY,
+    },
   });
 
-  const { homes, rooms, items, isLoading } = useLocationOptions();
   const isRecurring = watch('isRecurring');
   const selectedHomeId = watch('homeId');
   const selectedRoomId = watch('roomId');
@@ -98,28 +85,29 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
     ? items.filter((item) => item.roomId === selectedRoomId)
     : items;
 
-  // Set initial location values when editing
+  // Set form values once we have both task data and location data
   useEffect(() => {
-    if (task && !isLoading) {
-      // Set home first
+    if (task && !isLoading && homes.length > 0) {
       const homeId = task.homeId || task.room?.homeId || task.item?.room?.homeId;
-      if (homeId) {
-        setValue('homeId', homeId);
-      }
+      const roomId = task.roomId || task.room?.id || task.item?.roomId;
+      const itemId = task.itemId || task.item?.id;
 
-      // Set room if it exists and belongs to the selected home
-      const roomId = task.roomId || task.item?.roomId;
-      if (roomId && rooms.some((room) => room.id === roomId && room.homeId === homeId)) {
-        setValue('roomId', roomId);
-      }
-
-      // Set item if it exists and belongs to the selected room
-      const itemId = task.itemId;
-      if (itemId && items.some((item) => item.id === itemId && item.roomId === roomId)) {
-        setValue('itemId', itemId);
-      }
+      reset({
+        title: task.title,
+        description: task.description || undefined,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
+        assigneeId: task.assigneeId || undefined,
+        isRecurring: task.isRecurring,
+        interval: task.interval || undefined,
+        unit: task.unit || undefined,
+        homeId: homeId,
+        roomId: roomId,
+        itemId: itemId,
+      });
     }
-  }, [task, rooms, items, isLoading, setValue]);
+  }, [task, homes, rooms, items, isLoading, reset]);
 
   // Clear dependent fields when parent selection changes
   useEffect(() => {

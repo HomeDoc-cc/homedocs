@@ -7,4 +7,4 @@ declare module 'heic-convert' {
 
   function convert(options: ConvertOptions): Promise<Buffer>;
   export default convert;
-} 
+}

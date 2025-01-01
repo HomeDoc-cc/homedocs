@@ -76,4 +76,4 @@ export function ImageModal({ isOpen, onClose, imageUrl, alt = 'Image preview' }:
       </Dialog>
     </Transition>
   );
-} 
+}

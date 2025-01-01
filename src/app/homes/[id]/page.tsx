@@ -4,8 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { ShareHomeDialog } from '@/components/share-home-dialog';
 import { ImageModal } from '@/components/image-modal';
+import { ShareHomeDialog } from '@/components/share-home-dialog';
 
 interface HomePageProps {
   params: Promise<{

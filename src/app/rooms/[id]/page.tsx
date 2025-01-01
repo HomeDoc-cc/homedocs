@@ -4,8 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { MarkdownContent } from '@/components/markdown-content';
 import { ImageModal } from '@/components/image-modal';
+import { MarkdownContent } from '@/components/markdown-content';
 
 interface RoomPageProps {
   params: Promise<{
