@@ -28,8 +28,9 @@ export async function adminMiddleware(request: NextRequest) {
     }
 
     return NextResponse.next();
-  } catch (error) {
-    logger.error('Error in admin middleware', { error, url: request.url });
+  } catch (error: unknown) {
+    const errorObject = error instanceof Error ? error : new Error('Unknown error occurred');
+    logger.error('Error in admin middleware', { error: errorObject, url: request.url });
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

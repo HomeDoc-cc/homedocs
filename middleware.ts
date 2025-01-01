@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { adminMiddleware } from './middleware/admin';
+import { adminMiddleware } from '@/middleware/admin';
 
 export async function middleware(request: NextRequest) {
   // Protect admin routes

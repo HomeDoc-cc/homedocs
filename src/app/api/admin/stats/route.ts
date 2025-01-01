@@ -12,12 +12,8 @@ export async function GET(request: NextRequest) {
       return middlewareResponse;
     }
 
-    const [
-      totalUsers,
-      totalHomes,
-      totalTasks,
-      totalItems,
-    ] = await Promise.all([
+    // Get total counts
+    const [totalUsers, totalHomes, totalTasks, totalItems] = await Promise.all([
       prisma.user.count(),
       prisma.home.count(),
       prisma.task.count(),
@@ -30,8 +26,9 @@ export async function GET(request: NextRequest) {
       totalTasks,
       totalItems,
     });
-  } catch (error) {
-    logger.error('Error fetching admin stats', { error });
+  } catch (error: unknown) {
+    const errorObject = error instanceof Error ? error : new Error('Unknown error occurred');
+    logger.error('Error fetching admin stats', { error: errorObject });
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 } 
