@@ -129,51 +129,42 @@ export function Navbar() {
                       </Menu.Item>
                     )}
                     <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={() => setTheme('light')}
-                          className={classNames(
-                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                            theme === 'light'
-                              ? 'text-blue-600 dark:text-blue-400'
-                              : 'text-gray-700 dark:text-gray-300',
-                            'block w-full text-left px-4 py-2 text-sm'
-                          )}
-                        >
-                          Light Theme
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={() => setTheme('dark')}
-                          className={classNames(
-                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                            theme === 'dark'
-                              ? 'text-blue-600 dark:text-blue-400'
-                              : 'text-gray-700 dark:text-gray-300',
-                            'block w-full text-left px-4 py-2 text-sm'
-                          )}
-                        >
-                          Dark Theme
-                        </button>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={() => setTheme('system')}
-                          className={classNames(
-                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                            theme === 'system'
-                              ? 'text-blue-600 dark:text-blue-400'
-                              : 'text-gray-700 dark:text-gray-300',
-                            'block w-full text-left px-4 py-2 text-sm'
-                          )}
-                        >
-                          System Theme
-                        </button>
+                      {() => (
+                        <div className="px-4 py-2">
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Theme</div>
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => setTheme('light')}
+                              className={`flex-1 px-2 py-1 text-xs rounded-md ${
+                                theme === 'light'
+                                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                              }`}
+                            >
+                              Light
+                            </button>
+                            <button
+                              onClick={() => setTheme('dark')}
+                              className={`flex-1 px-2 py-1 text-xs rounded-md ${
+                                theme === 'dark'
+                                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                              }`}
+                            >
+                              Dark
+                            </button>
+                            <button
+                              onClick={() => setTheme('system')}
+                              className={`flex-1 px-2 py-1 text-xs rounded-md ${
+                                theme === 'system'
+                                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                              }`}
+                            >
+                              System
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </Menu.Item>
                     <Menu.Item>
