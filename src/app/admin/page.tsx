@@ -11,41 +11,74 @@ interface AdminStats {
   totalItems: number;
 }
 
+interface PaginatedUsers {
+  users: User[];
+  total: number;
+}
+
+type RoleFilter = 'ALL' | 'USER' | 'ADMIN';
+type StatusFilter = 'ALL' | 'ACTIVE' | 'DISABLED';
+
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('ALL');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const pageSize = 10;
 
   useEffect(() => {
     async function fetchAdminData() {
       try {
-        const [usersRes, statsRes] = await Promise.all([
-          fetch('/api/admin/users'),
-          fetch('/api/admin/stats'),
-        ]);
-
-        if (!usersRes.ok || !statsRes.ok) {
+        const statsRes = await fetch('/api/admin/stats');
+        if (!statsRes.ok) {
           throw new Error('Failed to fetch admin data');
         }
-
-        const [usersData, statsData] = await Promise.all([
-          usersRes.json(),
-          statsRes.json(),
-        ]);
-
-        setUsers(usersData);
+        const statsData = await statsRes.json();
         setStats(statsData);
       } catch (error) {
         setError(error instanceof Error ? error.message : 'An error occurred');
-      } finally {
-        setLoading(false);
       }
     }
 
     fetchAdminData();
   }, []);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        setLoading(true);
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: pageSize.toString(),
+          search: searchQuery,
+          role: roleFilter,
+          status: statusFilter,
+        });
+
+        const usersRes = await fetch(`/api/admin/users?${searchParams}`);
+        if (!usersRes.ok) {
+          throw new Error('Failed to fetch users');
+        }
+
+        const data: PaginatedUsers = await usersRes.json();
+        setUsers(data.users);
+        setTotalUsers(data.total);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'Failed to fetch users');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    const debounceTimeout = setTimeout(fetchUsers, 300);
+    return () => clearTimeout(debounceTimeout);
+  }, [page, searchQuery, roleFilter, statusFilter]);
 
   const handleRoleChange = async (userId: string, newRole: 'USER' | 'ADMIN') => {
     try {
@@ -90,7 +123,9 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
+  const totalPages = Math.ceil(totalUsers / pageSize);
+
+  if (loading && !users.length) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
@@ -98,7 +133,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (error) {
+  if (error && !users.length) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-red-500">{error}</div>
@@ -133,7 +168,47 @@ export default function AdminDashboard() {
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Users</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Users</h2>
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <div className="w-full sm:w-64">
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                />
+              </div>
+              <select
+                value={roleFilter}
+                onChange={(e) => {
+                  setRoleFilter(e.target.value as RoleFilter);
+                  setPage(1);
+                }}
+                className="w-full sm:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+              >
+                <option value="ALL">All Roles</option>
+                <option value="USER">User</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value as StatusFilter);
+                  setPage(1);
+                }}
+                className="w-full sm:w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+              >
+                <option value="ALL">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="DISABLED">Disabled</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -219,6 +294,32 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalUsers)} of{' '}
+                {totalUsers} users
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
