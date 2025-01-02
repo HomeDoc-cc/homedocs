@@ -81,7 +81,15 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
   }
 
   // Group tasks by status and recurring status
-  const activeTasks = tasks.filter((task) => task.status !== 'COMPLETED');
+  const activeTasks = tasks
+    .filter((task) => task.status !== 'COMPLETED')
+    .sort((a, b) => {
+      // Handle tasks without due dates (put them at the end)
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      // Sort by due date (ascending)
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    });
   const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
 
   return (
