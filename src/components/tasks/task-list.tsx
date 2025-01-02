@@ -19,6 +19,7 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
   const [showCompleted, setShowCompleted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+  const [dateFilter, setDateFilter] = useState<'7' | '30' | '120' | 'all'>('all');
 
   const { createTask, updateTask, deleteTask, completeTask, error } = useTaskActions(onTasksChange);
 
@@ -80,22 +81,61 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
     );
   }
 
+  // Filter tasks based on date range
+  const now = new Date();
+  const filterDate = (task: Task) => {
+    if (!task.dueDate) return false;
+    const dueDate = new Date(task.dueDate);
+    const diffInDays = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    switch (dateFilter) {
+      case '7':
+        return diffInDays <= 7;
+      case '30':
+        return diffInDays <= 30;
+      case '120':
+        return diffInDays <= 120;
+      default:
+        return true;
+    }
+  };
+
   // Group tasks by status and recurring status
   const activeTasks = tasks
     .filter((task) => task.status !== 'COMPLETED')
     .sort((a, b) => {
+      // Put overdue tasks at the top
+      const aOverdue = a.dueDate && new Date(a.dueDate) < now;
+      const bOverdue = b.dueDate && new Date(b.dueDate) < now;
+      if (aOverdue && !bOverdue) return -1;
+      if (!aOverdue && bOverdue) return 1;
+      
       // Handle tasks without due dates (put them at the end)
       if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
       // Sort by due date (ascending)
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-    });
+    })
+    .filter(filterDate);
+
   const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
 
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Tasks</h2>
+        <div className="flex items-center space-x-4">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Tasks</h2>
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as typeof dateFilter)}
+            className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          >
+            <option value="all">All tasks</option>
+            <option value="7">Next 7 days</option>
+            <option value="30">Next 30 days</option>
+            <option value="120">Next 120 days</option>
+          </select>
+        </div>
         <button
           onClick={() => handleOpenModal()}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
