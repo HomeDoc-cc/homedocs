@@ -1,11 +1,11 @@
 'use client';
 
-import { format } from 'date-fns';
 import Link from 'next/link';
 import { JSX } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import { useTimezone } from '@/contexts/timezone-context';
 import { Task } from '@/types/prisma';
 
 interface TaskCardProps {
@@ -64,8 +64,19 @@ function getLocationLinks(task: Task) {
 }
 
 export function TaskCard({ task, onEdit, onDelete, onComplete }: TaskCardProps) {
+  const { timezone } = useTimezone();
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
   const locationLinks = getLocationLinks(task);
+
+  const formatDate = (date: string) => {
+    const utcDate = new Date(date);
+    return utcDate.toLocaleDateString('en-US', {
+      timeZone: timezone,
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -164,7 +175,7 @@ export function TaskCard({ task, onEdit, onDelete, onComplete }: TaskCardProps) 
                 : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
             }`}
           >
-            Due {format(new Date(task.dueDate), 'MMM d, yyyy')}
+            Due {formatDate(task.dueDate)}
           </span>
         )}
         {task.isRecurring && (
