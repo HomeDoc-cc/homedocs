@@ -37,20 +37,32 @@ export type CreateTaskInput = z.infer<typeof taskSchema>;
 function calculateNextDueDate(
   completionDate: Date,
   interval: number,
-  unit: TaskRecurrenceUnit
+  unit: TaskRecurrenceUnit,
+  timezone: string
 ): Date {
+  // Convert the completion date to the user's timezone
+  const localDate = new Date(completionDate.toLocaleString('en-US', { timeZone: timezone }));
+
+  let nextDate: Date;
   switch (unit) {
     case TaskRecurrenceUnit.DAILY:
-      return addDays(completionDate, interval);
+      nextDate = addDays(localDate, interval);
+      break;
     case TaskRecurrenceUnit.WEEKLY:
-      return addWeeks(completionDate, interval);
+      nextDate = addWeeks(localDate, interval);
+      break;
     case TaskRecurrenceUnit.MONTHLY:
-      return addMonths(completionDate, interval);
+      nextDate = addMonths(localDate, interval);
+      break;
     case TaskRecurrenceUnit.YEARLY:
-      return addYears(completionDate, interval);
+      nextDate = addYears(localDate, interval);
+      break;
     default:
       throw new Error('Invalid recurrence unit');
   }
+
+  // Convert back to UTC for storage
+  return new Date(nextDate.toLocaleString('en-US', { timeZone: 'UTC' }));
 }
 
 export async function getRecentTasks(userId: string) {
@@ -125,7 +137,23 @@ export async function getRecentTasks(userId: string) {
   return tasks as Task[];
 }
 
+// Convert a date from local timezone to UTC
+function convertToUTC(date: string): string {
+  // Create a date object in the user's timezone
+  const localDate = new Date(date);
+  // Get the UTC time that corresponds to that local time
+  const utcDate = new Date(localDate.toLocaleString('en-US', { timeZone: 'UTC' }));
+  return utcDate.toISOString();
+}
+
 export async function createTask(userId: string, input: CreateTaskInput) {
+  // Get user's timezone
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { timezone: true },
+  });
+  const timezone = user?.timezone || 'UTC';
+
   // Determine the most specific location ID
   let locationId: { itemId?: string; roomId?: string; homeId?: string } = {};
 
@@ -270,12 +298,13 @@ export async function createTask(userId: string, input: CreateTaskInput) {
   // For recurring tasks, set the nextDueDate
   if (input.isRecurring && input.dueDate && input.interval && input.unit) {
     const dueDate = new Date(input.dueDate);
-    const nextDueDate = calculateNextDueDate(
-      dueDate,
-      input.interval,
-      input.unit as TaskRecurrenceUnit
-    );
+    const nextDueDate = calculateNextDueDate(dueDate, input.interval, input.unit, timezone);
     taskData.nextDueDate = nextDueDate;
+  }
+
+  // Convert dueDate to UTC for storage if it exists
+  if (taskData.dueDate) {
+    taskData.dueDate = convertToUTC(taskData.dueDate);
   }
 
   const task = await prisma.task.create({
@@ -628,10 +657,16 @@ export async function updateTask(taskId: string, userId: string, input: Partial<
     }
   }
 
+  // Convert dueDate to UTC if it's being updated
+  const updateData = { ...input };
+  if (updateData.dueDate) {
+    updateData.dueDate = convertToUTC(updateData.dueDate);
+  }
+
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
     data: {
-      ...input,
+      ...updateData,
       ...locationId,
     },
     include: {
@@ -815,6 +850,14 @@ export async function completeTask(taskId: string, userId: string) {
   if (!task) {
     throw new Error('Task not found or insufficient permissions');
   }
+
+  // Get user's timezone
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { timezone: true },
+  });
+  const timezone = user?.timezone || 'UTC';
+
   // Update the current task
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
@@ -823,27 +866,31 @@ export async function completeTask(taskId: string, userId: string) {
       lastCompleted: new Date(),
     },
   });
+
   // If this is a recurring task, create the next occurrence
   if (task.isRecurring && task.interval && task.unit && task.dueDate) {
     const nextDueDate = calculateNextDueDate(
       new Date(),
       task.interval,
-      task.unit as TaskRecurrenceUnit
+      task.unit as TaskRecurrenceUnit,
+      timezone
     );
+
     await prisma.task.create({
       data: {
         title: task.title,
         description: task.description,
         priority: task.priority,
         status: TaskStatus.PENDING,
-        dueDate: nextDueDate,
+        dueDate: nextDueDate.toISOString(),
         isRecurring: true,
         interval: task.interval,
         unit: task.unit,
         nextDueDate: calculateNextDueDate(
           nextDueDate,
           task.interval,
-          task.unit as TaskRecurrenceUnit
+          task.unit as TaskRecurrenceUnit,
+          timezone
         ),
         homeId: task.homeId,
         roomId: task.roomId,
