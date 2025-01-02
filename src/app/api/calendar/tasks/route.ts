@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
           select: {
             name: true,
             email: true,
+            timezone: true,
           },
         },
       },
@@ -33,6 +34,9 @@ export async function GET(request: NextRequest) {
       });
       return new NextResponse('Invalid token', { status: 401 });
     }
+
+    // Get user's timezone or default to UTC
+    const userTimezone = calendarToken.user.timezone || 'UTC';
 
     // Get tasks for user
     const tasks = await prisma.task.findMany({
@@ -53,12 +57,15 @@ export async function GET(request: NextRequest) {
     const calendar = ical({
       name: 'HomeDocs Tasks',
       prodId: { company: 'HomeDocs', product: 'Tasks Calendar' },
-      timezone: 'UTC',
+      timezone: userTimezone,
     });
 
     // Add tasks to calendar
     tasks.forEach((task) => {
       if (!task.dueDate) return; // Skip tasks without due dates
+
+      // Convert task due date to user's timezone
+      const taskDate = new Date(task.dueDate);
 
       const location = [task.home?.name, task.room?.name].filter(Boolean).join(' - ');
 
@@ -84,8 +91,8 @@ export async function GET(request: NextRequest) {
 
       const event = calendar.createEvent({
         id: task.id,
-        start: new Date(task.dueDate),
-        end: new Date(task.dueDate),
+        start: taskDate,
+        end: taskDate,
         allDay: true,
         summary: task.title + (task.isRecurring ? ' 🔄' : ''),
         description,

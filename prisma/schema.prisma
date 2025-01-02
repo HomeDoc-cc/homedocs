@@ -52,6 +52,7 @@ model User {
   isDisabled    Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
+  timezone      String?   @default("UTC")
 
   // App relations
   ownedHomes    Home[]         @relation("HomeOwner")
