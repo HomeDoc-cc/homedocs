@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 interface ColorData {
-  code: string;     // hex color code or rgb format
-  label: string | number;   // color code/number (can be numeric)
-  name: string;    // color name
-  book: string;    // manufacturer/brand
+  code: string; // hex color code or rgb format
+  label: string | number; // color code/number (can be numeric)
+  name: string; // color name
+  book: string; // manufacturer/brand
 }
 
 // Function to convert RGB format to hex
@@ -26,7 +26,7 @@ function parseRgb(rgb: string): { r: number; g: number; b: number } | null {
       return {
         r: parseInt(match[1], 10),
         g: parseInt(match[2], 10),
-        b: parseInt(match[3], 10)
+        b: parseInt(match[3], 10),
       };
     }
     return null;
@@ -36,8 +36,23 @@ function parseRgb(rgb: string): { r: number; g: number; b: number } | null {
   }
 }
 
+async function refreshColorData() {
+  const sourceUrl = 'https://raw.githubusercontent.com/ryancwalsh/paint_color_gallery/refs/heads/main/data/colornerd.json';
+  const response = await fetch(sourceUrl);
+  const data = await response.json();
+  const colorDataPath = join(__dirname, 'data', 'colordata.json');
+  try { 
+    writeFileSync(colorDataPath, JSON.stringify(data, null, 2));
+    console.log('Color data refreshed successfully');
+  } catch (error) {
+    console.error('Error refreshing color data:', error);
+  }
+}
+
 // Function to ensure hex code is properly formatted
-function formatHexCode(color: string): { hex: string; rgb: { r: number; g: number; b: number; } } | null {
+function formatHexCode(
+  color: string
+): { hex: string; rgb: { r: number; g: number; b: number } } | null {
   try {
     // Check if it's an RGB format
     if (color.startsWith('rgb(')) {
@@ -45,7 +60,7 @@ function formatHexCode(color: string): { hex: string; rgb: { r: number; g: numbe
       if (rgb) {
         return {
           hex: rgbToHex(rgb.r, rgb.g, rgb.b),
-          rgb
+          rgb,
         };
       }
       return null;
@@ -68,7 +83,7 @@ function formatHexCode(color: string): { hex: string; rgb: { r: number; g: numbe
 
     return {
       hex,
-      rgb: { r, g, b }
+      rgb: { r, g, b },
     };
   } catch (error) {
     console.error('Error processing color:', color, error);
@@ -78,17 +93,25 @@ function formatHexCode(color: string): { hex: string; rgb: { r: number; g: numbe
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function main(force = false) {
   try {
+    // Check if we already have color data
+    const existingCount = await prisma.color.count();
+    
+    if (existingCount > 0 && !force) {
+      console.log('Paint color data already exists. Use --force to reimport.');
+      return;
+    }
+
+    await refreshColorData();
+
     // First, clean up existing color data
     await prisma.color.deleteMany({});
     console.log('Cleaned up existing color data');
-
+    
     // Read the color data JSON file
     const colorDataPath = join(__dirname, 'data', 'colordata.json');
-    const colorData: ColorData[] = JSON.parse(
-      readFileSync(colorDataPath, 'utf-8')
-    );
+    const colorData: ColorData[] = JSON.parse(readFileSync(colorDataPath, 'utf-8'));
 
     console.log(`Found ${colorData.length} colors to import`);
 
@@ -133,7 +156,9 @@ async function main() {
   }
 }
 
-main()
+// Check if --force flag is passed
+const force = process.argv.includes('--force');
+main(force)
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);

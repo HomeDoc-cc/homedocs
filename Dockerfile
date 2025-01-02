@@ -44,16 +44,16 @@ RUN npm ci --only=production
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/scripts/start.sh ./start.sh
+COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/next.config.js ./next.config.js
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Set permissions for the startup script
-RUN chmod +x ./start.sh
-RUN chown nextjs:nodejs ./start.sh
+# Set permissions for the startup script and scripts directory
+RUN chmod +x ./scripts/start.sh
+RUN chown -R nextjs:nodejs ./scripts
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -69,4 +69,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["./start.sh"] 
+CMD ["./scripts/start.sh"] 
