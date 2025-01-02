@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
     const tasks = await prisma.task.findMany({
       where: {
         OR: [{ creatorId: calendarToken.userId }, { assigneeId: calendarToken.userId }],
-        isRecurring: true,
       },
       include: {
         home: { select: { name: true } },
