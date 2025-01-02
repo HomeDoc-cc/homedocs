@@ -84,10 +84,6 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
   const activeTasks = tasks.filter((task) => task.status !== 'COMPLETED');
   const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
 
-  // Further group active tasks by recurring status
-  const activeRecurringTasks = activeTasks.filter((task) => task.isRecurring);
-  const activeNonRecurringTasks = activeTasks.filter((task) => !task.isRecurring);
-
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
@@ -113,30 +109,10 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
         </div>
       )}
 
-      {activeRecurringTasks.length > 0 && (
+      {activeTasks.length > 0 && (
         <div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            Recurring Tasks
-          </h3>
           <div className="space-y-4">
-            {activeRecurringTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onEdit={() => handleOpenModal(task)}
-                onDelete={() => deleteTask(task.id)}
-                onComplete={() => completeTask(task.id)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeNonRecurringTasks.length > 0 && (
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">One-time Tasks</h3>
-          <div className="space-y-4">
-            {activeNonRecurringTasks.map((task) => (
+            {activeTasks.map((task) => (
               <TaskCard
                 key={task.id}
                 task={task}
