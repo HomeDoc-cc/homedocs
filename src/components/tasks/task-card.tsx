@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { JSX } from 'react';
+import { JSX, useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -67,6 +67,16 @@ export function TaskCard({ task, onEdit, onDelete, onComplete }: TaskCardProps) 
   const { timezone } = useTimezone();
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date();
   const locationLinks = getLocationLinks(task);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const [isLongDescription, setIsLongDescription] = useState(false);
+
+  useEffect(() => {
+    if (descriptionRef.current) {
+      // Check if the description content height is greater than the line height
+      setIsLongDescription(descriptionRef.current.scrollHeight > descriptionRef.current.clientHeight);
+    }
+  }, [task.description]);
 
   const formatDate = (date: string) => {
     const utcDate = new Date(date);
@@ -84,8 +94,23 @@ export function TaskCard({ task, onEdit, onDelete, onComplete }: TaskCardProps) 
         <div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">{task.title}</h3>
           {task.description && (
-            <div className="mt-1 text-sm text-gray-500 dark:text-gray-400 prose dark:prose-invert max-w-none prose-sm">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{task.description}</ReactMarkdown>
+            <div className="mt-1">
+              <div
+                ref={descriptionRef}
+                className={`text-sm text-gray-500 dark:text-gray-400 prose dark:prose-invert max-w-none prose-sm ${
+                  !isDescriptionExpanded ? 'line-clamp-1' : ''
+                }`}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{task.description}</ReactMarkdown>
+              </div>
+              {isLongDescription && (
+                <button
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  className="mt-1 text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  {isDescriptionExpanded ? 'Show less' : 'Show more'}
+                </button>
+              )}
             </div>
           )}
           {locationLinks.length > 0 && (
