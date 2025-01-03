@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 interface HomeWithCounts {
@@ -18,16 +19,21 @@ interface HomesOverviewProps {
 }
 
 export function HomesOverview({ homes }: HomesOverviewProps) {
+  const { data: session } = useSession();
+  const canAddHome = session?.user?.tier !== 'FREE' || homes.length === 0;
+
   return (
     <section className="mb-12">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Your Homes</h2>
-        <Link
-          href="/homes/new"
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Add Home
-        </Link>
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">{canAddHome ? 'Your Homes' : 'Your Home'}</h2>
+        {canAddHome && (
+          <Link
+            href="/homes/new"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Add Home
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -12,6 +12,26 @@ export type CreateHomeInput = z.infer<typeof homeSchema>;
 export async function createHome(userId: string, input: CreateHomeInput) {
   const { name, address } = homeSchema.parse(input);
 
+  // Get the user's tier and existing homes count
+  const [user, homeCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { tier: true },
+    }),
+    prisma.home.count({
+      where: { userId },
+    }),
+  ]);
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Free tier users can only create one home
+  if (user.tier === 'FREE' && homeCount >= 1) {
+    throw new Error('Free tier users can only create one home');
+  }
+
   const home = await prisma.home.create({
     data: {
       name,

@@ -102,7 +102,7 @@ export const authOptions: NextAuthOptions = {
         // Fetch user role and disabled status
         const user = await prisma.user.findUnique({
           where: { id: token.sub! },
-          select: { role: true, isDisabled: true },
+          select: { role: true, isDisabled: true, tier: true },
         });
 
         // If user is disabled, end their session
@@ -111,6 +111,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         session.user.role = user?.role;
+        session.user.tier = user?.tier;
       }
       return session;
     },

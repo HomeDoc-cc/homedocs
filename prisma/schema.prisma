@@ -53,6 +53,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   timezone      String?   @default("UTC")
+  tier          SubscriptionTier @default(FREE)
 
   // App relations
   ownedHomes    Home[]         @relation("HomeOwner")
@@ -67,6 +68,12 @@ model User {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
 }
 
 // App Models
