@@ -109,6 +109,13 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
     }
   }, [task, homes, rooms, items, isLoading, reset]);
 
+  // Auto-select first home when there's only one and no home is selected
+  useEffect(() => {
+    if (!isLoading && homes.length === 1 && !selectedHomeId) {
+      setValue('homeId', homes[0].id);
+    }
+  }, [homes, isLoading, selectedHomeId, setValue]);
+
   // Clear dependent fields when parent selection changes
   useEffect(() => {
     if (!selectedHomeId) {
