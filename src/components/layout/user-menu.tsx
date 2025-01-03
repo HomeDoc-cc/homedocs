@@ -7,12 +7,14 @@ import Link from 'next/link';
 import { Fragment } from 'react';
 
 import { ThemeSelector } from '../theme-selector';
+import { UserRole } from '@prisma/client';
 
 interface UserMenuProps {
   user: {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: UserRole;
   };
 }
 
@@ -26,10 +28,12 @@ export function UserMenu({ user }: UserMenuProps) {
             className="h-8 w-8 rounded-full"
             src={user.image}
             alt={user.name || 'User avatar'}
+            width={32}
+            height={32}
           />
         ) : (
-          <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-500 font-medium">
+          <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <span className="text-gray-600 dark:text-gray-300 font-medium">
               {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
             </span>
           </div>
@@ -64,6 +68,36 @@ export function UserMenu({ user }: UserMenuProps) {
                 </Link>
               )}
             </Menu.Item>
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  href="/settings"
+                  className={`block px-4 py-2 text-sm ${
+                    active
+                      ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
+                      : 'text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  Settings
+                </Link>
+              )}
+            </Menu.Item>
+            {user.role === UserRole.ADMIN && (
+              <Menu.Item>
+                {({ active }) => (
+                  <Link
+                    href="/admin"
+                    className={`block px-4 py-2 text-sm ${
+                      active
+                        ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+              </Menu.Item>
+            )}
           </div>
           <div className="border-t border-gray-200 dark:border-gray-700">
             <ThemeSelector />

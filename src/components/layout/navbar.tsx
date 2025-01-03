@@ -1,12 +1,10 @@
 'use client';
 
-import { Menu, Transition } from '@headlessui/react';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Fragment } from 'react';
 
-import { useTheme } from '@/contexts/theme-context';
+import { UserMenu } from './user-menu';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -14,7 +12,6 @@ function classNames(...classes: string[]) {
 
 export function Navbar() {
   const { data: session } = useSession();
-  const { theme, setTheme } = useTheme();
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -66,123 +63,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center">
             {session?.user ? (
-              <Menu as="div" className="relative ml-3">
-                <div>
-                  <Menu.Button className="flex rounded-full bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <span className="sr-only">Open user menu</span>
-                    <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                      <span className="text-gray-600 dark:text-gray-300">
-                        {session.user.name?.[0] || session.user.email?.[0] || 'U'}
-                      </span>
-                    </div>
-                  </Menu.Button>
-                </div>
-                <Transition
-                  as={Fragment}
-                  enter="transition ease-out duration-200"
-                  enterFrom="transform opacity-0 scale-95"
-                  enterTo="transform opacity-100 scale-100"
-                  leave="transition ease-in duration-75"
-                  leaveFrom="transform opacity-100 scale-100"
-                  leaveTo="transform opacity-0 scale-95"
-                >
-                  <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <Menu.Item>
-                      {({ active }) => (
-                        <Link
-                          href="/profile"
-                          className={classNames(
-                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                            'block px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
-                          )}
-                        >
-                          Profile
-                        </Link>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <Link
-                          href="/settings"
-                          className={classNames(
-                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                            'block px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
-                          )}
-                        >
-                          Settings
-                        </Link>
-                      )}
-                    </Menu.Item>
-                    {session.user.role === 'ADMIN' && (
-                      <Menu.Item>
-                        {({ active }) => (
-                          <Link
-                            href="/admin"
-                            className={classNames(
-                              active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                              'block px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
-                            )}
-                          >
-                            Admin Dashboard
-                          </Link>
-                        )}
-                      </Menu.Item>
-                    )}
-                    <Menu.Item>
-                      {() => (
-                        <div className="px-4 py-2">
-                          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Theme</div>
-                          <div className="flex space-x-1">
-                            <button
-                              onClick={() => setTheme('light')}
-                              className={`flex-1 px-2 py-1 text-xs rounded-md ${
-                                theme === 'light'
-                                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                              }`}
-                            >
-                              Light
-                            </button>
-                            <button
-                              onClick={() => setTheme('dark')}
-                              className={`flex-1 px-2 py-1 text-xs rounded-md ${
-                                theme === 'dark'
-                                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                              }`}
-                            >
-                              Dark
-                            </button>
-                            <button
-                              onClick={() => setTheme('system')}
-                              className={`flex-1 px-2 py-1 text-xs rounded-md ${
-                                theme === 'system'
-                                  ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                              }`}
-                            >
-                              System
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <button
-                          onClick={() => signOut()}
-                          className={classNames(
-                            active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                            'block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300'
-                          )}
-                        >
-                          Sign out
-                        </button>
-                      )}
-                    </Menu.Item>
-                  </Menu.Items>
-                </Transition>
-              </Menu>
+              <UserMenu user={session.user} />
             ) : (
               <Link
                 href="/auth/signin"

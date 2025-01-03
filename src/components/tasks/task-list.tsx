@@ -131,7 +131,7 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
           <select
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value as typeof dateFilter)}
-            className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="rounded-md border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           >
             <option value="all">All tasks</option>
             <option value="7">Next 7 days</option>
