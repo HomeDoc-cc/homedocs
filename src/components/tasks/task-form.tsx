@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -50,6 +50,14 @@ interface TaskFormProps {
 
 export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
   const { homes, rooms, items, isLoading } = useLocationOptions();
+  const hasAutoSelectedHome = useRef(false);
+  const previousHomeId = useRef<string | undefined>(
+    task?.homeId || task?.room?.homeId || task?.item?.room?.homeId
+  );
+  const previousRoomId = useRef<string | undefined>(
+    task?.roomId || task?.room?.id || task?.item?.roomId
+  );
+  const hasSetInitialValues = useRef(false);
 
   const {
     register,
@@ -87,7 +95,7 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
 
   // Set form values once we have both task data and location data
   useEffect(() => {
-    if (task && !isLoading && homes.length > 0) {
+    if (task && !isLoading && homes.length > 0 && !hasSetInitialValues.current) {
       const homeId = task.homeId || task.room?.homeId || task.item?.room?.homeId;
       const roomId = task.roomId || task.room?.id || task.item?.roomId;
       const itemId = task.itemId || task.item?.id;
@@ -106,44 +114,50 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
         roomId: roomId,
         itemId: itemId,
       });
+      hasSetInitialValues.current = true;
     }
   }, [task, homes, rooms, items, isLoading, reset]);
 
   // Auto-select first home when there's only one and no home is selected
   useEffect(() => {
-    if (!isLoading && homes.length === 1 && !selectedHomeId) {
+    if (!hasAutoSelectedHome.current && !isLoading && homes.length === 1 && !selectedHomeId) {
       setValue('homeId', homes[0].id);
+      hasAutoSelectedHome.current = true;
     }
   }, [homes, isLoading, selectedHomeId, setValue]);
 
   // Clear dependent fields when parent selection changes
   useEffect(() => {
-    if (!selectedHomeId) {
-      setValue('roomId', undefined);
-      setValue('itemId', undefined);
-      return;
-    }
-
-    const roomExists = rooms.some(
-      (room) => room.homeId === selectedHomeId && room.id === selectedRoomId
-    );
-    if (!roomExists) {
-      setValue('roomId', undefined);
-      setValue('itemId', undefined);
+    if (selectedHomeId !== previousHomeId.current) {
+      if (!selectedHomeId) {
+        setValue('roomId', undefined);
+        setValue('itemId', undefined);
+      } else {
+        const roomExists = rooms.some(
+          (room) => room.homeId === selectedHomeId && room.id === selectedRoomId
+        );
+        if (!roomExists) {
+          setValue('roomId', undefined);
+          setValue('itemId', undefined);
+        }
+      }
+      previousHomeId.current = selectedHomeId;
     }
   }, [selectedHomeId, selectedRoomId, rooms, setValue]);
 
   useEffect(() => {
-    if (!selectedRoomId) {
-      setValue('itemId', undefined);
-      return;
-    }
-
-    const itemExists = items.some(
-      (item) => item.roomId === selectedRoomId && item.id === selectedItemId
-    );
-    if (!itemExists) {
-      setValue('itemId', undefined);
+    if (selectedRoomId !== previousRoomId.current) {
+      if (!selectedRoomId) {
+        setValue('itemId', undefined);
+      } else {
+        const itemExists = items.some(
+          (item) => item.roomId === selectedRoomId && item.id === selectedItemId
+        );
+        if (!itemExists) {
+          setValue('itemId', undefined);
+        }
+      }
+      previousRoomId.current = selectedRoomId;
     }
   }, [selectedRoomId, selectedItemId, items, setValue]);
 
