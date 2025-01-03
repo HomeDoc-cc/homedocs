@@ -1,5 +1,5 @@
 import { useSession } from 'next-auth/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Task, User } from '@/types/prisma';
 
@@ -15,6 +15,10 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const hasFetchedInitialData = useRef(false);
+  const previousType = useRef(type);
+  const previousId = useRef(id);
+
   const fetchTasks = useCallback(async () => {
     if (!session) return;
 
@@ -28,6 +32,7 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
       }
       const data = await response.json();
       setTasks(data);
+      hasFetchedInitialData.current = true;
     } catch (error) {
       console.error('Error fetching tasks:', error);
       setError(error instanceof Error ? error.message : 'Failed to fetch tasks');
@@ -51,10 +56,18 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
   }, [session]);
 
   useEffect(() => {
+    // Check if type or id has changed
+    if (type !== previousType.current || id !== previousId.current) {
+      hasFetchedInitialData.current = false;
+      previousType.current = type;
+      previousId.current = id;
+    }
+
     // Only fetch if we have a session and either:
     // 1. No type/id specified (fetch all tasks)
     // 2. Both type and id are specified (fetch specific tasks)
-    if (session && (!type || (type && id))) {
+    // And we haven't fetched the initial data yet
+    if (session && (!type || (type && id)) && !hasFetchedInitialData.current) {
       fetchTasks();
     }
   }, [type, id, session, fetchTasks]);
@@ -70,6 +83,9 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
     users,
     isLoading,
     error,
-    refetch: fetchTasks,
+    refetch: useCallback(() => {
+      hasFetchedInitialData.current = false;
+      return fetchTasks();
+    }, [fetchTasks]),
   };
 }

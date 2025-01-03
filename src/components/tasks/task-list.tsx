@@ -29,7 +29,6 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
   };
 
   const handleCloseModal = () => {
-    setSelectedTask(undefined);
     setIsModalOpen(false);
   };
 
@@ -39,6 +38,10 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
     if (success) {
       handleCloseModal();
     }
+  };
+
+  const handleTransitionEnd = () => {
+    setSelectedTask(undefined);
   };
 
   if (isLoading) {
@@ -211,6 +214,7 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
       <TaskModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        onTransitionEnd={handleTransitionEnd}
         task={selectedTask}
         users={users}
         onSubmit={handleSubmit}

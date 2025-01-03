@@ -64,11 +64,23 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
     handleSubmit,
     watch,
     setValue,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    defaultValues: {
+    defaultValues: task ? {
+      title: task.title,
+      description: task.description || undefined,
+      priority: task.priority,
+      status: task.status,
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
+      assigneeId: task.assigneeId || undefined,
+      isRecurring: task.isRecurring,
+      interval: task.interval || undefined,
+      unit: task.unit || undefined,
+      homeId: task.homeId || task.room?.homeId || task.item?.room?.homeId,
+      roomId: task.roomId || task.room?.id || task.item?.roomId,
+      itemId: task.itemId || task.item?.id,
+    } : {
       priority: TaskPriority.LOW,
       status: TaskStatus.PENDING,
       isRecurring: false,
@@ -93,30 +105,20 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
     ? items.filter((item) => item.roomId === selectedRoomId)
     : items;
 
-  // Set form values once we have both task data and location data
+  // Update location-related fields once we have the data
   useEffect(() => {
-    if (task && !isLoading && homes.length > 0 && !hasSetInitialValues.current) {
-      const homeId = task.homeId || task.room?.homeId || task.item?.room?.homeId;
-      const roomId = task.roomId || task.room?.id || task.item?.roomId;
-      const itemId = task.itemId || task.item?.id;
+    if (!isLoading && homes.length > 0 && !hasSetInitialValues.current) {
+      const homeId = task?.homeId || task?.room?.homeId || task?.item?.room?.homeId;
+      const roomId = task?.roomId || task?.room?.id || task?.item?.roomId;
+      const itemId = task?.itemId || task?.item?.id;
 
-      reset({
-        title: task.title,
-        description: task.description || undefined,
-        priority: task.priority,
-        status: task.status,
-        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
-        assigneeId: task.assigneeId || undefined,
-        isRecurring: task.isRecurring,
-        interval: task.interval || undefined,
-        unit: task.unit || undefined,
-        homeId: homeId,
-        roomId: roomId,
-        itemId: itemId,
-      });
+      if (homeId) setValue('homeId', homeId);
+      if (roomId) setValue('roomId', roomId);
+      if (itemId) setValue('itemId', itemId);
+      
       hasSetInitialValues.current = true;
     }
-  }, [task, homes, rooms, items, isLoading, reset]);
+  }, [task, homes, rooms, items, isLoading, setValue]);
 
   // Auto-select first home when there's only one and no home is selected
   useEffect(() => {

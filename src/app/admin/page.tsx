@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { User } from '@/types/prisma';
 
@@ -32,8 +32,17 @@ export default function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const pageSize = 10;
 
+  const hasFetchedStats = useRef(false);
+  const previousSearchQuery = useRef(searchQuery);
+  const previousPage = useRef(page);
+  const previousRoleFilter = useRef(roleFilter);
+  const previousStatusFilter = useRef(statusFilter);
+  const fetchTimeout = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     async function fetchAdminData() {
+      if (hasFetchedStats.current) return;
+      
       try {
         const statsRes = await fetch('/api/admin/stats');
         if (!statsRes.ok) {
@@ -41,12 +50,17 @@ export default function AdminDashboard() {
         }
         const statsData = await statsRes.json();
         setStats(statsData);
+        hasFetchedStats.current = true;
       } catch (error) {
         setError(error instanceof Error ? error.message : 'An error occurred');
       }
     }
 
     fetchAdminData();
+    return () => {
+      // Cleanup function
+      hasFetchedStats.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -76,9 +90,36 @@ export default function AdminDashboard() {
       }
     }
 
-    const debounceTimeout = setTimeout(fetchUsers, 300);
-    return () => clearTimeout(debounceTimeout);
-  }, [page, searchQuery, roleFilter, statusFilter]);
+    // Clear previous timeout
+    if (fetchTimeout.current) {
+      clearTimeout(fetchTimeout.current);
+    }
+
+    // Check if any filter has changed
+    const hasFiltersChanged = 
+      searchQuery !== previousSearchQuery.current ||
+      page !== previousPage.current ||
+      roleFilter !== previousRoleFilter.current ||
+      statusFilter !== previousStatusFilter.current;
+
+    if (hasFiltersChanged) {
+      // Update previous values
+      previousSearchQuery.current = searchQuery;
+      previousPage.current = page;
+      previousRoleFilter.current = roleFilter;
+      previousStatusFilter.current = statusFilter;
+
+      // Set new timeout
+      fetchTimeout.current = setTimeout(fetchUsers, 300);
+    }
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (fetchTimeout.current) {
+        clearTimeout(fetchTimeout.current);
+      }
+    };
+  }, [page, searchQuery, roleFilter, statusFilter, pageSize]);
 
   const handleRoleChange = async (userId: string, newRole: 'USER' | 'ADMIN') => {
     try {

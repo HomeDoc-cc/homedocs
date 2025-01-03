@@ -25,14 +25,15 @@ export type TaskFormData = {
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onTransitionEnd?: () => void;
   task?: Task;
   users: User[];
   onSubmit: (data: TaskFormData) => void;
 }
 
-export function TaskModal({ isOpen, onClose, task, users, onSubmit }: TaskModalProps) {
+export function TaskModal({ isOpen, onClose, onTransitionEnd, task, users, onSubmit }: TaskModalProps) {
   return (
-    <Transition.Root show={isOpen} as={Fragment}>
+    <Transition.Root show={isOpen} as={Fragment} afterLeave={onTransitionEnd}>
       <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={onClose}>
         <div className="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
           <Transition.Child
@@ -85,7 +86,7 @@ export function TaskModal({ isOpen, onClose, task, users, onSubmit }: TaskModalP
                     }
                     users={users}
                     onSubmit={onSubmit}
-                    onCancel={onClose}
+                    onCancel={() => onClose()}
                   />
                 </div>
               </div>

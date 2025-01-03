@@ -1,7 +1,7 @@
 'use client';
 
 import { Combobox } from '@headlessui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { useBrands } from '@/hooks/useBrands';
@@ -58,13 +58,19 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
   const code = watch('code');
   const brand = watch('brand') || '';
 
+  const hasSetInitialValues = useRef(false);
+  const previousBrand = useRef<string | undefined>(paint?.brand);
+  const previousCode = useRef<string | undefined>(paint?.code);
+  const hasFetchedColor = useRef(false);
+
   const filteredBrands =
     brandQuery === ''
       ? brands
       : brands.filter((brand) => brand.toLowerCase().includes(brandQuery.toLowerCase()));
 
+  // Set initial form values
   useEffect(() => {
-    if (paint) {
+    if (paint && !hasSetInitialValues.current) {
       reset({
         location: paint.location || '',
         brand: paint.brand || '',
@@ -74,30 +80,26 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
         notes: paint.notes || '',
       });
       setBrandQuery(paint.brand || '');
-    } else {
-      reset({
-        location: '',
-        brand: '',
-        color: '',
-        finish: '',
-        code: '',
-        notes: '',
-      });
-      setBrandQuery('');
+      hasSetInitialValues.current = true;
     }
   }, [paint, reset]);
 
+  // Handle color code changes
   useEffect(() => {
+    const trimmedCode = code?.trim() || '';
+    if (trimmedCode !== previousCode.current) {
+      previousCode.current = trimmedCode;
+      hasFetchedColor.current = false;
+    }
+
     // Function to fetch color data
     const fetchColorData = async (colorCode: string) => {
-      console.log('Fetching color data for:', colorCode);
+      if (hasFetchedColor.current) return;
+      
       try {
         const response = await fetch(`/api/colors/${colorCode}`);
-        console.log('API response status:', response.status);
         if (response.ok) {
           const data = await response.json();
-          console.log('Color data received:', data);
-          // Transform the data to match ColorData interface
           const colorData: ColorData = {
             code: data.code,
             name: data.name,
@@ -108,6 +110,7 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
             rgbB: data.rgb.b,
           };
           setColorPreview(colorData);
+          hasFetchedColor.current = true;
 
           // Auto-fill brand and color name if they're empty
           const currentBrand = watch('brand');
@@ -121,7 +124,6 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
             setBrandQuery(colorData.brand);
           }
         } else {
-          console.log('API error:', await response.text());
           setColorPreview(null);
         }
       } catch (error) {
@@ -130,15 +132,19 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
       }
     };
 
-    const trimmedCode = code?.trim() || '';
-    console.log('Current code:', trimmedCode);
-
     if (trimmedCode) {
       void fetchColorData(trimmedCode);
     } else {
       setColorPreview(null);
     }
   }, [code, setValue, watch]);
+
+  // Handle brand changes
+  useEffect(() => {
+    if (brand !== previousBrand.current) {
+      previousBrand.current = brand;
+    }
+  }, [brand]);
 
   const handleFormSubmit = async (data: PaintFormData) => {
     try {
