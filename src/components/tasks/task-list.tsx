@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useTaskActions } from '@/hooks/use-task-actions';
 import { Task, User } from '@/types/prisma';
@@ -19,9 +19,23 @@ export function TaskList({ tasks, users, onTasksChange, isLoading = false }: Tas
   const [showCompleted, setShowCompleted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
-  const [dateFilter, setDateFilter] = useState<'7' | '30' | '120' | 'all'>('all');
+  const [dateFilter, setDateFilter] = useState<'7' | '30' | '120' | 'all'>(() => {
+    // Try to get the stored preference from localStorage
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('taskDateFilter');
+      return (stored as '7' | '30' | '120' | 'all') || 'all';
+    }
+    return 'all';
+  });
 
   const { createTask, updateTask, deleteTask, completeTask, error } = useTaskActions(onTasksChange);
+
+  // Update localStorage when dateFilter changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('taskDateFilter', dateFilter);
+    }
+  }, [dateFilter]);
 
   const handleOpenModal = (task?: Task) => {
     setSelectedTask(task);
