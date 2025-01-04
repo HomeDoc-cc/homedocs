@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -30,8 +31,17 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white">
-                HomeDocs
+              <Link href="/" className="flex items-center space-x-2">
+                <Image
+                  src="/icons/icon-192x192.png"
+                  alt="HomeDocs"
+                  width={32}
+                  height={32}
+                  className="rounded-lg"
+                />
+                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                  HomeDocs
+                </span>
               </Link>
             </div>
             {session?.user && (
