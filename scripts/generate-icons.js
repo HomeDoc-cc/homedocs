@@ -4,6 +4,7 @@ const path = require('path');
 
 async function generateIcons() {
   const iconSizes = [192, 512];
+  const faviconSizes = [16, 32, 48, 64, 96, 128, 256];
   const sourceIcon = path.join(__dirname, '../public/icon.jpg');
   const iconDir = path.join(__dirname, '../public/icons');
 
@@ -27,6 +28,14 @@ async function generateIcons() {
     .resize(180, 180)
     .png()
     .toFile(path.join(iconDir, 'apple-touch-icon.png'));
+
+  // Generate favicons in multiple sizes
+  for (const size of faviconSizes) {
+    await sharp(sourceIcon)
+      .resize(size, size)
+      .png()
+      .toFile(path.join(iconDir, `favicon-${size}x${size}.png`));
+  }
 
   console.log('Icons generated successfully!');
 }
