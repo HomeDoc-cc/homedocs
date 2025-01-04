@@ -21,7 +21,8 @@ export function VersionCheck() {
         );
         if (response.ok) {
           const data = await response.json();
-          setLatestVersion(data);
+          const tagName = data.tag_name.replace('v', '');
+          setLatestVersion({ tag_name: tagName, html_url: data.html_url });
         }
       } catch (error) {
         console.error('Failed to fetch latest version:', error);
@@ -31,22 +32,7 @@ export function VersionCheck() {
     checkVersion();
   }, []);
 
-  if (!latestVersion) {
-    return (
-      <span className="">
-        <a
-          href="https://github.com/jhofker/homedocs"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-green-600 dark:text-green-400 text-sm ml-2"
-        >
-          v{currentVersion}
-        </a>
-      </span>
-    );
-  }
-
-  const isOutdated = latestVersion.tag_name.replace('v', '') !== currentVersion;
+  const isOutdated = latestVersion && latestVersion.tag_name !== currentVersion;
 
   return isOutdated ? (
     <a
@@ -59,6 +45,13 @@ export function VersionCheck() {
       v{currentVersion} ({latestVersion.tag_name} available)
     </a>
   ) : (
-    ''
+    <a
+      href="https://github.com/jhofker/homedocs"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm ml-2"
+    >
+      v{currentVersion}
+    </a>
   );
 }
