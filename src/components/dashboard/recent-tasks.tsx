@@ -6,7 +6,7 @@ import { TaskList } from '@/components/tasks/task-list';
 import { useTaskData } from '@/hooks/use-task-data';
 
 export function RecentTasks() {
-  const { tasks, users, isLoading } = useTaskData();
+  const { tasks, users, isLoading, refetch } = useTaskData();
 
   return (
     <section className="mb-12">
@@ -20,7 +20,7 @@ export function RecentTasks() {
         </Link>
       </div>
 
-      <TaskList tasks={tasks} users={users} isLoading={isLoading} />
+      <TaskList tasks={tasks} users={users} isLoading={isLoading} onTasksChange={refetch} />
     </section>
   );
 }
