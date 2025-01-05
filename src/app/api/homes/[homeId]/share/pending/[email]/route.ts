@@ -3,17 +3,13 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/session';
 
-interface RouteParams {
-  params: {
-    homeId: string;
-    email: string;
-  };
-}
-
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ homeId: string; email: string }> }
+) {
   try {
     const session = await requireAuth();
-    const { homeId, email } = params;
+    const { homeId, email } = await params;
 
     // Check if the user is the home owner
     const home = await prisma.home.findFirst({
@@ -42,4 +38,4 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     console.error('Error removing pending home share:', error);
     return new NextResponse('Internal server error', { status: 500 });
   }
-} 
+}
