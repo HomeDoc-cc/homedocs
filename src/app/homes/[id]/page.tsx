@@ -3,9 +3,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 import { ImageModal } from '@/components/image-modal';
 import { ShareHomeDialog } from '@/components/share-home-dialog';
+import { HomeShares } from '@/components/home-shares';
 
 interface HomePageProps {
   params: Promise<{
@@ -28,9 +30,24 @@ interface Home {
     name: string | null;
     email: string | null;
   };
+  shares: Array<{
+    role: 'READ' | 'WRITE';
+    user: {
+      id: string;
+      name: string | null;
+      email: string | null;
+    };
+  }>;
+  pendingShares: Array<{
+    email: string;
+    role: 'READ' | 'WRITE';
+    createdAt: Date;
+    expiresAt: Date;
+  }>;
 }
 
 export default function HomePage({ params }: HomePageProps) {
+  const { data: session } = useSession();
   const [home, setHome] = useState<Home | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
@@ -216,6 +233,18 @@ export default function HomePage({ params }: HomePageProps) {
             </div>
           </dl>
         </div>
+      </div>
+
+      <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <HomeShares
+          shares={home.shares}
+          pendingShares={home.pendingShares}
+          isOwner={session?.user?.id === home.owner.id}
+          homeId={home.id}
+          onUpdate={() => {
+            // Optionally trigger a server-side revalidation if needed
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

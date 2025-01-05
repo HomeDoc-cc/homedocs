@@ -1,5 +1,7 @@
 import { z } from 'zod';
+import { randomBytes } from 'crypto';
 
+import { sendHomeShareInviteEmail } from './email';
 import { prisma } from './db';
 
 export const homeSchema = z.object({
@@ -139,6 +141,17 @@ export async function getHomeById(homeId: string, userId: string) {
           },
         },
       },
+      pendingShares: {
+        select: {
+          email: true,
+          role: true,
+          createdAt: true,
+          expiresAt: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
       rooms: {
         include: {
           _count: {
@@ -260,6 +273,14 @@ export async function shareHome(
       id: homeId,
       userId: userId,
     },
+    include: {
+      owner: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
   if (!home) {
@@ -270,43 +291,88 @@ export async function shareHome(
     where: { email: targetUserEmail },
   });
 
-  if (!targetUser) {
-    throw new Error('User not found');
-  }
-
-  if (targetUser.id === userId) {
+  if (targetUser?.id === userId) {
     throw new Error('Cannot share home with yourself');
   }
 
-  const existingShare = await prisma.homeShare.findUnique({
-    where: {
-      homeId_userId: {
-        homeId,
-        userId: targetUser.id,
+  // Check for existing share or pending share
+  const [existingShare, existingPendingShare] = await Promise.all([
+    targetUser
+      ? prisma.homeShare.findUnique({
+          where: {
+            homeId_userId: {
+              homeId,
+              userId: targetUser.id,
+            },
+          },
+        })
+      : null,
+    prisma.pendingHomeShare.findUnique({
+      where: {
+        homeId_email: {
+          homeId,
+          email: targetUserEmail,
+        },
       },
-    },
-  });
+    }),
+  ]);
 
   if (existingShare) {
     throw new Error('Home already shared with this user');
   }
 
-  const homeShare = await prisma.homeShare.create({
-    data: {
-      home: { connect: { id: homeId } },
-      user: { connect: { id: targetUser.id } },
-      role,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
+  if (existingPendingShare) {
+    throw new Error('Pending invitation already exists for this email');
+  }
+
+  // Generate a secure random token
+  const token = randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+  if (targetUser) {
+    // User exists, create a direct share
+    const homeShare = await prisma.homeShare.create({
+      data: {
+        home: { connect: { id: homeId } },
+        user: { connect: { id: targetUser.id } },
+        role,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  return homeShare;
+    // Send email notification for existing user
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/homes/${homeId}`;
+    const invitedBy = home.owner.name || home.owner.email || 'A user';
+
+    await sendHomeShareInviteEmail(targetUserEmail, home.name, inviteUrl, invitedBy);
+
+    return homeShare;
+  } else {
+    // User doesn't exist, create a pending share
+    const pendingShare = await prisma.pendingHomeShare.create({
+      data: {
+        home: { connect: { id: homeId } },
+        email: targetUserEmail,
+        role,
+        token,
+        expiresAt,
+      },
+    });
+
+    // Send email notification with signup link for new user
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/accept/${token}`;
+    const invitedBy = home.owner.name || home.owner.email || 'A user';
+
+    await sendHomeShareInviteEmail(targetUserEmail, home.name, inviteUrl, invitedBy);
+
+    return pendingShare;
+  }
 }

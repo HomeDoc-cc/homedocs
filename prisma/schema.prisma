@@ -90,12 +90,13 @@ model Home {
   owner  User   @relation("HomeOwner", fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  shares    HomeShare[]
-  rooms     Room[]
-  items     Item[]
-  tasks     Task[]
-  paints    Paint[]
-  floorings Flooring[]
+  shares         HomeShare[]
+  pendingShares  PendingHomeShare[]
+  rooms          Room[]
+  items          Item[]
+  tasks          Task[]
+  paints         Paint[]
+  floorings      Flooring[]
 }
 
 model HomeShare {
@@ -280,4 +281,17 @@ model CalendarToken {
   updatedAt DateTime @updatedAt
 
   @@index([token])
+}
+
+model PendingHomeShare {
+  id        String    @id @default(cuid())
+  homeId    String
+  email     String
+  role      ShareRole @default(READ)
+  token     String    @unique
+  home      Home      @relation(fields: [homeId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+
+  @@unique([homeId, email])
 }

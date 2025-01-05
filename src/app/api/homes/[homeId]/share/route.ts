@@ -13,11 +13,18 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ homeId: string }> }
 ) {
-  const session = await requireAuth();
-  const json = await request.json();
-  const { email, role } = shareSchema.parse(json);
+  try {
+    const session = await requireAuth();
+    const json = await request.json();
+    const { email, role } = shareSchema.parse(json);
 
-  const share = await shareHome((await params).homeId, session.id, email, role);
+    const share = await shareHome((await params).homeId, session.id, email, role);
 
-  return NextResponse.json(share, { status: 201 });
+    return NextResponse.json(share, { status: 201 });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
