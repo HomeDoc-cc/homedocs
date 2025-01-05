@@ -10,8 +10,11 @@ import { getStorageProvider } from '@/lib/storage';
 async function processImage(
   buffer: Buffer,
   mimeType: string
-): Promise<{ buffer: Buffer; mimeType: string }> {
-  // Convert HEIC to JPEG
+): Promise<{ buffer: Buffer; mimeType: string; thumbnail: Buffer }> {
+  let processedBuffer = buffer;
+  let processedMimeType = mimeType;
+  
+  // Convert HEIC to JPEG first if needed
   if (mimeType.toLowerCase() === 'image/heic') {
     logger.info('Converting HEIC to JPEG');
     try {
@@ -20,13 +23,8 @@ async function processImage(
         format: 'JPEG',
         quality: 0.85,
       });
-
-      // Use sharp for any additional processing (like rotation)
-      const processedBuffer = await sharp(jpegBuffer)
-        .rotate() // Preserve rotation
-        .toBuffer();
-
-      return { buffer: processedBuffer, mimeType: 'image/jpeg' };
+      processedBuffer = jpegBuffer;
+      processedMimeType = 'image/jpeg';
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       const errorObject = error instanceof Error ? error : new Error(errorMessage);
@@ -34,7 +32,51 @@ async function processImage(
       throw errorObject;
     }
   }
-  return { buffer, mimeType };
+
+  // Process with sharp for optimization
+  try {
+    const image = sharp(processedBuffer);
+    const metadata = await image.metadata();
+
+    // Resize if image is too large (max 2000px on longest side)
+    if (metadata.width && metadata.height) {
+      const maxDimension = Math.max(metadata.width, metadata.height);
+      if (maxDimension > 2000) {
+        const ratio = 2000 / maxDimension;
+        await image.resize(
+          Math.round(metadata.width * ratio),
+          Math.round(metadata.height * ratio),
+          { fit: 'inside' }
+        );
+      }
+    }
+
+    // Convert to WebP for better compression if not already WebP
+    if (processedMimeType !== 'image/webp') {
+      processedBuffer = await image
+        .webp({ quality: 80 })
+        .rotate() // Preserve rotation
+        .toBuffer();
+      processedMimeType = 'image/webp';
+    } else {
+      processedBuffer = await image
+        .rotate() // Preserve rotation
+        .toBuffer();
+    }
+
+    // Generate thumbnail (300px width)
+    const thumbnail = await image
+      .resize(300, null, { fit: 'inside' })
+      .webp({ quality: 60 })
+      .toBuffer();
+
+    return { buffer: processedBuffer, mimeType: processedMimeType, thumbnail };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorObject = error instanceof Error ? error : new Error(errorMessage);
+    logger.error('Error processing image', { error: errorObject });
+    throw errorObject;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -70,25 +112,27 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const { buffer: processedBuffer, mimeType } = await processImage(buffer, file.type);
+    const { buffer: processedBuffer, mimeType, thumbnail } = await processImage(buffer, file.type);
 
     const storage = getStorageProvider();
-    // Update filename extension if the format changed
-    const filename =
-      mimeType === 'image/jpeg' && !file.name.toLowerCase().endsWith('.jpg')
-        ? `${file.name.split('.')[0]}.jpg`
-        : file.name;
+    // Update filename extension based on the processed format
+    const baseFilename = file.name.split('.')[0];
+    const mainFilename = `${baseFilename}.webp`;
+    const thumbnailFilename = `${baseFilename}-thumb.webp`;
 
-    const key = await storage.uploadFile(processedBuffer, filename, mimeType, session.user.id);
+    // Upload both main image and thumbnail
+    const mainKey = await storage.uploadFile(processedBuffer, mainFilename, mimeType, session.user.id);
+    const thumbnailKey = await storage.uploadFile(thumbnail, thumbnailFilename, 'image/webp', session.user.id);
 
     logger.info('File uploaded successfully', {
       userId: session.user.id,
-      key,
+      mainKey,
+      thumbnailKey,
       originalType: file.type,
       convertedType: mimeType,
     });
 
-    return NextResponse.json({ key });
+    return NextResponse.json({ key: mainKey, thumbnailKey });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     const errorObject = error instanceof Error ? error : new Error(errorMessage);

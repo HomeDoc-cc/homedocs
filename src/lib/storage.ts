@@ -118,10 +118,12 @@ class CloudStorageProvider implements StorageProvider {
     this.urlExpiration = S3_URL_EXPIRATION;
   }
 
-  private async getSignedUrl(key: string): Promise<string> {
+  private async getSignedUrl(key: string, contentType?: string): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucket,
       Key: `uploads/${key}`,
+      ResponseContentType: contentType,
+      ResponseCacheControl: 'public, max-age=31536000, immutable', // Cache for 1 year
     });
 
     return getSignedUrl(this.s3Client, command, { expiresIn: this.urlExpiration });
@@ -139,18 +141,23 @@ class CloudStorageProvider implements StorageProvider {
     const timestamp = Date.now();
     const key = `${userId}/${timestamp}-${hash}${ext}`;
 
-    // Upload to S3
+    // Upload to S3 with improved caching and compression settings
     const command = new PutObjectCommand({
       Bucket: this.bucket,
       Key: `uploads/${key}`,
       Body: file,
       ContentType: mimetype,
-      CacheControl: 'private, max-age=3600',
+      CacheControl: 'public, max-age=31536000, immutable', // Cache for 1 year
+      ContentEncoding: mimetype === 'image/webp' ? 'br' : undefined, // Use Brotli compression for WebP
+      Metadata: {
+        'original-name': filename,
+        'upload-date': new Date().toISOString(),
+        'user-id': userId,
+      },
     });
 
     await this.s3Client.send(command);
 
-    // Return storage key (not the signed URL)
     return key;
   }
 
@@ -167,6 +174,18 @@ class CloudStorageProvider implements StorageProvider {
 
     try {
       await this.s3Client.send(command);
+
+      // Also try to delete the thumbnail if it exists
+      if (!key.endsWith('-thumb.webp')) {
+        const thumbKey = key.replace(/\.[^/.]+$/, '-thumb.webp');
+        const thumbCommand = new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: `uploads/${thumbKey}`,
+        });
+        await this.s3Client.send(thumbCommand).catch(() => {
+          // Ignore errors if thumbnail doesn't exist
+        });
+      }
     } catch (error) {
       // Ignore if file doesn't exist
       if ((error as { name: string }).name !== 'NoSuchKey') {
@@ -181,7 +200,18 @@ class CloudStorageProvider implements StorageProvider {
       throw new Error('Unauthorized access to file');
     }
 
-    return this.getSignedUrl(key);
+    // Determine content type based on extension
+    const ext = path.extname(key).toLowerCase();
+    const contentType =
+      {
+        '.webp': 'image/webp',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+      }[ext] || 'application/octet-stream';
+
+    return this.getSignedUrl(key, contentType);
   }
 }
 

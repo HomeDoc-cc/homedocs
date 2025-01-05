@@ -11,50 +11,72 @@ interface ImageUploadProps {
   className?: string;
 }
 
+interface ImageUrlCache {
+  url: string;
+  thumbnailUrl: string;
+  expiry: number;
+}
+
 export function ImageUpload({ images, onImagesChange, className = '' }: ImageUploadProps) {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [imageUrls, setImageUrls] = useState<Record<string, ImageUrlCache>>({});
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Fetch signed URLs for all images
   useEffect(() => {
     async function fetchUrls() {
-      const urls: Record<string, string> = {};
-      for (const key of images) {
-        if (!key) continue;
-        try {
-          const response = await fetch(`/api/upload/url?key=${encodeURIComponent(key)}`);
-          if (response.ok) {
-            const { url } = await response.json();
-            urls[key] = url;
+      const now = Date.now();
+      const urls: Record<string, ImageUrlCache> = {};
+      const keysToFetch = images.filter(
+        (key) => key && (!imageUrls[key] || imageUrls[key].expiry < now)
+      );
+
+      if (keysToFetch.length === 0) return;
+
+      try {
+        // Batch fetch URLs
+        const responses = await Promise.all(
+          keysToFetch.map((key) =>
+            fetch(`/api/upload/url?key=${encodeURIComponent(key)}`).then((r) => r.json())
+          )
+        );
+
+        responses.forEach((response, index) => {
+          const key = keysToFetch[index];
+          if (response.url) {
+            urls[key] = {
+              url: response.url,
+              thumbnailUrl: response.thumbnailUrl || response.url, // Fallback to main URL if no thumbnail
+              expiry: now + 45 * 60 * 1000, // 45 minutes
+            };
           }
-        } catch (error) {
-          console.error('Error fetching URL:', error);
-        }
+        });
+
+        setImageUrls((prev) => ({ ...prev, ...urls }));
+      } catch (error) {
+        console.error('Error fetching URLs:', error);
       }
-      setImageUrls((prev) => ({ ...prev, ...urls }));
     }
 
-    if (images.some((key) => key && !imageUrls[key])) {
-      fetchUrls();
-    }
-  }, [images, refreshKey, imageUrls]);
+    fetchUrls();
+  }, [images, refreshKey]);
 
   // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
   useEffect(() => {
     if (images.length === 0) return;
 
-    const interval = setInterval(
-      () => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      // Only refresh if there are URLs that will expire soon
+      if (Object.values(imageUrls).some((cache) => cache.expiry - now < 5 * 60 * 1000)) {
         setRefreshKey((key) => key + 1);
-      },
-      45 * 60 * 1000
-    );
+      }
+    }, 60 * 1000); // Check every minute
 
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [images.length, imageUrls]);
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
     if (!event.target.files?.length) return;
@@ -152,14 +174,19 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
               {imageUrls[key] ? (
                 <button
                   type="button"
-                  onClick={() => setSelectedImage(imageUrls[key])}
+                  onClick={() => setSelectedImage(imageUrls[key].url)}
                   className="group relative w-full h-full"
                 >
                   <Image
-                    src={imageUrls[key]}
+                    src={imageUrls[key].thumbnailUrl}
                     alt={`Image ${index + 1}`}
                     fill
                     className="object-cover rounded-lg transition-opacity group-hover:opacity-75"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    priority={index < 4} // Prioritize loading first 4 images
+                    loading={index >= 4 ? 'lazy' : undefined}
+                    blurDataURL={imageUrls[key].thumbnailUrl} // Use thumbnail as blur placeholder
+                    placeholder="blur"
                   />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
