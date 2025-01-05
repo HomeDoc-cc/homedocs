@@ -4,19 +4,19 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-interface AcceptInvitePageProps {
-  params: {
-    token: string;
-  };
-}
-
-export default function AcceptInvitePage({ params }: AcceptInvitePageProps) {
-  const { token } = params;
+export default function AcceptInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const router = useRouter();
   const { status } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [token, setToken] = useState<string | null>(null);
+  useEffect(() => {
+    async function getParams() {
+      const { token } = await params;
+      setToken(token);
+    }
+    getParams();
+  }, [params]);
   useEffect(() => {
     async function acceptInvite() {
       try {
@@ -54,7 +54,9 @@ export default function AcceptInvitePage({ params }: AcceptInvitePageProps) {
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Processing invitation...
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Please wait while we set things up.</p>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Please wait while we set things up.
+          </p>
         </div>
       </div>
     );
@@ -74,4 +76,4 @@ export default function AcceptInvitePage({ params }: AcceptInvitePageProps) {
   }
 
   return null;
-} 
+}

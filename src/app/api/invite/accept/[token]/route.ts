@@ -6,11 +6,11 @@ import { requireAuth } from '@/lib/session';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
+  const { token } = await params;
   try {
     const session = await requireAuth();
-    const { token } = params;
 
     // Find the pending share
     const pendingShare = await prisma.pendingHomeShare.findUnique({
@@ -77,7 +77,7 @@ export async function POST(
   } catch (error) {
     logger.error('Failed to accept home share invitation', {
       error: error as Error,
-      token: params.token,
+      token: token,
     });
 
     if (error instanceof Error) {
@@ -85,4 +85,4 @@ export async function POST(
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}
