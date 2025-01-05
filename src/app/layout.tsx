@@ -14,16 +14,10 @@ export const metadata = {
   title: 'HomeDocs',
   description: 'Document and manage your home',
   manifest: '/manifest.json',
-  themeColor: '#2563eb',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'HomeDocs',
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
   },
   icons: {
     icon: [
@@ -39,6 +33,13 @@ export const metadata = {
       { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
+};
+
+export const viewport = {
+  themeColor: '#2563eb',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
