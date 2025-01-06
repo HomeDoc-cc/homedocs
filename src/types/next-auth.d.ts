@@ -12,4 +12,14 @@ declare module 'next-auth' {
       tier?: SubscriptionTier;
     };
   }
+
+  interface JWT {
+    accessToken?: string;
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    accessToken?: string;
+  }
 }
