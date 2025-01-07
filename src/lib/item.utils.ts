@@ -130,7 +130,13 @@ export async function getItemById(itemId: string, userId: string) {
       },
       _count: {
         select: {
-          tasks: true,
+          tasks: {
+            where: {
+              status: {
+                not: 'COMPLETED',
+              },
+            },
+          },
         },
       },
     },

@@ -93,7 +93,13 @@ export async function getUserHomes(userId: string) {
       _count: {
         select: {
           rooms: true,
-          tasks: true,
+          tasks: {
+            where: {
+              status: {
+                not: 'COMPLETED'
+              }
+            }
+          },
           items: true,
         },
       },

@@ -92,7 +92,13 @@ export async function getRoomsByHome(homeId: string, userId: string) {
       _count: {
         select: {
           items: true,
-          tasks: true,
+          tasks: {
+            where: {
+              status: {
+                not: 'COMPLETED'
+              }
+            }
+          },
         },
       },
     },
@@ -161,12 +167,33 @@ export async function getRoomById(roomId: string, userId: string) {
           id: true,
           name: true,
           userId: true,
+          owner: {
+            select: {
+              id: true,
+            },
+          },
+          shares: {
+            select: {
+              role: true,
+              user: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
         },
       },
       _count: {
         select: {
           items: true,
-          tasks: true,
+          tasks: {
+            where: {
+              status: {
+                not: 'COMPLETED'
+              }
+            }
+          },
           paints: true,
         },
       },
