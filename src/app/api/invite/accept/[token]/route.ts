@@ -1,8 +1,10 @@
+import { hash } from 'bcryptjs';
+import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { requireAuth } from '@/lib/session';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
@@ -10,7 +12,8 @@ export async function POST(
 ) {
   const { token } = await params;
   try {
-    const session = await requireAuth();
+    const session = await getServerSession(authOptions);
+    const body = await request.json();
 
     // Find the pending share
     const pendingShare = await prisma.pendingHomeShare.findUnique({
@@ -31,31 +34,79 @@ export async function POST(
       return NextResponse.json({ error: 'Invitation has expired' }, { status: 410 });
     }
 
-    if (pendingShare.email !== session.email) {
+    // If user is authenticated, verify email matches
+    if (session?.user) {
+      if (pendingShare.email !== session.user.email) {
+        return NextResponse.json(
+          { error: 'This invitation was sent to a different email address' },
+          { status: 403 }
+        );
+      }
+
+      // Create the home share for existing user
+      const homeShare = await prisma.$transaction(async (tx) => {
+        // Create the share
+        const share = await tx.homeShare.create({
+          data: {
+            home: { connect: { id: pendingShare.homeId } },
+            user: { connect: { id: session.user.id } },
+            role: pendingShare.role,
+          },
+          include: {
+            home: true,
+          },
+        });
+
+        // Delete the pending share
+        await tx.pendingHomeShare.delete({
+          where: { id: pendingShare.id },
+        });
+
+        return share;
+      });
+
+      return NextResponse.json(homeShare);
+    }
+
+    // For new users, create account and share
+    if (!body.name || !body.password) {
       return NextResponse.json(
-        { error: 'This invitation was sent to a different email address' },
-        { status: 403 }
+        { error: 'Name and password are required' },
+        { status: 400 }
       );
     }
 
-    // Create the home share
+    const existingUser = await prisma.user.findUnique({
+      where: { email: pendingShare.email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'An account with this email already exists. Please sign in.' },
+        { status: 400 }
+      );
+    }
+
     const homeShare = await prisma.$transaction(async (tx) => {
+      // Create the user
+      const hashedPassword = await hash(body.password, 12);
+      const user = await tx.user.create({
+        data: {
+          email: pendingShare.email,
+          name: body.name,
+          password: hashedPassword,
+        },
+      });
+
       // Create the share
       const share = await tx.homeShare.create({
         data: {
           home: { connect: { id: pendingShare.homeId } },
-          user: { connect: { id: session.id } },
+          user: { connect: { id: user.id } },
           role: pendingShare.role,
         },
         include: {
           home: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
         },
       });
 
@@ -67,22 +118,15 @@ export async function POST(
       return share;
     });
 
-    logger.info('Home share invitation accepted', {
-      userId: session.id,
-      homeId: homeShare.homeId,
-      role: homeShare.role,
-    });
-
     return NextResponse.json(homeShare);
   } catch (error) {
-    logger.error('Failed to accept home share invitation', {
-      error: error as Error,
-      token: token,
+    logger.error('Error accepting invite', {
+      error: error instanceof Error ? error : undefined,
+      token,
     });
-
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'An error occurred while accepting the invitation' },
+      { status: 500 }
+    );
   }
 }
