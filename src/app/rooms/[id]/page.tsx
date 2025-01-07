@@ -1,17 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
-import { ImageModal } from '@/components/image-modal';
+import { ImageGallery } from '@/components/image-gallery';
 import { MarkdownContent } from '@/components/markdown-content';
 
-interface RoomPageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
 
 interface Room {
   id: string;
@@ -28,13 +22,10 @@ interface Room {
   };
 }
 
-export default function RoomPage({ params }: RoomPageProps) {
+export default function RoomPage({ params }: { params: { id: string } }) {
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     async function getParams() {
@@ -61,46 +52,6 @@ export default function RoomPage({ params }: RoomPageProps) {
       void fetchRoom();
     }
   }, [id, fetchRoom]);
-
-  // Fetch signed URLs for all images
-  useEffect(() => {
-    async function fetchUrls() {
-      if (!room?.images) return;
-
-      const urls: Record<string, string> = {};
-      for (const key of room.images) {
-        if (!key) continue; // Skip undefined keys
-        try {
-          const response = await fetch(`/api/upload/url?key=${encodeURIComponent(key)}`);
-          if (response.ok) {
-            const { url } = await response.json();
-            urls[key] = url;
-          }
-        } catch (error) {
-          console.error('Error fetching URL:', error);
-        }
-      }
-      setImageUrls((prev) => ({ ...prev, ...urls }));
-    }
-
-    if (room?.images.some((key) => key && !imageUrls[key])) {
-      fetchUrls();
-    }
-  }, [room?.images, refreshKey, imageUrls]);
-
-  // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
-  useEffect(() => {
-    if (!room?.images?.length) return;
-
-    const interval = setInterval(
-      () => {
-        setRefreshKey((key) => key + 1);
-      },
-      45 * 60 * 1000
-    );
-
-    return () => clearInterval(interval);
-  }, [room?.images?.length]);
 
   if (error) {
     return (
@@ -140,35 +91,10 @@ export default function RoomPage({ params }: RoomPageProps) {
 
       {room.images && room.images.length > 0 && (
         <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {room.images.filter(Boolean).map((key, index) => (
-              <div key={`${key}-${index}`} className="relative aspect-video">
-                {imageUrls[key] ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedImage(imageUrls[key])}
-                    className="group relative w-full h-full"
-                  >
-                    <Image
-                      src={imageUrls[key]}
-                      alt={`${room.name} - Image ${index + 1}`}
-                      fill
-                      className="object-cover rounded-lg transition-opacity group-hover:opacity-75"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
-                        View
-                      </span>
-                    </div>
-                  </button>
-                ) : (
-                  <div className="w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-                    <span className="text-gray-400">Loading...</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <ImageGallery
+            images={room.images}
+            homeId={room.home.id}
+          />
         </div>
       )}
 
@@ -226,15 +152,6 @@ export default function RoomPage({ params }: RoomPageProps) {
           <p className="text-gray-600 dark:text-gray-300">Track paint colors and finishes</p>
         </Link>
       </div>
-
-      {selectedImage && (
-        <ImageModal
-          isOpen={true}
-          onClose={() => setSelectedImage(null)}
-          imageUrl={selectedImage}
-          alt={room?.name}
-        />
-      )}
     </div>
   );
 }
