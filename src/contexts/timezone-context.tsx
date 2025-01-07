@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 interface TimezoneContextType {
@@ -11,13 +12,17 @@ interface TimezoneContextType {
 const TimezoneContext = createContext<TimezoneContextType | undefined>(undefined);
 
 export function TimezoneProvider({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
   const [timezone, setTimezone] = useState<string>('UTC');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchTimezone() {
+      if (!session?.user) return;
+
       try {
+        setIsLoading(true);
         const response = await fetch('/api/settings/timezone');
         if (!response.ok) {
           throw new Error('Failed to fetch timezone');
@@ -32,7 +37,7 @@ export function TimezoneProvider({ children }: { children: React.ReactNode }) {
     }
 
     fetchTimezone();
-  }, []);
+  }, [session?.user]);
 
   return (
     <TimezoneContext.Provider value={{ timezone, isLoading, error }}>
