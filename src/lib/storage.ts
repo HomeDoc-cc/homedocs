@@ -27,7 +27,7 @@ const S3_URL_EXPIRATION = parseInt(process.env.S3_URL_EXPIRATION || '3600', 10);
 interface StorageProvider {
   uploadFile: (file: Buffer, filename: string, mimetype: string, userId: string) => Promise<string>;
   deleteFile: (key: string, userId: string) => Promise<void>;
-  getUrl: (key: string, userId: string) => Promise<string>;
+  getUrl: (key: string, userId: string, homeId?: string) => Promise<string>;
 }
 
 class LocalStorageProvider implements StorageProvider {
@@ -76,9 +76,9 @@ class LocalStorageProvider implements StorageProvider {
     }
   }
 
-  async getUrl(key: string, userId: string): Promise<string> {
-    // Verify the key belongs to the user
-    if (!key.startsWith(`${userId}/`)) {
+  async getUrl(key: string, userId: string, homeId?: string): Promise<string> {
+    // If homeId is provided, skip user verification (will be handled by the API layer)
+    if (!homeId && !key.startsWith(`${userId}/`)) {
       throw new Error('Unauthorized access to file');
     }
 
@@ -194,9 +194,9 @@ class CloudStorageProvider implements StorageProvider {
     }
   }
 
-  async getUrl(key: string, userId: string): Promise<string> {
-    // Verify the key belongs to the user
-    if (!key.startsWith(`${userId}/`)) {
+  async getUrl(key: string, userId: string, homeId?: string): Promise<string> {
+    // If homeId is provided, skip user verification (will be handled by the API layer)
+    if (!homeId && !key.startsWith(`${userId}/`)) {
       throw new Error('Unauthorized access to file');
     }
 

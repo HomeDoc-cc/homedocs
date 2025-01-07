@@ -9,6 +9,8 @@ interface ImageUploadProps {
   images: string[]; // These are now storage keys, not URLs
   onImagesChange: (images: string[]) => void;
   className?: string;
+  homeId?: string;
+  readOnly?: boolean;
 }
 
 interface ImageUrlCache {
@@ -17,7 +19,7 @@ interface ImageUrlCache {
   expiry: number;
 }
 
-export function ImageUpload({ images, onImagesChange, className = '' }: ImageUploadProps) {
+export function ImageUpload({ images, onImagesChange, className = '', homeId, readOnly = false }: ImageUploadProps) {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, ImageUrlCache>>({});
@@ -39,7 +41,11 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
         // Batch fetch URLs
         const responses = await Promise.all(
           keysToFetch.map((key) =>
-            fetch(`/api/upload/url?key=${encodeURIComponent(key)}`).then((r) => r.json())
+            fetch(
+              `/api/upload/url?key=${encodeURIComponent(key)}${
+                homeId ? `&homeId=${encodeURIComponent(homeId)}` : ''
+              }`
+            ).then((r) => r.json())
           )
         );
 
@@ -48,7 +54,7 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
           if (response.url) {
             urls[key] = {
               url: response.url,
-              thumbnailUrl: response.thumbnailUrl || response.url, // Fallback to main URL if no thumbnail
+              thumbnailUrl: response.thumbnailUrl || response.url,
               expiry: now + 45 * 60 * 1000, // 45 minutes
             };
           }
@@ -61,7 +67,7 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
     }
 
     fetchUrls();
-  }, [images, imageUrls, refreshKey]);
+  }, [images, imageUrls, refreshKey, homeId]);
 
   // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
   useEffect(() => {
@@ -149,20 +155,22 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         Images
       </label>
-      <input
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleImageUpload}
-        disabled={uploadingImages}
-        className="block w-full text-sm text-gray-500 dark:text-gray-400
-          file:mr-4 file:py-2 file:px-4
-          file:rounded-md file:border-0
-          file:text-sm file:font-medium
-          file:bg-blue-50 file:text-blue-700
-          dark:file:bg-blue-900 dark:file:text-blue-300
-          hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
-      />
+      {!readOnly && (
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageUpload}
+          disabled={uploadingImages}
+          className="block w-full text-sm text-gray-500 dark:text-gray-400
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-medium
+            file:bg-blue-50 file:text-blue-700
+            dark:file:bg-blue-900 dark:file:text-blue-300
+            hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
+        />
+      )}
       {uploadingImages && (
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Uploading images...</p>
       )}
@@ -183,9 +191,9 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
                     fill
                     className="object-cover rounded-lg transition-opacity group-hover:opacity-75"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    priority={index < 4} // Prioritize loading first 4 images
+                    priority={index < 4}
                     loading={index >= 4 ? 'lazy' : undefined}
-                    blurDataURL={imageUrls[key].thumbnailUrl} // Use thumbnail as blur placeholder
+                    blurDataURL={imageUrls[key].thumbnailUrl}
                     placeholder="blur"
                   />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -199,24 +207,26 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
                   <span className="text-gray-400">Loading...</span>
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => handleImageDelete(key, index)}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+              {!readOnly && (
+                <button
+                  type="button"
+                  onClick={() => handleImageDelete(key, index)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              )}
             </div>
           ))}
         </div>
