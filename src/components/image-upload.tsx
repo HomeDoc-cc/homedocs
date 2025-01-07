@@ -61,7 +61,7 @@ export function ImageUpload({ images, onImagesChange, className = '' }: ImageUpl
     }
 
     fetchUrls();
-  }, [images, refreshKey]);
+  }, [images, imageUrls, refreshKey]);
 
   // Refresh URLs periodically (every 45 minutes to be safe with 1-hour expiration)
   useEffect(() => {
