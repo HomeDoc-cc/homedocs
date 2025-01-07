@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -33,7 +33,7 @@ export default function AcceptInvitePage({ params }: { params: Promise<{ token: 
   useEffect(() => {
     async function getInviteDetails() {
       if (!token) return;
-      
+
       try {
         const response = await fetch(`/api/invite/${token}`);
         if (!response.ok) {
@@ -57,7 +57,7 @@ export default function AcceptInvitePage({ params }: { params: Promise<{ token: 
   const handleAcceptInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAccepting(true);
-    
+
     try {
       const response = await fetch(`/api/invite/accept/${token}`, {
         method: 'POST',
@@ -148,11 +148,10 @@ export default function AcceptInvitePage({ params }: { params: Promise<{ token: 
       <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-red-600 dark:text-red-400">
-              Wrong Account
-            </h2>
+            <h2 className="text-2xl font-semibold text-red-600 dark:text-red-400">Wrong Account</h2>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              This invitation was sent to {inviteDetails.email} but you&apos;re signed in as {session.user.email}.
+              This invitation was sent to {inviteDetails.email} but you&apos;re signed in as{' '}
+              {session.user.email}.
             </p>
             <div className="mt-4">
               <Link
@@ -178,7 +177,8 @@ export default function AcceptInvitePage({ params }: { params: Promise<{ token: 
               You&apos;ve been invited!
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-              You&apos;ve been invited to join {inviteDetails.homeName} as a {inviteDetails.role.toLowerCase()} member
+              You&apos;ve been invited to join {inviteDetails.homeName} as a{' '}
+              {inviteDetails.role.toLowerCase()} member
             </p>
           </div>
 
@@ -204,7 +204,8 @@ export default function AcceptInvitePage({ params }: { params: Promise<{ token: 
             You&apos;ve been invited!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            You&apos;ve been invited to join {inviteDetails.homeName} as a {inviteDetails.role.toLowerCase()} member
+            You&apos;ve been invited to join {inviteDetails.homeName} as a{' '}
+            {inviteDetails.role.toLowerCase()} member
           </p>
         </div>
 

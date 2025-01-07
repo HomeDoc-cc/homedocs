@@ -170,17 +170,15 @@ export default function EditHomePage({ params }: EditHomePageProps) {
           <div className="space-y-8 divide-y divide-gray-200 dark:divide-gray-700">
             <div className="space-y-6 pt-8 sm:space-y-5 sm:pt-10">
               <div>
-                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">Images</h3>
+                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                  Images
+                </h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
                   Add photos of your home
                 </p>
               </div>
 
-              <ImageUpload
-                images={images}
-                onImagesChange={setImages}
-                homeId={id || undefined}
-              />
+              <ImageUpload images={images} onImagesChange={setImages} homeId={id || undefined} />
             </div>
 
             {error && <div className="text-red-500 text-sm text-center">{error}</div>}

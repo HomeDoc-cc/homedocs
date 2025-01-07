@@ -41,7 +41,7 @@ export function HomeShares({ shares, pendingShares, isOwner, homeId, onUpdate }:
       if (!response.ok) {
         throw new Error('Failed to remove share');
       }
-      setLocalShares(localShares.filter(share => share.user.id !== userId));
+      setLocalShares(localShares.filter((share) => share.user.id !== userId));
       onUpdate?.();
     } catch {
       setError('Failed to remove share');
@@ -54,13 +54,16 @@ export function HomeShares({ shares, pendingShares, isOwner, homeId, onUpdate }:
     setIsLoading(email);
     setError(null);
     try {
-      const response = await fetch(`/api/homes/${homeId}/share/pending/${encodeURIComponent(email)}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/homes/${homeId}/share/pending/${encodeURIComponent(email)}`,
+        {
+          method: 'DELETE',
+        }
+      );
       if (!response.ok) {
         throw new Error('Failed to remove invite');
       }
-      setLocalPendingShares(localPendingShares.filter(share => share.email !== email));
+      setLocalPendingShares(localPendingShares.filter((share) => share.email !== email));
       onUpdate?.();
     } catch {
       setError('Failed to remove invite');
@@ -71,11 +74,7 @@ export function HomeShares({ shares, pendingShares, isOwner, homeId, onUpdate }:
 
   return (
     <div className="space-y-6">
-      {error && (
-        <div className="text-sm text-red-500 dark:text-red-400 mb-4">
-          {error}
-        </div>
-      )}
+      {error && <div className="text-sm text-red-500 dark:text-red-400 mb-4">{error}</div>}
 
       <div>
         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Shared With</h3>
@@ -169,4 +168,4 @@ export function HomeShares({ shares, pendingShares, isOwner, homeId, onUpdate }:
       )}
     </div>
   );
-} 
+}

@@ -38,9 +38,7 @@ export async function GET(request: NextRequest) {
         // Role filter
         role !== 'ALL' ? { role: role as UserRole } : {},
         // Status filter
-        status !== 'ALL'
-          ? { isDisabled: status === 'DISABLED' }
-          : {},
+        status !== 'ALL' ? { isDisabled: status === 'DISABLED' } : {},
       ],
     };
 
@@ -113,4 +111,4 @@ export async function PATCH(request: NextRequest) {
     logger.error('Error updating user in admin route', { error: errorObject });
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-} 
+}

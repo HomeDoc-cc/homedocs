@@ -13,7 +13,7 @@ async function processImage(
 ): Promise<{ buffer: Buffer; mimeType: string; thumbnail: Buffer }> {
   let processedBuffer = buffer;
   let processedMimeType = mimeType;
-  
+
   // Convert HEIC to JPEG first if needed
   if (mimeType.toLowerCase() === 'image/heic') {
     logger.info('Converting HEIC to JPEG');
@@ -121,8 +121,18 @@ export async function POST(request: NextRequest) {
     const thumbnailFilename = `${baseFilename}-thumb.webp`;
 
     // Upload both main image and thumbnail
-    const mainKey = await storage.uploadFile(processedBuffer, mainFilename, mimeType, session.user.id);
-    const thumbnailKey = await storage.uploadFile(thumbnail, thumbnailFilename, 'image/webp', session.user.id);
+    const mainKey = await storage.uploadFile(
+      processedBuffer,
+      mainFilename,
+      mimeType,
+      session.user.id
+    );
+    const thumbnailKey = await storage.uploadFile(
+      thumbnail,
+      thumbnailFilename,
+      'image/webp',
+      session.user.id
+    );
 
     logger.info('File uploaded successfully', {
       userId: session.user.id,

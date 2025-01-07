@@ -83,7 +83,8 @@ if (process.env.NEXT_PUBLIC_OIDC_ENABLED === 'true') {
     clientId: process.env.OIDC_CLIENT_ID || '',
     clientSecret: process.env.OIDC_CLIENT_SECRET || '',
     issuer: process.env.OIDC_ISSUER,
-    allowDangerousEmailAccountLinking: process.env.NEXTAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING === 'true',
+    allowDangerousEmailAccountLinking:
+      process.env.NEXTAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING === 'true',
     authorization: { params: { scope: 'openid email profile' } },
     idToken: true,
     checks: ['pkce', 'state'],
@@ -115,7 +116,8 @@ if (process.env.NEXT_PUBLIC_GOOGLE_ENABLED === 'true') {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: process.env.NEXTAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING === 'true',
+      allowDangerousEmailAccountLinking:
+        process.env.NEXTAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING === 'true',
       async profile(profile) {
         // Check if user exists and is disabled
         const user = await prisma.user.findUnique({

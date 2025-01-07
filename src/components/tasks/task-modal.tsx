@@ -31,7 +31,14 @@ interface TaskModalProps {
   onSubmit: (data: TaskFormData) => void;
 }
 
-export function TaskModal({ isOpen, onClose, onTransitionEnd, task, users, onSubmit }: TaskModalProps) {
+export function TaskModal({
+  isOpen,
+  onClose,
+  onTransitionEnd,
+  task,
+  users,
+  onSubmit,
+}: TaskModalProps) {
   return (
     <Transition.Root show={isOpen} as={Fragment} afterLeave={onTransitionEnd}>
       <Dialog as="div" className="fixed inset-0 z-10 overflow-y-auto" onClose={onClose}>

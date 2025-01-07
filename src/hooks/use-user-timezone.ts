@@ -34,14 +34,14 @@ export function useUserTimezone() {
     };
   }, [fetchTimezone]);
 
-  return { 
-    timezone, 
-    isLoading, 
+  return {
+    timezone,
+    isLoading,
     error,
     refetch: useCallback(() => {
       hasFetchedTimezone.current = false;
       setIsLoading(true);
       fetchTimezone();
-    }, [fetchTimezone])
+    }, [fetchTimezone]),
   };
-} 
+}

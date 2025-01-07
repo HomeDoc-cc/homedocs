@@ -19,7 +19,13 @@ interface ImageUrlCache {
   expiry: number;
 }
 
-export function ImageUpload({ images, onImagesChange, className = '', homeId, readOnly = false }: ImageUploadProps) {
+export function ImageUpload({
+  images,
+  onImagesChange,
+  className = '',
+  homeId,
+  readOnly = false,
+}: ImageUploadProps) {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, ImageUrlCache>>({});

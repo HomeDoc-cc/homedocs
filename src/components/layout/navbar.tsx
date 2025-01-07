@@ -39,9 +39,7 @@ export function Navbar() {
                   height={32}
                   className="rounded-lg"
                 />
-                <span className="text-xl font-bold text-gray-900 dark:text-white">
-                  HomeDocs
-                </span>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">HomeDocs</span>
               </Link>
             </div>
             {session?.user && (

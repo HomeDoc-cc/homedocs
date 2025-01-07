@@ -31,4 +31,4 @@ export async function GET(request: NextRequest) {
     logger.error('Error fetching admin stats', { error: errorObject });
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-} 
+}

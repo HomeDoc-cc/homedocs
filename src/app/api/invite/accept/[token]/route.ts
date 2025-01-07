@@ -2,9 +2,9 @@ import { hash } from 'bcryptjs';
 import { getServerSession } from 'next-auth';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { authOptions } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
@@ -70,10 +70,7 @@ export async function POST(
 
     // For new users, create account and share
     if (!body.name || !body.password) {
-      return NextResponse.json(
-        { error: 'Name and password are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Name and password are required' }, { status: 400 });
     }
 
     const existingUser = await prisma.user.findUnique({

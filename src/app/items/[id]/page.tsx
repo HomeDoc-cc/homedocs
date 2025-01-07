@@ -1,10 +1,12 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
 import { ImageGallery } from '@/components/image-gallery';
 import { MarkdownContent } from '@/components/markdown-content';
+import { hasWriteAccess } from '@/lib/permissions';
 
 interface ItemPageProps {
   params: Promise<{
@@ -30,6 +32,15 @@ interface Item {
     home: {
       id: string;
       name: string;
+      owner: {
+        id: string;
+      };
+      shares: Array<{
+        role: 'READ' | 'WRITE';
+        user: {
+          id: string;
+        };
+      }>;
     };
   };
   _count: {
@@ -38,6 +49,7 @@ interface Item {
 }
 
 export default function ItemPage({ params }: ItemPageProps) {
+  const { data: session } = useSession();
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
@@ -85,6 +97,8 @@ export default function ItemPage({ params }: ItemPageProps) {
     );
   }
 
+  const canEdit = hasWriteAccess(session?.user?.id, item.room.home);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -97,21 +111,20 @@ export default function ItemPage({ params }: ItemPageProps) {
             ← {item.room.name}
           </Link>
         </div>
-        <Link
-          href={`/items/${item.id}/edit`}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Edit Item
-        </Link>
+        {canEdit && (
+          <Link
+            href={`/items/${item.id}/edit`}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Edit Item
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-4">
           {item.images.length > 0 ? (
-            <ImageGallery
-              images={item.images}
-              homeId={item.room.home.id}
-            />
+            <ImageGallery images={item.images} homeId={item.room.home.id} />
           ) : (
             <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
               <span className="text-gray-400 dark:text-gray-500">No images available</span>
@@ -227,18 +240,22 @@ export default function ItemPage({ params }: ItemPageProps) {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Tasks</h2>
-            <p className="text-gray-600 dark:text-gray-400">View and manage tasks for this item</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              {canEdit ? 'View and manage tasks for this item' : 'View tasks for this item'}
+            </p>
           </div>
           <div className="flex items-center space-x-4">
             <span className="text-2xl font-semibold text-gray-700 dark:text-gray-300">
               {item._count.tasks}
             </span>
-            <Link
-              href={`/tasks/new?itemId=${item.id}`}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-            >
-              Add Task
-            </Link>
+            {canEdit && (
+              <Link
+                href={`/tasks/new?itemId=${item.id}`}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+              >
+                Add Task
+              </Link>
+            )}
           </div>
         </div>
       </div>

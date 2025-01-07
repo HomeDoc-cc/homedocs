@@ -1,8 +1,8 @@
-import { z } from 'zod';
 import { randomBytes } from 'crypto';
+import { z } from 'zod';
 
-import { sendHomeShareInviteEmail } from './email';
 import { prisma } from './db';
+import { sendHomeShareInviteEmail } from './email';
 
 export const homeSchema = z.object({
   name: z.string().min(1),

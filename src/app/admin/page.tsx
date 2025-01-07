@@ -42,7 +42,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchAdminData() {
       if (hasFetchedStats.current) return;
-      
+
       try {
         const statsRes = await fetch('/api/admin/stats');
         if (!statsRes.ok) {
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
     }
 
     // Check if any filter has changed
-    const hasFiltersChanged = 
+    const hasFiltersChanged =
       searchQuery !== previousSearchQuery.current ||
       page !== previousPage.current ||
       roleFilter !== previousRoleFilter.current ||
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
       }
 
       await response.json();
-      setUsers(users.map(user => user.id === userId ? { ...user, role: newRole } : user));
+      setUsers(users.map((user) => (user.id === userId ? { ...user, role: newRole } : user)));
       setEditingUser(null);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to update user role');
@@ -158,7 +158,7 @@ export default function AdminDashboard() {
       }
 
       await response.json();
-      setUsers(users.map(user => user.id === userId ? { ...user, isDisabled } : user));
+      setUsers(users.map((user) => (user.id === userId ? { ...user, isDisabled } : user)));
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to update user status');
     }
@@ -189,20 +189,36 @@ export default function AdminDashboard() {
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Total Users</h3>
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalUsers}</p>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+              Total Users
+            </h3>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {stats.totalUsers}
+            </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Total Homes</h3>
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalHomes}</p>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+              Total Homes
+            </h3>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {stats.totalHomes}
+            </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Total Tasks</h3>
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalTasks}</p>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+              Total Tasks
+            </h3>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {stats.totalTasks}
+            </p>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Total Items</h3>
-            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.totalItems}</p>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+              Total Items
+            </h3>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {stats.totalItems}
+            </p>
           </div>
         </div>
       )}
@@ -288,7 +304,9 @@ export default function AdminDashboard() {
                     {editingUser === user.id ? (
                       <select
                         value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value as 'USER' | 'ADMIN')}
+                        onChange={(e) =>
+                          handleRoleChange(user.id, e.target.value as 'USER' | 'ADMIN')
+                        }
                         className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                       >
                         <option value="USER">User</option>
@@ -344,14 +362,14 @@ export default function AdminDashboard() {
               </div>
               <div className="flex space-x-2">
                 <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                   className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
                 <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                   className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -364,4 +382,4 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-} 
+}

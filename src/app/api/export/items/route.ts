@@ -52,11 +52,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: [
-        { homeId: 'asc' },
-        { roomId: 'asc' },
-        { name: 'asc' },
-      ],
+      orderBy: [{ homeId: 'asc' }, { roomId: 'asc' }, { name: 'asc' }],
     });
 
     logger.info('Items fetched successfully', {
@@ -80,7 +76,7 @@ export async function GET(request: NextRequest) {
       'Room',
     ];
 
-    const rows = items.map(item => [
+    const rows = items.map((item) => [
       item.name,
       item.description || '',
       item.category || '',
@@ -96,7 +92,7 @@ export async function GET(request: NextRequest) {
 
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
+      ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')),
     ].join('\n');
 
     logger.info('CSV file generated successfully', {
@@ -121,4 +117,4 @@ export async function GET(request: NextRequest) {
     });
     return new NextResponse('Internal Server Error', { status: 500 });
   }
-} 
+}

@@ -1,13 +1,13 @@
 'use client';
 
 import { Menu, Transition } from '@headlessui/react';
+import { UserRole } from '@prisma/client';
 import { signOut } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment } from 'react';
 
 import { ThemeSelector } from '../theme-selector';
-import { UserRole } from '@prisma/client';
 
 interface UserMenuProps {
   user: {

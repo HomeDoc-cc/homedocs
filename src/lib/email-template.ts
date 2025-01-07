@@ -106,4 +106,4 @@ export function createEmailTemplate({ title, previewText, content }: EmailTempla
 </body>
 </html>
   `.trim();
-} 
+}

@@ -29,10 +29,8 @@ export function ImageGallery({ images, homeId, className = '' }: ImageGalleryPro
       const now = Date.now();
       const urls: Record<string, ImageUrlCache> = {};
       const keysToFetch = images.filter(
-        (key) => 
-          key && 
-          !failedUrls.includes(key) && 
-          (!imageUrls[key] || imageUrls[key].expiry < now)
+        (key) =>
+          key && !failedUrls.includes(key) && (!imageUrls[key] || imageUrls[key].expiry < now)
       );
 
       if (keysToFetch.length === 0) return;
@@ -41,7 +39,8 @@ export function ImageGallery({ images, homeId, className = '' }: ImageGalleryPro
         // Batch fetch URLs
         const responses = await Promise.all(
           keysToFetch.map((key) =>
-            fetch(`/api/upload/url?key=${encodeURIComponent(key)}&homeId=${encodeURIComponent(homeId)}`
+            fetch(
+              `/api/upload/url?key=${encodeURIComponent(key)}&homeId=${encodeURIComponent(homeId)}`
             ).then((r) => r.json())
           )
         );
@@ -137,4 +136,4 @@ export function ImageGallery({ images, homeId, className = '' }: ImageGalleryPro
       />
     </div>
   );
-} 
+}

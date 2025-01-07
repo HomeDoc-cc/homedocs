@@ -95,7 +95,7 @@ export function PaintForm({ onSubmit, onCancel, paint }: PaintFormProps) {
     // Function to fetch color data
     const fetchColorData = async (colorCode: string) => {
       if (hasFetchedColor.current) return;
-      
+
       try {
         const response = await fetch(`/api/colors/${colorCode}`);
         if (response.ok) {

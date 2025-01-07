@@ -170,4 +170,4 @@ export async function sendHomeShareInviteEmail(
     text: `Home Share Invitation\n\n${invitedBy} has invited you to access their home "${homeName}" in HomeDocs.\n\nClick the link below to accept the invitation and access the home:\n\n${inviteUrl}`,
     from: process.env.EMAIL_FROM || `"HomeDocs" <${process.env.EMAIL_USER}>`,
   });
-} 
+}

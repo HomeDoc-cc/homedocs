@@ -55,11 +55,11 @@ export function ShareHomeDialog({ isOpen, onClose, homeId, onShare }: ShareHomeD
       if (!response.ok) {
         const text = await response.text();
         let errorMessage: string;
-        
+
         try {
           const data = JSON.parse(text);
           errorMessage = data.error;
-          
+
           // Show resend option if there's a pending invite
           if (errorMessage === 'Pending invitation already exists for this email') {
             setShowResend(true);
@@ -67,7 +67,7 @@ export function ShareHomeDialog({ isOpen, onClose, homeId, onShare }: ShareHomeD
         } catch {
           errorMessage = text || 'Failed to share home';
         }
-        
+
         throw new Error(errorMessage);
       }
 
@@ -179,9 +179,10 @@ export function ShareHomeDialog({ isOpen, onClose, homeId, onShare }: ShareHomeD
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm
-                          ${validationErrors.email 
-                            ? 'border-red-300 dark:border-red-500 focus:border-red-500 focus:ring-red-500' 
-                            : 'border-gray-300 dark:border-gray-600'
+                          ${
+                            validationErrors.email
+                              ? 'border-red-300 dark:border-red-500 focus:border-red-500 focus:ring-red-500'
+                              : 'border-gray-300 dark:border-gray-600'
                           }
                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                           disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400
@@ -210,9 +211,10 @@ export function ShareHomeDialog({ isOpen, onClose, homeId, onShare }: ShareHomeD
                         value={role}
                         onChange={(e) => setRole(e.target.value as 'READ' | 'WRITE')}
                         className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm
-                          ${validationErrors.role 
-                            ? 'border-red-300 dark:border-red-500 focus:border-red-500 focus:ring-red-500' 
-                            : 'border-gray-300 dark:border-gray-600'
+                          ${
+                            validationErrors.role
+                              ? 'border-red-300 dark:border-red-500 focus:border-red-500 focus:ring-red-500'
+                              : 'border-gray-300 dark:border-gray-600'
                           }
                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                           disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-gray-500 dark:disabled:text-gray-400

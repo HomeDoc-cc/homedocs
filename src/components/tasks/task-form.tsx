@@ -67,27 +67,29 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    defaultValues: task ? {
-      title: task.title,
-      description: task.description || undefined,
-      priority: task.priority,
-      status: task.status,
-      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
-      assigneeId: task.assigneeId || undefined,
-      isRecurring: task.isRecurring,
-      interval: task.interval || undefined,
-      unit: task.unit || undefined,
-      homeId: task.homeId || task.room?.homeId || task.item?.room?.homeId,
-      roomId: task.roomId || task.room?.id || task.item?.roomId,
-      itemId: task.itemId || task.item?.id,
-    } : {
-      priority: TaskPriority.LOW,
-      status: TaskStatus.PENDING,
-      isRecurring: false,
-      dueDate: new Date().toISOString().split('T')[0],
-      interval: 1,
-      unit: TaskRecurrenceUnit.WEEKLY,
-    },
+    defaultValues: task
+      ? {
+          title: task.title,
+          description: task.description || undefined,
+          priority: task.priority,
+          status: task.status,
+          dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
+          assigneeId: task.assigneeId || undefined,
+          isRecurring: task.isRecurring,
+          interval: task.interval || undefined,
+          unit: task.unit || undefined,
+          homeId: task.homeId || task.room?.homeId || task.item?.room?.homeId,
+          roomId: task.roomId || task.room?.id || task.item?.roomId,
+          itemId: task.itemId || task.item?.id,
+        }
+      : {
+          priority: TaskPriority.LOW,
+          status: TaskStatus.PENDING,
+          isRecurring: false,
+          dueDate: new Date().toISOString().split('T')[0],
+          interval: 1,
+          unit: TaskRecurrenceUnit.WEEKLY,
+        },
   });
 
   const isRecurring = watch('isRecurring');
@@ -115,7 +117,7 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
       if (homeId) setValue('homeId', homeId);
       if (roomId) setValue('roomId', roomId);
       if (itemId) setValue('itemId', itemId);
-      
+
       hasSetInitialValues.current = true;
     }
   }, [task, homes, rooms, items, isLoading, setValue]);

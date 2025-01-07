@@ -54,16 +54,16 @@ export async function POST(request: Request) {
       data: { timezone },
     });
 
-    logger.info('Timezone updated successfully', { 
+    logger.info('Timezone updated successfully', {
       userId: session.user.email,
-      timezone 
+      timezone,
     });
     return NextResponse.json({ timezone });
   } catch (error) {
-    logger.error('Failed to update timezone', { 
+    logger.error('Failed to update timezone', {
       userId: session.user.email,
       timezone,
-      error: error as Error
+      error: error as Error,
     });
     return NextResponse.json({ error: 'Failed to update timezone' }, { status: 500 });
   }

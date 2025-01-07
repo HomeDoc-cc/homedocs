@@ -29,9 +29,7 @@ export const metadata = {
       { url: '/icons/favicon-128x128.png', sizes: '128x128', type: 'image/png' },
       { url: '/icons/favicon-256x256.png', sizes: '256x256', type: 'image/png' },
     ],
-    apple: [
-      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
 };
 

@@ -1,5 +1,5 @@
-import 'next-auth';
 import { SubscriptionTier } from '@prisma/client';
+import 'next-auth';
 
 declare module 'next-auth' {
   interface Session {

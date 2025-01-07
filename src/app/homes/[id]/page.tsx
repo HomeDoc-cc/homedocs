@@ -1,12 +1,13 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 
-import { ShareHomeDialog } from '@/components/share-home-dialog';
 import { HomeShares } from '@/components/home-shares';
 import { ImageGallery } from '@/components/image-gallery';
+import { ShareHomeDialog } from '@/components/share-home-dialog';
+import { hasWriteAccess } from '@/lib/permissions';
 
 interface HomePageProps {
   params: Promise<{
@@ -95,31 +96,34 @@ export default function HomePage({ params }: HomePageProps) {
     );
   }
 
+  const canEdit = hasWriteAccess(session?.user?.id, home);
+  const isOwner = session?.user?.id === home.owner.id;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{home.name}</h1>
         <div className="flex space-x-4">
-          <button
-            onClick={() => setIsShareDialogOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-          >
-            Share
-          </button>
-          <Link
-            href={`/homes/${home.id}/edit`}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-          >
-            Edit Home
-          </Link>
+          {isOwner && (
+            <button
+              onClick={() => setIsShareDialogOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
+            >
+              Share
+            </button>
+          )}
+          {canEdit && (
+            <Link
+              href={`/homes/${home.id}/edit`}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            >
+              Edit Home
+            </Link>
+          )}
         </div>
       </div>
 
-      <ImageGallery
-        className="mb-8"
-        images={home.images}
-        homeId={home.id}
-      />
+      <ImageGallery className="mb-8" images={home.images} homeId={home.id} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
@@ -163,17 +167,19 @@ export default function HomePage({ params }: HomePageProps) {
         </div>
       </div>
 
-      <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <HomeShares
-          shares={home.shares}
-          pendingShares={home.pendingShares}
-          isOwner={session?.user?.id === home.owner.id}
-          homeId={home.id}
-          onUpdate={() => {
-            // Optionally trigger a server-side revalidation if needed
-          }}
-        />
-      </div>
+      {isOwner && (
+        <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <HomeShares
+            shares={home.shares}
+            pendingShares={home.pendingShares}
+            isOwner={isOwner}
+            homeId={home.id}
+            onUpdate={() => {
+              // Optionally trigger a server-side revalidation if needed
+            }}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link
@@ -181,7 +187,9 @@ export default function HomePage({ params }: HomePageProps) {
           className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
         >
           <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Rooms</h3>
-          <p className="text-gray-600 dark:text-gray-300">Manage rooms and their contents</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {canEdit ? 'Manage rooms and their contents' : 'View rooms and their contents'}
+          </p>
         </Link>
 
         <Link
@@ -189,7 +197,9 @@ export default function HomePage({ params }: HomePageProps) {
           className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
         >
           <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Tasks</h3>
-          <p className="text-gray-600 dark:text-gray-300">View and manage home tasks</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {canEdit ? 'View and manage home tasks' : 'View home tasks'}
+          </p>
         </Link>
 
         <Link
@@ -197,7 +207,9 @@ export default function HomePage({ params }: HomePageProps) {
           className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
         >
           <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Paint</h3>
-          <p className="text-gray-600 dark:text-gray-300">Track paint colors and finishes</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {canEdit ? 'Track paint colors and finishes' : 'View paint colors and finishes'}
+          </p>
         </Link>
       </div>
 

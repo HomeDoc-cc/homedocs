@@ -25,7 +25,9 @@ export function HomesOverview({ homes }: HomesOverviewProps) {
   return (
     <section className="mb-12">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">{canAddHome ? 'Your Homes' : 'Your Home'}</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+          {canAddHome ? 'Your Homes' : 'Your Home'}
+        </h2>
         {canAddHome && (
           <Link
             href="/homes/new"
