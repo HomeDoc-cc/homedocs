@@ -1,6 +1,6 @@
 {
   "name": "homedocs",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "repository": "https://github.com/homedocs-cc/homedocs",
   "scripts": {
