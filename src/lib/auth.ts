@@ -116,7 +116,7 @@ if (process.env.NEXT_PUBLIC_OIDC_ENABLED === 'true') {
 }
 
 // Add Google provider if enabled
-if (process.env.NEXT_PUBLIC_GOOGLE_ENABLED === 'true') {
+if (process.env.GOOGLE_ENABLED === 'true') {
   providers.push(
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
