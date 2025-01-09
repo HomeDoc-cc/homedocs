@@ -21,7 +21,7 @@ export const config = {
     '/api/rooms/:path*',
     '/api/items/:path*',
     '/api/tasks/:path*',
-    // Exclude auth routes, invite routes, and root path
-    '/((?!api|_next/static|_next/image|favicon.ico|auth|invite|$).*)',
+    // Exclude auth routes, invite routes, static files, and root path
+    '/((?!api|_next/static|_next/image|favicon|manifest.json|sw.js|icons|auth|invite|$).*)',
   ],
 };
