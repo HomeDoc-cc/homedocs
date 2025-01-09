@@ -10,4 +10,4 @@ npx tsx scripts/importColorData.ts
 
 # Start the Next.js application
 echo "Starting Next.js..."
-npm run start 
+node server.js
