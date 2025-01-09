@@ -23,11 +23,16 @@ async function generateIcons() {
       .toFile(path.join(iconDir, `icon-${size}x${size}.png`));
   }
 
-  // Generate Apple Touch Icon
+  // Generate Apple Touch Icons
   await sharp(sourceIcon)
     .resize(180, 180)
     .png()
     .toFile(path.join(iconDir, 'apple-touch-icon.png'));
+
+  await sharp(sourceIcon)
+    .resize(180, 180)
+    .png()
+    .toFile(path.join(iconDir, 'apple-touch-icon-precomposed.png'));
 
   // Generate favicons in multiple sizes
   for (const size of faviconSizes) {
@@ -36,6 +41,14 @@ async function generateIcons() {
       .png()
       .toFile(path.join(iconDir, `favicon-${size}x${size}.png`));
   }
+
+  // Generate ICO file
+  const icoBuffer = await sharp(sourceIcon)
+    .resize(32, 32)
+    .toFormat('png')
+    .toBuffer();
+
+  await fs.writeFile(path.join(__dirname, '../public/icons/favicon.ico'), icoBuffer);
 
   console.log('Icons generated successfully!');
 }

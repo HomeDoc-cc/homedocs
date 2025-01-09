@@ -18,9 +18,16 @@ export const metadata = {
     capable: true,
     statusBarStyle: 'default',
     title: 'HomeDocs',
+    startupImage: [
+      {
+        url: '/icons/apple-touch-icon.png',
+        media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)',
+      },
+    ],
   },
   icons: {
     icon: [
+      { url: '/icons/favicon.ico', sizes: 'any' },
       { url: '/icons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/icons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/icons/favicon-48x48.png', sizes: '48x48', type: 'image/png' },
@@ -29,7 +36,11 @@ export const metadata = {
       { url: '/icons/favicon-128x128.png', sizes: '128x128', type: 'image/png' },
       { url: '/icons/favicon-256x256.png', sizes: '256x256', type: 'image/png' },
     ],
-    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/icons/favicon.ico'],
+    apple: [
+      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/apple-touch-icon-precomposed.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
 };
 
