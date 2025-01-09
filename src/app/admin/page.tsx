@@ -1,5 +1,7 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { User } from '@/types/prisma';
@@ -20,6 +22,13 @@ type RoleFilter = 'ALL' | 'USER' | 'ADMIN';
 type StatusFilter = 'ALL' | 'ACTIVE' | 'DISABLED';
 
 export default function AdminDashboard() {
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect('/auth/signin');
+    },
+  });
+
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,12 +49,34 @@ export default function AdminDashboard() {
   const fetchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (status === 'loading') return;
+    if (!session?.user) return;
+
+    async function checkAdminAccess() {
+      try {
+        const response = await fetch('/api/admin/stats');
+        if (response.status === 403) {
+          redirect('/dashboard');
+        }
+      } catch {
+        setError('Failed to verify admin access');
+      }
+    }
+
+    checkAdminAccess();
+  }, [session, status]);
+
+  useEffect(() => {
     async function fetchAdminData() {
       if (hasFetchedStats.current) return;
 
       try {
         const statsRes = await fetch('/api/admin/stats');
         if (!statsRes.ok) {
+          if (statsRes.status === 403) {
+            redirect('/dashboard');
+            return;
+          }
           throw new Error('Failed to fetch admin data');
         }
         const statsData = await statsRes.json();
@@ -56,12 +87,14 @@ export default function AdminDashboard() {
       }
     }
 
-    fetchAdminData();
+    if (status !== 'loading' && session?.user) {
+      fetchAdminData();
+    }
+
     return () => {
-      // Cleanup function
       hasFetchedStats.current = false;
     };
-  }, []);
+  }, [session, status]);
 
   useEffect(() => {
     async function fetchUsers() {
@@ -90,6 +123,9 @@ export default function AdminDashboard() {
       }
     }
 
+    // Don't fetch if session is not loaded
+    if (status === 'loading' || !session?.user) return;
+
     // Clear previous timeout
     if (fetchTimeout.current) {
       clearTimeout(fetchTimeout.current);
@@ -111,6 +147,11 @@ export default function AdminDashboard() {
 
       // Set new timeout
       fetchTimeout.current = setTimeout(fetchUsers, 300);
+    } else {
+      // If no filters changed but we don't have users yet, fetch them
+      if (users.length === 0) {
+        fetchTimeout.current = setTimeout(fetchUsers, 300);
+      }
     }
 
     // Cleanup timeout on unmount
@@ -119,7 +160,7 @@ export default function AdminDashboard() {
         clearTimeout(fetchTimeout.current);
       }
     };
-  }, [page, searchQuery, roleFilter, statusFilter, pageSize]);
+  }, [page, searchQuery, roleFilter, statusFilter, pageSize, session, status, users.length]);
 
   const handleRoleChange = async (userId: string, newRole: 'USER' | 'ADMIN') => {
     try {
