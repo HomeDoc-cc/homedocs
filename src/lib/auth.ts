@@ -47,7 +47,7 @@ const providers: NextAuthOptions['providers'] = [
         });
 
         if (!user || !user.password) {
-          return null;
+          throw new Error('Invalid email or password');
         }
 
         if (user.isDisabled) {
@@ -57,7 +57,7 @@ const providers: NextAuthOptions['providers'] = [
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-          return null;
+          throw new Error('Invalid email or password');
         }
 
         return {
@@ -66,8 +66,13 @@ const providers: NextAuthOptions['providers'] = [
           name: user.name,
           image: user.image,
         };
-      } catch {
-        return null;
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          // Get the first validation error message
+          const firstError = error.errors[0];
+          throw new Error(firstError.message);
+        }
+        throw error;
       }
     },
   }),
