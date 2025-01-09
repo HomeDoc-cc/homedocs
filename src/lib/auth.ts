@@ -79,7 +79,7 @@ const providers: NextAuthOptions['providers'] = [
 ];
 
 // Add OIDC provider if enabled
-if (process.env.NEXT_PUBLIC_OIDC_ENABLED === 'true') {
+if (process.env.OIDC_ENABLED === 'true') {
   const oidcProvider = {
     id: 'oidc',
     name: 'OpenID Connect',
@@ -123,6 +123,9 @@ if (process.env.GOOGLE_ENABLED === 'true') {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       allowDangerousEmailAccountLinking:
         process.env.NEXTAUTH_ALLOW_DANGEROUS_EMAIL_ACCOUNT_LINKING === 'true',
+      httpOptions: {
+        timeout: 10000, // 10 seconds
+      },
       async profile(profile) {
         // Check if user exists and is disabled
         const user = await prisma.user.findUnique({
