@@ -23,7 +23,7 @@ A web application for documenting and tracking home maintenance tasks, appliance
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/jhofker/homedocs.git
+git clone https://github.com/homedocs-cc/homedocs.git
 cd homedocs
 ```
 

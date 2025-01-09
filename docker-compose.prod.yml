@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/jhofker/homedocs:latest
+    image: ghcr.io/homedocs-cc/homedocs:latest
     ports:
       - '3000:3000'
     env_file:

@@ -15,7 +15,7 @@ export function Footer() {
               Home
             </Link>
             <a
-              href="https://github.com/jhofker/homedocs"
+              href="https://github.com/homedocs-cc/homedocs"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 flex items-center space-x-1"

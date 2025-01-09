@@ -17,7 +17,7 @@ export function VersionCheck() {
     async function checkVersion() {
       try {
         const response = await fetch(
-          'https://api.github.com/repos/jhofker/homedocs/releases/latest'
+          'https://api.github.com/repos/homedocs-cc/homedocs/releases/latest'
         );
         if (response.ok) {
           const data = await response.json();
@@ -46,7 +46,7 @@ export function VersionCheck() {
     </a>
   ) : (
     <a
-      href="https://github.com/jhofker/homedocs"
+      href="https://github.com/homedocs-cc/homedocs"
       target="_blank"
       rel="noopener noreferrer"
       className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-sm ml-2"

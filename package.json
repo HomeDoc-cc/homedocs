@@ -2,7 +2,7 @@
   "name": "homedocs",
   "version": "0.2.3",
   "private": true,
-  "repository": "https://github.com/jhofker/homedocs",
+  "repository": "https://github.com/homedocs-cc/homedocs",
   "scripts": {
     "dev": "next dev",
     "build": "set PHASE=build && next build",
