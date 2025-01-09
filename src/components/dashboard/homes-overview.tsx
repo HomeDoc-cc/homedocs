@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 interface HomeWithCounts {
@@ -16,12 +15,10 @@ interface HomeWithCounts {
 
 interface HomesOverviewProps {
   homes: HomeWithCounts[];
+  canAddHome: boolean;
 }
 
-export function HomesOverview({ homes }: HomesOverviewProps) {
-  const { data: session } = useSession();
-  const canAddHome = session?.user?.tier !== 'FREE' || homes.length === 0;
-
+export function HomesOverview({ homes, canAddHome }: HomesOverviewProps) {
   return (
     <section className="mb-12">
       <div className="flex items-center justify-between mb-4">
