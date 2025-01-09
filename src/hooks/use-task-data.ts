@@ -46,14 +46,17 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
     if (!session) return;
 
     try {
-      const response = await fetch('/api/users');
+      // If we're fetching tasks for a specific home, pass the homeId
+      const homeId = type === 'home' ? id : undefined;
+      const endpoint = homeId ? `/api/users?homeId=${homeId}` : '/api/users';
+      const response = await fetch(endpoint);
       const data = await response.json();
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
       setUsers([]);
     }
-  }, [session]);
+  }, [session, type, id]);
 
   useEffect(() => {
     // Check if type or id has changed

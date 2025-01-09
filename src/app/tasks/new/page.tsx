@@ -81,7 +81,7 @@ export default function NewTaskPage() {
 
   async function fetchUsers() {
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch(homeId ? `/api/users?homeId=${homeId}` : '/api/users');
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();
       setUsers(data);
