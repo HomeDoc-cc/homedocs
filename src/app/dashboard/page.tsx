@@ -11,7 +11,7 @@ import { getServerContext, logger } from '@/lib/logger';
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user) {
+  if (session === null) {
     logger.info('Unauthorized access attempt to dashboard', {
       ...getServerContext(),
       path: '/dashboard',
@@ -33,7 +33,10 @@ export default async function DashboardPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Dashboard</h1>
-        <HomesOverview homes={homes} />
+        <HomesOverview
+          homes={homes}
+          canAddHome={session.user.tier !== 'FREE' || homes.length === 0}
+        />
         <RecentTasks />
         <QuickStats homes={homes} />
       </div>

@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 export default function SignUpPage() {
   const session = useSession();
-  if (session?.data?.user) {
+  if (session.status === 'authenticated') {
     redirect('/dashboard');
   }
   const [error, setError] = useState<string | null>(null);

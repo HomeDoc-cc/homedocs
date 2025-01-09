@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 export default function SignInPage() {
   const session = useSession();
-  if (session?.data?.user) {
+  if (session.status === 'authenticated') {
     redirect('/dashboard');
   }
 

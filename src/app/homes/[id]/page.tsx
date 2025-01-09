@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { HomeShares } from '@/components/home-shares';
@@ -47,7 +48,10 @@ interface Home {
 }
 
 export default function HomePage({ params }: HomePageProps) {
-  const { data: session } = useSession();
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated: () => redirect('/auth/signin'),
+  });
   const [home, setHome] = useState<Home | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);

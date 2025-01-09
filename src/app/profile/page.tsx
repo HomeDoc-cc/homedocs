@@ -2,13 +2,16 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { logger } from '@/lib/logger';
 
 export default function ProfilePage() {
-  const { data: session, update: updateSession } = useSession();
+  const { data: session, update: updateSession } = useSession({
+    required: true,
+    onUnauthenticated: () => redirect('/auth/signin'),
+  });
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
@@ -16,16 +19,31 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  async function fetchUserData() {
+    try {
+      const response = await fetch('/api/user/profile');
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch user data');
+      }
+      setName(data.name || '');
+    } catch (error) {
+      logger.error('Failed to fetch user data', {
+        error: error instanceof Error ? error : new Error('Unknown error occurred'),
+      });
+    }
+  }
+
   useEffect(() => {
     try {
       logger.info('Profile page access attempt', { userId: session?.user?.id });
 
-      if (!session) {
+      if (session === null) {
         logger.info('Redirecting unauthenticated user to signin');
         router.push('/auth/signin');
-      } else {
+      } else if (session) {
         logger.info('Profile page loaded successfully', { userId: session.user.id });
-        setName(session.user.name || '');
+        fetchUserData();
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -45,6 +63,8 @@ export default function ProfilePage() {
     setSuccessMessage(null);
 
     try {
+      logger.info('Submitting profile update', { name });
+
       const response = await fetch('/api/user/profile', {
         method: 'PATCH',
         headers: {
@@ -53,10 +73,16 @@ export default function ProfilePage() {
         body: JSON.stringify({ name }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.error || 'Failed to update profile');
       }
+
+      logger.info('Profile update response received', { data });
+
+      // Update the local state with the response data
+      setName(data.name);
 
       // Update the session with the new name
       await updateSession();
@@ -64,6 +90,9 @@ export default function ProfilePage() {
       setSuccessMessage('Profile updated successfully');
       setIsEditing(false);
     } catch (error) {
+      logger.error('Failed to update profile', {
+        error: error instanceof Error ? error : new Error('Unknown error occurred'),
+      });
       setError(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
       setIsLoading(false);
@@ -117,9 +146,7 @@ export default function ProfilePage() {
                 </form>
               ) : (
                 <div className="mt-1 flex items-center justify-between">
-                  <div className="text-gray-900 dark:text-white">
-                    {session.user.name || 'Not provided'}
-                  </div>
+                  <div className="text-gray-900 dark:text-white">{name || 'Not provided'}</div>
                   <button
                     onClick={() => setIsEditing(true)}
                     className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"

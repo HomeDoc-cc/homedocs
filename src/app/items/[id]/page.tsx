@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { ImageGallery } from '@/components/image-gallery';
@@ -49,7 +50,10 @@ interface Item {
 }
 
 export default function ItemPage({ params }: ItemPageProps) {
-  const { data: session } = useSession();
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated: () => redirect('/auth/signin'),
+  });
   const [item, setItem] = useState<Item | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);

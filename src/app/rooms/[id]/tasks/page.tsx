@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { TaskList } from '@/components/tasks/task-list';
@@ -14,7 +15,10 @@ interface TasksPageProps {
 }
 
 export default function TasksPage({ params }: TasksPageProps) {
-  const { data: session } = useSession();
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated: () => redirect('/auth/signin'),
+  });
   const [id, setId] = useState<string | null>(null);
   const [room, setRoom] = useState<{
     id: string;
