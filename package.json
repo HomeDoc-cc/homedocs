@@ -1,6 +1,6 @@
 {
   "name": "homedocs",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "private": true,
   "repository": "https://github.com/homedocs-cc/homedocs",
   "scripts": {
@@ -21,7 +21,7 @@
     "docker:db": "docker-compose -f docker-compose.dev.yml up db",
     "docker:app": "docker-compose -f docker-compose.dev.yml up app",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
-    "release": "git push && git tag v$npm_package_version && git push origin v$npm_package_version",
+    "release": "npm i && git add package* && git commit -m \"v$npm_package_version\" && git push && git tag v$npm_package_version && git push origin v$npm_package_version",
     "type-check": "tsc --noEmit",
     "icons": "node scripts/generate-icons.js"
   },
