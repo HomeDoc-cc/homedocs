@@ -96,9 +96,9 @@ export async function getUserHomes(userId: string) {
           tasks: {
             where: {
               status: {
-                not: 'COMPLETED'
-              }
-            }
+                not: 'COMPLETED',
+              },
+            },
           },
           items: true,
         },

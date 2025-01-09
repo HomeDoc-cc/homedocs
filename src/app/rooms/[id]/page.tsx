@@ -32,7 +32,7 @@ interface Room {
   };
 }
 
-export default function RoomPage({ params }: { params: { id: string } }) {
+export default function RoomPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session } = useSession();
   const [room, setRoom] = useState<Room | null>(null);
   const [error, setError] = useState<string | null>(null);

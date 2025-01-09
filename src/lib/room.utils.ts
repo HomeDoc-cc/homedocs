@@ -95,9 +95,9 @@ export async function getRoomsByHome(homeId: string, userId: string) {
           tasks: {
             where: {
               status: {
-                not: 'COMPLETED'
-              }
-            }
+                not: 'COMPLETED',
+              },
+            },
           },
         },
       },
@@ -190,9 +190,9 @@ export async function getRoomById(roomId: string, userId: string) {
           tasks: {
             where: {
               status: {
-                not: 'COMPLETED'
-              }
-            }
+                not: 'COMPLETED',
+              },
+            },
           },
           paints: true,
         },

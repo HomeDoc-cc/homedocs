@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface TaskFormData {
   title: string;
@@ -56,12 +56,24 @@ export default function NewTaskPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await fetch(homeId ? `/api/users?homeId=${homeId}` : '/api/users');
+      if (!response.ok) throw new Error('Failed to fetch users');
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setUsers([]);
+    }
+  }, [homeId]);
+
   useEffect(() => {
     fetchUsers();
     if (!homeId && !roomId && !itemId) {
       fetchHomes();
     }
-  }, [homeId, roomId, itemId]);
+  }, [homeId, roomId, itemId, fetchUsers]);
 
   useEffect(() => {
     if (homeId) {
@@ -78,18 +90,6 @@ export default function NewTaskPage() {
       setItems([]);
     }
   }, [roomId]);
-
-  async function fetchUsers() {
-    try {
-      const response = await fetch(homeId ? `/api/users?homeId=${homeId}` : '/api/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setUsers([]);
-    }
-  }
 
   async function fetchHomes() {
     try {
