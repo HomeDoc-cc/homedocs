@@ -2,7 +2,7 @@
 
 import { signIn, useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
 export default function SignUpPage() {
@@ -10,7 +10,6 @@ export default function SignUpPage() {
   if (session?.data?.user) {
     redirect('/dashboard');
   }
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,14 +40,13 @@ export default function SignUpPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false,
+        redirect: true,
+        callbackUrl: '/dashboard'
       });
 
       if (result?.error) {
         throw new Error(result.error);
       }
-
-      router.push('/dashboard');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to sign up');
     } finally {
