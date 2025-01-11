@@ -3,7 +3,11 @@ const IMAGE_CACHE_NAME = 'homedocs-images-v1';
 const urlsToCache = [
   '/',
   '/manifest.json',
-  '/icons/icon-192x192.png',
+  '/icons/icon-32x32.png',
+  '/icons/icon-48x48.png',
+  '/icons/icon-64x64.png',
+  '/icons/icon-96x96.png',
+  '/icons/icon-128x128.png',
   '/icons/icon-512x512.png',
   '/icons/apple-touch-icon.png',
 ];
@@ -46,7 +50,7 @@ self.addEventListener('activate', (event) => {
           requests.map(async (request) => {
             const response = await cache.match(request);
             if (!response) return;
-            
+
             const cachedDate = response.headers.get('x-cached-date');
             if (cachedDate && now - new Date(cachedDate).getTime() > IMAGE_CACHE_DURATION) {
               return cache.delete(request);
@@ -60,7 +64,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  
+
   // Special handling for image requests
   if (event.request.method === 'GET' && event.request.destination === 'image') {
     event.respondWith(
@@ -81,11 +85,11 @@ self.addEventListener('fetch', (event) => {
           if (networkResponse.ok) {
             // Clone the response before caching because the response body can only be used once
             const responseToCache = networkResponse.clone();
-            
+
             // Add cache date header
             const headers = new Headers(responseToCache.headers);
             headers.append('x-cached-date', new Date().toISOString());
-            
+
             const modifiedResponse = new Response(await responseToCache.blob(), {
               status: responseToCache.status,
               statusText: responseToCache.statusText,
@@ -121,4 +125,4 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-}); 
+});
