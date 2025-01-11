@@ -1,12 +1,20 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 import { TaskList } from '@/components/tasks/task-list';
 import { useTaskData } from '@/hooks/use-task-data';
+import { Task } from '@/types/prisma';
 
 export function RecentTasks() {
+  const { data: session } = useSession();
   const { tasks, users, isLoading, refetch } = useTaskData();
+
+  const canEdit = (task: Task) => {
+    if (!session?.user?.id) return false;
+    return task.creatorId === session.user.id || task.assigneeId === session.user.id;
+  };
 
   return (
     <section className="mb-12">
@@ -20,7 +28,14 @@ export function RecentTasks() {
         </Link>
       </div>
 
-      <TaskList tasks={tasks} users={users} isLoading={isLoading} onTasksChange={refetch} />
+      <TaskList
+        tasks={tasks}
+        users={users}
+        isLoading={isLoading}
+        onTasksChange={refetch}
+        canEdit={canEdit}
+        canCreateTask={true}
+      />
     </section>
   );
 }

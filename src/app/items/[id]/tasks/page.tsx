@@ -56,7 +56,13 @@ export default function TasksPage({ params }: TasksPageProps) {
     id: id || undefined,
   });
 
-  const canEdit = item ? hasWriteAccess(session?.user?.id, item.room.home) : false;
+  const canEdit = () => {
+    if (!session?.user?.id || !item) return false;
+    return hasWriteAccess(session.user.id, item.room.home);
+  };
+
+  const canCreateTask =
+    item && session?.user?.id ? hasWriteAccess(session.user.id, item.room.home) : false;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -70,6 +76,7 @@ export default function TasksPage({ params }: TasksPageProps) {
         onTasksChange={refetch}
         isLoading={isLoading}
         canEdit={canEdit}
+        canCreateTask={canCreateTask}
       />
     </div>
   );

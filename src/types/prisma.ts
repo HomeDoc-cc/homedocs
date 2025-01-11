@@ -85,6 +85,10 @@ export interface Task {
   home: {
     id: string;
     name: string;
+    userId: string;
+    shares: {
+      role: 'READ' | 'WRITE';
+    }[];
   } | null;
   room: {
     id: string;
@@ -93,6 +97,10 @@ export interface Task {
     home: {
       id: string;
       name: string;
+      userId: string;
+      shares: {
+        role: 'READ' | 'WRITE';
+      }[];
     };
   } | null;
   item: {
@@ -106,6 +114,10 @@ export interface Task {
       home: {
         id: string;
         name: string;
+        userId: string;
+        shares: {
+          role: 'READ' | 'WRITE';
+        }[];
       };
     };
   } | null;

@@ -11,17 +11,19 @@ import { TaskFormData, TaskModal } from './task-modal';
 interface TaskListProps {
   tasks: Task[];
   users: User[];
-  onTasksChange?: () => void;
-  isLoading?: boolean;
-  canEdit?: boolean;
+  onTasksChange: () => void;
+  isLoading: boolean;
+  canEdit?: (task: Task) => boolean;
+  canCreateTask?: boolean;
 }
 
 export function TaskList({
   tasks,
   users,
   onTasksChange,
-  isLoading = false,
-  canEdit = false,
+  isLoading,
+  canEdit,
+  canCreateTask = false,
 }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,6 +67,10 @@ export function TaskList({
     setSelectedTask(undefined);
   };
 
+  const canEditTask = (task: Task) => {
+    return canEdit ? canEdit(task) : false;
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -83,9 +89,11 @@ export function TaskList({
       <div className="text-center py-12">
         <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No tasks</h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {canEdit ? 'Get started by creating a new task.' : 'No tasks have been created yet.'}
+          {canCreateTask
+            ? 'Get started by creating a new task.'
+            : 'No tasks have been created yet.'}
         </p>
-        {canEdit && (
+        {canCreateTask && (
           <div className="mt-6">
             <button
               onClick={() => handleOpenModal()}
@@ -107,44 +115,18 @@ export function TaskList({
     );
   }
 
-  // Filter tasks based on date range
   const now = new Date();
-  const filterDate = (task: Task) => {
-    if (!task.dueDate) return false;
+  const filterDays = dateFilter === 'all' ? Infinity : parseInt(dateFilter);
+  const filterDate = new Date(now.getTime() + filterDays * 24 * 60 * 60 * 1000);
+
+  const filteredTasks = tasks.filter((task) => {
+    if (!task.dueDate) return true;
     const dueDate = new Date(task.dueDate);
-    const diffInDays = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return dueDate <= filterDate;
+  });
 
-    switch (dateFilter) {
-      case '7':
-        return diffInDays <= 7;
-      case '30':
-        return diffInDays <= 30;
-      case '120':
-        return diffInDays <= 120;
-      default:
-        return true;
-    }
-  };
-
-  // Group tasks by status and recurring status
-  const activeTasks = tasks
-    .filter((task) => task.status !== 'COMPLETED')
-    .sort((a, b) => {
-      // Put overdue tasks at the top
-      const aOverdue = a.dueDate && new Date(a.dueDate) < now;
-      const bOverdue = b.dueDate && new Date(b.dueDate) < now;
-      if (aOverdue && !bOverdue) return -1;
-      if (!aOverdue && bOverdue) return 1;
-
-      // Handle tasks without due dates (put them at the end)
-      if (!a.dueDate) return 1;
-      if (!b.dueDate) return -1;
-      // Sort by due date (ascending)
-      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-    })
-    .filter(filterDate);
-
-  const completedTasks = tasks.filter((task) => task.status === 'COMPLETED');
+  const activeTasks = filteredTasks.filter((task) => task.status !== 'COMPLETED');
+  const completedTasks = filteredTasks.filter((task) => task.status === 'COMPLETED');
 
   return (
     <div className="space-y-8">
@@ -162,7 +144,7 @@ export function TaskList({
             <option value="120">Next 120 days</option>
           </select>
         </div>
-        {canEdit && (
+        {canCreateTask && (
           <button
             onClick={() => handleOpenModal()}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -192,9 +174,9 @@ export function TaskList({
               <TaskCard
                 key={task.id}
                 task={task}
-                onEdit={canEdit ? () => handleOpenModal(task) : undefined}
-                onDelete={canEdit ? () => deleteTask(task.id) : undefined}
-                onComplete={canEdit ? () => completeTask(task.id) : undefined}
+                onEdit={canEditTask(task) ? () => handleOpenModal(task) : undefined}
+                onDelete={canEditTask(task) ? () => deleteTask(task.id) : undefined}
+                onComplete={canEditTask(task) ? () => completeTask(task.id) : undefined}
               />
             ))}
           </div>
@@ -227,8 +209,8 @@ export function TaskList({
                 <TaskCard
                   key={task.id}
                   task={task}
-                  onEdit={canEdit ? () => handleOpenModal(task) : undefined}
-                  onDelete={canEdit ? () => deleteTask(task.id) : undefined}
+                  onEdit={canEditTask(task) ? () => handleOpenModal(task) : undefined}
+                  onDelete={canEditTask(task) ? () => deleteTask(task.id) : undefined}
                 />
               ))}
             </div>
