@@ -139,7 +139,7 @@ export default function SignUpPage() {
 
         <form className="mt-8 space-y-6" onSubmit={onSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            <div>
+            <div className="mb-4">
               <label htmlFor="email" className="sr-only">
                 Email address
               </label>
