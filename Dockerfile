@@ -2,7 +2,7 @@ FROM node:22-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat openssl vips-dev build-base python3
+RUN apk add --no-cache libc6-compat openssl vips-dev build-base python3 postgresql-client
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -33,10 +33,11 @@ ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN apk add --no-cache vips-dev
-
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Install system dependencies
+RUN apk add --no-cache vips-dev postgresql-client
 
 # Install only production dependencies
 COPY --from=builder /app/package.json /app/package-lock.json ./
@@ -54,6 +55,14 @@ RUN chown nextjs:nodejs .next
 # Set permissions for the startup script and scripts directory
 RUN chmod +x ./scripts/start.sh
 RUN chown -R nextjs:nodejs ./scripts
+
+# Create and set permissions for backups directory
+RUN mkdir backups
+RUN chown nextjs:nodejs backups
+
+# Ensure postgresql-client binaries are accessible
+RUN chmod +x /usr/bin/pg_dump
+RUN chown nextjs:nodejs /usr/bin/pg_dump
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing

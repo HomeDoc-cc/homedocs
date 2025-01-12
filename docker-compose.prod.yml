@@ -5,9 +5,11 @@ services:
       - '3000:3000'
     env_file:
       - .env
+    volumes:
+      - backups_prod:/app/backups
     depends_on:
       - db
-    restart: always
+    restart: unless-stopped
 
   db:
     image: postgres:16-alpine
@@ -17,7 +19,8 @@ services:
       - .env
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
-    restart: always
+    restart: unless-stopped
 
 volumes:
   postgres_data_prod:
+  backups_prod:
