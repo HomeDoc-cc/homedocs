@@ -17,7 +17,7 @@ export function VersionCheck() {
     async function checkVersion() {
       try {
         const response = await fetch(
-          'https://api.github.com/repos/homedocs-cc/homedocs/releases/latest'
+          'https://api.github.com/repos/jhofker/homedocs/releases/latest'
         );
         if (response.ok) {
           const data = await response.json();
