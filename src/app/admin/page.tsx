@@ -284,7 +284,11 @@ export default function AdminDashboard() {
       return;
     }
 
-    if (!window.confirm('Are you sure you want to restore this backup? This will overwrite the current database.')) {
+    if (
+      !window.confirm(
+        'Are you sure you want to restore this backup? This will overwrite the current database.'
+      )
+    ) {
       return;
     }
 
@@ -488,7 +492,10 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {users.map((user) => (
-                    <tr key={user.id} className={user.isDisabled ? 'bg-gray-50 dark:bg-gray-900' : ''}>
+                    <tr
+                      key={user.id}
+                      className={user.isDisabled ? 'bg-gray-50 dark:bg-gray-900' : ''}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {user.name || 'No name'}
                       </td>
@@ -552,8 +559,8 @@ export default function AdminDashboard() {
               <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex justify-between items-center">
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalUsers)} of{' '}
-                    {totalUsers} users
+                    Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, totalUsers)}{' '}
+                    of {totalUsers} users
                   </div>
                   <div className="flex space-x-2">
                     <button
@@ -580,7 +587,9 @@ export default function AdminDashboard() {
         {activeTab === 'database' && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
             <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Database Management</h2>
+              <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+                Database Management
+              </h2>
               <div className="flex gap-4 items-end">
                 <button
                   onClick={handleBackup}

@@ -13,10 +13,10 @@ export async function GET() {
   try {
     const backupDir = path.join(process.cwd(), 'backups');
     const files = await fs.readdir(backupDir);
-    const backupFiles = files.filter(file => file.startsWith('backup-') && file.endsWith('.sql'));
-    
+    const backupFiles = files.filter((file) => file.startsWith('backup-') && file.endsWith('.sql'));
+
     return NextResponse.json({
-      files: backupFiles.sort().reverse() // Most recent first
+      files: backupFiles.sort().reverse(), // Most recent first
     });
   } catch (error) {
     logger.error('Failed to list backup files', {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     // Validate backup file exists and is in the backups directory
     const backupDir = path.join(process.cwd(), 'backups');
     const backupFile = path.join(backupDir, filename);
-    
+
     // Check if file exists and is within backups directory
     try {
       await fs.access(backupFile);
@@ -82,4 +82,4 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ error: 'Failed to restore database' }, { status: 500 });
   }
-} 
+}

@@ -45,8 +45,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               toast.variant === 'destructive'
                 ? 'bg-red-600 text-white'
                 : toast.variant === 'success'
-                ? 'bg-green-600 text-white'
-                : 'bg-white text-gray-900 dark:bg-gray-800 dark:text-white'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-white text-gray-900 dark:bg-gray-800 dark:text-white'
             }`}
           >
             <div className="flex items-start">
