@@ -1,3 +1,6 @@
+export type UserRole = 'USER' | 'ADMIN';
+export type ShareRole = 'READ' | 'WRITE';
+
 export enum TaskRecurrenceUnit {
   DAILY = 'DAILY',
   WEEKLY = 'WEEKLY',
@@ -125,7 +128,7 @@ export interface Task {
   updatedAt: Date;
 }
 
-export type User = {
+export interface User {
   id: string;
   name: string | null;
   email: string | null;
@@ -135,7 +138,8 @@ export type User = {
   isDisabled: boolean;
   createdAt: Date;
   updatedAt: Date;
-};
+  hasVerificationPending?: boolean;
+}
 
 export interface Home {
   id: string;

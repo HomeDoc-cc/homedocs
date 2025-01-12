@@ -326,6 +326,66 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleVerifyEmail = async (userId: string) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, action: 'verify' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to verify email');
+      }
+
+      const updatedUser = await response.json();
+      setUsers(users.map((user) => (user.id === userId ? updatedUser : user)));
+      toast({
+        title: 'Success',
+        description: 'Email marked as verified',
+        variant: 'success',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to verify email',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSendVerification = async (userId: string) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, action: 'send-verification' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send verification email');
+      }
+
+      const updatedUser = await response.json();
+      setUsers(users.map((user) => (user.id === userId ? updatedUser : user)));
+      toast({
+        title: 'Success',
+        description: 'Verification email sent',
+        variant: 'success',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to send verification email',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const totalPages = Math.ceil(totalUsers / pageSize);
 
   if (loading && !users.length) {
@@ -483,6 +543,9 @@ export default function AdminDashboard() {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Verified
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Joined
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -528,6 +591,47 @@ export default function AdminDashboard() {
                         >
                           {user.isDisabled ? 'Disabled' : 'Active'}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              user.emailVerified
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                : user.hasVerificationPending
+                                  ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                            }`}
+                          >
+                            {user.emailVerified
+                              ? 'Verified'
+                              : user.hasVerificationPending
+                                ? 'Pending'
+                                : 'Not Verified'}
+                          </span>
+                          {editingUser === user.id && !user.emailVerified && (
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleVerifyEmail(user.id)}
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                                title="Mark as verified"
+                              >
+                                Verify
+                              </button>
+                              <button
+                                onClick={() => handleSendVerification(user.id)}
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                                title={
+                                  user.hasVerificationPending
+                                    ? 'Resend verification email'
+                                    : 'Send verification email'
+                                }
+                              >
+                                {user.hasVerificationPending ? 'Resend' : 'Send'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {new Date(user.createdAt).toLocaleDateString()}
