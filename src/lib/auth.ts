@@ -161,7 +161,18 @@ export const authOptions: NextAuthOptions = {
   providers,
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === 'credentials') return true;
+      if (account?.provider === 'credentials') {
+        // Check if email is verified for credentials login
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+        });
+
+        if (!dbUser?.emailVerified && dbUser?.password) {
+          throw new Error('Please verify your email before signing in');
+        }
+
+        return true;
+      }
 
       // For OAuth providers (Google and OIDC)
       const existingUser = await prisma.user.findUnique({
@@ -169,7 +180,14 @@ export const authOptions: NextAuthOptions = {
         include: { accounts: true },
       });
 
-      if (!existingUser) return true;
+      if (!existingUser) {
+        // For OAuth sign ups, automatically verify their email
+        await prisma.user.update({
+          where: { email: user.email! },
+          data: { emailVerified: new Date() },
+        });
+        return true;
+      }
 
       // If the user exists but has no accounts, allow sign in
       if (existingUser.accounts.length === 0) return true;

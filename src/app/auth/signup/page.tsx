@@ -13,6 +13,7 @@ export default function SignUpPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [authConfig, setAuthConfig] = useState<{ googleEnabled: boolean; oidcEnabled: boolean }>({
     googleEnabled: false,
     oidcEnabled: false,
@@ -48,17 +49,7 @@ export default function SignUpPage() {
         throw new Error(data.error || 'Failed to sign up');
       }
 
-      // Sign in after successful signup
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: true,
-        callbackUrl: '/dashboard',
-      });
-
-      if (result?.error) {
-        throw new Error(result.error);
-      }
+      setIsSuccess(true);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to sign up');
     } finally {
@@ -73,6 +64,29 @@ export default function SignUpPage() {
   const handleOIDCSignIn = () => {
     signIn('oidc', { callbackUrl: '/dashboard' });
   };
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+              Check your email
+            </h2>
+            <div className="mt-4 text-center">
+              <p className="text-gray-600 dark:text-gray-400">
+                We&apos;ve sent you an email with a verification link. Please check your inbox and
+                click the link to verify your email address.
+              </p>
+              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                If you don&apos;t see the email, please check your spam folder.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

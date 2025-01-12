@@ -171,3 +171,33 @@ export async function sendHomeShareInviteEmail(
     from: process.env.EMAIL_FROM || `"HomeDocs" <${process.env.EMAIL_USER}>`,
   });
 }
+
+export async function sendVerificationEmail(email: string, token: string) {
+  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify?token=${token}`;
+  const subject = `${process.env.ENVIRONMENT === 'production' ? '' : '[TEST] '}Verify your email address`;
+
+  const content = `
+    <h1>Welcome to HomeDocs!</h1>
+    <p>Please verify your email address by clicking the button below:</p>
+    <a href="${verificationUrl}" style="display: inline-block; background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; margin: 16px 0;">
+      Verify Email
+    </a>
+    <p>If the button doesn't work, you can also click this link:</p>
+    <p><a href="${verificationUrl}">${verificationUrl}</a></p>
+    <p>This link will expire in 24 hours.</p>
+    <p>If you didn't create an account with HomeDocs, you can safely ignore this email.</p>
+  `;
+
+  const html = createEmailTemplate({
+    title: subject,
+    previewText: 'Please verify your email address to complete your HomeDocs account setup',
+    content,
+  });
+
+  return sendEmail({
+    to: email,
+    subject,
+    html,
+    text: `Welcome to HomeDocs!\n\nPlease verify your email address by clicking the following link: ${verificationUrl}\n\nThis link will expire in 24 hours.\n\nIf you didn't create an account with HomeDocs, you can safely ignore this email.`,
+  });
+}
