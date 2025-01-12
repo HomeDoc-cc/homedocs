@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/components/ui/use-toast';
@@ -30,8 +30,12 @@ export default function AdminDashboard() {
     },
   });
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'database'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'database'>(
+    (searchParams.get('tab') as 'overview' | 'users' | 'database') || 'overview'
+  );
 
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -387,6 +391,13 @@ export default function AdminDashboard() {
   };
 
   const totalPages = Math.ceil(totalUsers / pageSize);
+
+  // Update URL when tab changes
+  useEffect(() => {
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set('tab', activeTab);
+    router.push(`/admin?${currentParams.toString()}`, { scroll: false });
+  }, [activeTab, router]);
 
   if (loading && !users.length) {
     return (
