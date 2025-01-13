@@ -3,21 +3,29 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { authOptions } from '@/lib/auth';
-import { getServerContext, logger } from '@/lib/logger';
+import { logger } from '@/lib/logger';
+import { getServerContext } from '@/lib/logger';
 
 export default async function HomePage() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
+    if (session?.user) {
+      logger.info('Authenticated user visiting landing page, redirecting to dashboard', {
+        ...getServerContext(session.user.id, 'landing.redirect'),
+      });
+      redirect('/dashboard');
+    }
 
-  if (session?.user) {
-    logger.info('Authenticated user visiting landing page, redirecting to dashboard', {
-      ...getServerContext(session.user.id, 'landing.redirect'),
+    logger.info('Visitor accessing landing page', {
+      ...getServerContext(undefined, 'landing.view'),
     });
-    redirect('/dashboard');
+  } catch (error) {
+    // Silently ignore auth errors and show the homepage
+    logger.error('Auth error on home page', {
+      ...getServerContext(undefined, 'landing.error'),
+      error: error instanceof Error ? error : undefined,
+    });
   }
-
-  logger.info('Visitor accessing landing page', {
-    ...getServerContext(undefined, 'landing.view'),
-  });
 
   return (
     <div className="min-h-screen">
