@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { AddressAutocomplete } from '@/components/address-autocomplete';
 import { ImageUpload } from '@/components/image-upload';
 
 interface EditHomePageProps {
@@ -26,6 +27,7 @@ export default function EditHomePage({ params }: EditHomePageProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [id, setId] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>([]);
+  const [address, setAddress] = useState('');
 
   useEffect(() => {
     async function getParams() {
@@ -44,6 +46,7 @@ export default function EditHomePage({ params }: EditHomePageProps) {
       const data = await response.json();
       setHome(data);
       setImages(data.images || []);
+      setAddress(data.address || '');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch home');
     }
@@ -63,7 +66,7 @@ export default function EditHomePage({ params }: EditHomePageProps) {
     const formData = new FormData(event.currentTarget);
     const data = {
       name: formData.get('name') as string,
-      address: formData.get('address') as string,
+      address,
       images,
     };
 
@@ -156,11 +159,9 @@ export default function EditHomePage({ params }: EditHomePageProps) {
             >
               Address
             </label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              defaultValue={home.address}
+            <AddressAutocomplete
+              value={address}
+              onChange={setAddress}
               required
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="e.g., 123 Ocean Drive"
@@ -182,30 +183,21 @@ export default function EditHomePage({ params }: EditHomePageProps) {
             </div>
 
             {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-          </div>
 
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={onDelete}
-              disabled={isDeleting}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 dark:bg-red-500 border border-transparent rounded-md hover:bg-red-700 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete Home'}
-            </button>
-
-            <div className="flex space-x-4">
+            <div className="pt-6 flex justify-between items-center">
               <button
                 type="button"
-                onClick={() => router.back()}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={onDelete}
+                disabled={isDeleting}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
               >
-                Cancel
+                {isDeleting ? 'Deleting...' : 'Delete Home'}
               </button>
+
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </button>

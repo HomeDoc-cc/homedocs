@@ -5,6 +5,7 @@ import { Navbar } from '@/components/layout/navbar';
 import { Providers } from '@/components/providers';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { QueryProvider } from '@/providers/query-provider';
+import { GoogleMapsProvider } from '@/components/google-maps-provider';
 
 import './globals.css';
 
@@ -87,11 +88,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <QueryProvider>
             <ThemeProvider>
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-                <Navbar />
-                <main className="flex-grow">{children}</main>
-                <Footer />
-              </div>
+              <GoogleMapsProvider>
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+                  <Navbar />
+                  <main className="flex-grow">{children}</main>
+                  <Footer />
+                </div>
+              </GoogleMapsProvider>
             </ThemeProvider>
           </QueryProvider>
         </Providers>
