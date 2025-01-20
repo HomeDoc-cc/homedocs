@@ -38,7 +38,7 @@ const nextConfig = {
             value: `
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com;
-              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+              style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.googleapis.com;
               img-src 'self' data: https://*.googleapis.com https://*.gstatic.com;
               font-src 'self' https://fonts.gstatic.com;
               connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.github.com;
