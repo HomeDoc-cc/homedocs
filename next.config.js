@@ -13,6 +13,18 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.googleusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: '*.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.gstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.github.com',
+      },
     ],
   },
   transpilePackages: ['libheif-js', 'heic-decode', 'heic-convert'],
@@ -29,7 +41,7 @@ const nextConfig = {
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               img-src 'self' data: https://*.googleapis.com https://*.gstatic.com;
               font-src 'self' https://fonts.gstatic.com;
-              connect-src 'self' https://*.googleapis.com https://*.gstatic.com;
+              connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.github.com;
             `
               .replace(/\s+/g, ' ')
               .trim(),
