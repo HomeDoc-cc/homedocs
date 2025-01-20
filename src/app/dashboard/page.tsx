@@ -1,51 +1,73 @@
-import { getServerSession } from 'next-auth';
+'use client';
+
+import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { HomesOverview } from '@/components/dashboard/homes-overview';
 import { QuickStats } from '@/components/dashboard/quick-stats';
-import { RecentTasks } from '@/components/dashboard/recent-tasks';
-import { authOptions } from '@/lib/auth';
-import { getUserHomes } from '@/lib/home.utils';
-import { getServerContext, logger } from '@/lib/logger';
+import { TaskList } from '@/components/tasks/task-list';
+import { useTaskData } from '@/hooks/use-task-data';
+import { Task } from '@/types/prisma';
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+export default function DashboardPage() {
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated: () => redirect('/auth/signin'),
+  });
+  const [homes, setHomes] = useState([]);
+  const { tasks, users, isLoading, refetch } = useTaskData();
 
-  if (session === null) {
-    logger.info('Unauthorized access attempt to dashboard', {
-      ...getServerContext(),
-      path: '/dashboard',
-    });
-    redirect('/auth/signin');
-    return null;
-  }
+  useEffect(() => {
+    async function fetchHomes() {
+      try {
+        const response = await fetch('/api/homes');
+        if (!response.ok) throw new Error('Failed to fetch homes');
+        const data = await response.json();
+        setHomes(data);
+      } catch (error) {
+        console.error('Error fetching homes:', error);
+      }
+    }
 
-  try {
-    logger.info('Loading dashboard', getServerContext(session.user.id, 'dashboard.load'));
+    if (session?.user?.id) {
+      fetchHomes();
+    }
+  }, [session?.user?.id]);
 
-    const [homes] = await Promise.all([getUserHomes(session.user.id)]);
+  const canEdit = (task: Task) => {
+    if (!session?.user?.id) return false;
+    return task.creatorId === session.user.id || task.assigneeId === session.user.id;
+  };
 
-    logger.info('Dashboard loaded successfully', {
-      ...getServerContext(session.user.id, 'dashboard.loaded'),
-      homeCount: homes.length,
-    });
-
+  if (status === 'loading') {
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Dashboard</h1>
-        <HomesOverview
-          homes={homes}
-          canAddHome={session.user.tier !== 'FREE' || homes.length === 0}
-        />
-        <RecentTasks />
-        <QuickStats homes={homes} />
+        <div className="text-center text-gray-600 dark:text-gray-400">Loading...</div>
       </div>
     );
-  } catch (error) {
-    logger.error('Failed to load dashboard', {
-      ...getServerContext(session.user.id, 'dashboard.error'),
-      error: error as Error,
-    });
-    throw error;
   }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Dashboard</h1>
+      <HomesOverview
+        homes={homes}
+        canAddHome={session.user.tier !== 'FREE' || homes.length === 0}
+      />
+
+      <div className="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <TaskList
+          tasks={tasks}
+          users={users}
+          isLoading={isLoading}
+          onTasksChange={refetch}
+          canEdit={canEdit}
+          canCreateTask={true}
+        />
+      </div>
+
+      <QuickStats homes={homes} />
+    </div>
+  );
 }

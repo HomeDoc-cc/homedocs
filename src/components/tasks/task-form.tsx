@@ -46,17 +46,16 @@ interface TaskFormProps {
   users: User[];
   onSubmit: (data: TaskFormData) => void;
   onCancel: () => void;
+  defaultHomeId?: string;
+  defaultRoomId?: string;
+  defaultItemId?: string;
 }
 
-export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
-  const { homes, rooms, items, isLoading } = useLocationOptions();
+export function TaskForm({ task, users, onSubmit, onCancel, defaultHomeId, defaultRoomId, defaultItemId }: TaskFormProps) {
+  const { homes, rooms, items } = useLocationOptions();
   const hasAutoSelectedHome = useRef(false);
-  const previousHomeId = useRef<string | undefined>(
-    task?.homeId || task?.room?.homeId || task?.item?.room?.homeId
-  );
-  const previousRoomId = useRef<string | undefined>(
-    task?.roomId || task?.room?.id || task?.item?.roomId
-  );
+  const previousHomeId = useRef<string | undefined>(task?.homeId || task?.room?.homeId || task?.item?.room?.homeId);
+  const previousRoomId = useRef<string | undefined>(task?.roomId || task?.room?.id || task?.item?.roomId);
   const hasSetInitialValues = useRef(false);
 
   const {
@@ -89,6 +88,9 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
           dueDate: new Date().toISOString().split('T')[0],
           interval: 1,
           unit: TaskRecurrenceUnit.WEEKLY,
+          homeId: defaultHomeId,
+          roomId: defaultRoomId,
+          itemId: defaultItemId,
         },
   });
 
@@ -106,29 +108,6 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
   const availableItems = selectedRoomId
     ? items.filter((item) => item.roomId === selectedRoomId)
     : items;
-
-  // Update location-related fields once we have the data
-  useEffect(() => {
-    if (!isLoading && homes.length > 0 && !hasSetInitialValues.current) {
-      const homeId = task?.homeId || task?.room?.homeId || task?.item?.room?.homeId;
-      const roomId = task?.roomId || task?.room?.id || task?.item?.roomId;
-      const itemId = task?.itemId || task?.item?.id;
-
-      if (homeId) setValue('homeId', homeId);
-      if (roomId) setValue('roomId', roomId);
-      if (itemId) setValue('itemId', itemId);
-
-      hasSetInitialValues.current = true;
-    }
-  }, [task, homes, rooms, items, isLoading, setValue]);
-
-  // Auto-select first home when there's only one and no home is selected
-  useEffect(() => {
-    if (!hasAutoSelectedHome.current && !isLoading && homes.length === 1 && !selectedHomeId) {
-      setValue('homeId', homes[0].id);
-      hasAutoSelectedHome.current = true;
-    }
-  }, [homes, isLoading, selectedHomeId, setValue]);
 
   // Clear dependent fields when parent selection changes
   useEffect(() => {
@@ -148,6 +127,45 @@ export function TaskForm({ task, users, onSubmit, onCancel }: TaskFormProps) {
       previousHomeId.current = selectedHomeId;
     }
   }, [selectedHomeId, selectedRoomId, rooms, setValue]);
+
+  // Auto-select first home when there's only one and no home is selected
+  useEffect(() => {
+    if (!hasAutoSelectedHome.current && homes.length === 1 && !selectedHomeId && !defaultHomeId) {
+      setValue('homeId', homes[0].id);
+      hasAutoSelectedHome.current = true;
+    }
+  }, [homes, selectedHomeId, setValue, defaultHomeId]);
+
+  // Set initial values when data is available
+  useEffect(() => {
+    if (!task && !hasSetInitialValues.current) {
+      // If we have a default room and rooms are loaded, set room and find its home
+      if (defaultRoomId && rooms.length > 0) {
+        const room = rooms.find(room => room.id === defaultRoomId);
+        if (room) {
+          setValue('homeId', room.homeId);
+          previousHomeId.current = room.homeId;
+          setValue('roomId', defaultRoomId);
+          previousRoomId.current = defaultRoomId;
+
+          // Set item if provided and valid
+          if (defaultItemId && items.length > 0) {
+            const validItem = items.some(item => item.id === defaultItemId && item.roomId === defaultRoomId);
+            if (validItem) {
+              setValue('itemId', defaultItemId);
+            }
+          }
+        }
+      }
+      // If we have a default home and homes are loaded, set it
+      else if (defaultHomeId && homes.length > 0) {
+        setValue('homeId', defaultHomeId);
+        previousHomeId.current = defaultHomeId;
+      }
+
+      hasSetInitialValues.current = true;
+    }
+  }, [task, homes, rooms, items, defaultHomeId, defaultRoomId, defaultItemId, setValue]);
 
   useEffect(() => {
     if (selectedRoomId !== previousRoomId.current) {

@@ -8,6 +8,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { HomeShares } from '@/components/home-shares';
 import { ImageGallery } from '@/components/image-gallery';
 import { ShareHomeDialog } from '@/components/share-home-dialog';
+import { TaskList } from '@/components/tasks/task-list';
+import { useTaskData } from '@/hooks/use-task-data';
 import { hasWriteAccess } from '@/lib/permissions';
 
 interface HomePageProps {
@@ -83,6 +85,11 @@ export default function HomePage({ params }: HomePageProps) {
       fetchHome();
     }
   }, [id, fetchHome]);
+
+  const { tasks, users, isLoading: isLoadingTasks, refetch } = useTaskData({
+    type: 'home',
+    id: id || undefined,
+  });
 
   if (error) {
     return (
@@ -185,7 +192,19 @@ export default function HomePage({ params }: HomePageProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <TaskList
+          tasks={tasks}
+          users={users}
+          isLoading={isLoadingTasks}
+          onTasksChange={refetch}
+          canEdit={() => canEdit}
+          canCreateTask={canEdit}
+          defaultHomeId={home.id}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link
           href={`/homes/${home.id}/rooms`}
           className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
@@ -193,16 +212,6 @@ export default function HomePage({ params }: HomePageProps) {
           <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Rooms</h3>
           <p className="text-gray-600 dark:text-gray-300">
             {canEdit ? 'Manage rooms and their contents' : 'View rooms and their contents'}
-          </p>
-        </Link>
-
-        <Link
-          href={`/homes/${home.id}/tasks`}
-          className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-        >
-          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Tasks</h3>
-          <p className="text-gray-600 dark:text-gray-300">
-            {canEdit ? 'View and manage home tasks' : 'View home tasks'}
           </p>
         </Link>
 

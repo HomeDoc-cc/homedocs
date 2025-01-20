@@ -262,6 +262,9 @@ export default function ItemPage({ params }: ItemPageProps) {
           isLoading={isLoadingTasks}
           canEdit={() => canEdit}
           canCreateTask={canEdit}
+          defaultHomeId={item.room.home.id}
+          defaultRoomId={item.room.id}
+          defaultItemId={item.id}
         />
       </div>
     </div>

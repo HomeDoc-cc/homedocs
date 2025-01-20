@@ -7,6 +7,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { ImageGallery } from '@/components/image-gallery';
 import { MarkdownContent } from '@/components/markdown-content';
+import { TaskList } from '@/components/tasks/task-list';
+import { useTaskData } from '@/hooks/use-task-data';
 import { hasWriteAccess } from '@/lib/permissions';
 
 interface Room {
@@ -67,6 +69,11 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
       void fetchRoom();
     }
   }, [id, fetchRoom]);
+
+  const { tasks, users, isLoading: isLoadingTasks, refetch } = useTaskData({
+    type: 'room',
+    id: id || undefined,
+  });
 
   if (error) {
     return (
@@ -143,7 +150,20 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="mb-8 bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <TaskList
+          tasks={tasks}
+          users={users}
+          isLoading={isLoadingTasks}
+          onTasksChange={refetch}
+          canEdit={() => canEdit}
+          canCreateTask={canEdit}
+          defaultHomeId={room?.home.id}
+          defaultRoomId={room?.id}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link
           href={`/rooms/${room.id}/items`}
           className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
@@ -151,16 +171,6 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
           <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Items</h3>
           <p className="text-gray-600 dark:text-gray-300">
             {canEdit ? 'Manage items in this room' : 'View items in this room'}
-          </p>
-        </Link>
-
-        <Link
-          href={`/rooms/${room.id}/tasks`}
-          className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-        >
-          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Tasks</h3>
-          <p className="text-gray-600 dark:text-gray-300">
-            {canEdit ? 'View and manage room tasks' : 'View room tasks'}
           </p>
         </Link>
 

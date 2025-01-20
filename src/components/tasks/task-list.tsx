@@ -15,6 +15,9 @@ interface TaskListProps {
   isLoading: boolean;
   canEdit?: (task: Task) => boolean;
   canCreateTask?: boolean;
+  defaultHomeId?: string;
+  defaultRoomId?: string;
+  defaultItemId?: string;
 }
 
 export function TaskList({
@@ -24,6 +27,9 @@ export function TaskList({
   isLoading,
   canEdit,
   canCreateTask = false,
+  defaultHomeId,
+  defaultRoomId,
+  defaultItemId,
 }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -110,6 +116,9 @@ export function TaskList({
           task={selectedTask}
           users={users}
           onSubmit={handleSubmit}
+          defaultHomeId={defaultHomeId}
+          defaultRoomId={defaultRoomId}
+          defaultItemId={defaultItemId}
         />
       </div>
     );
@@ -225,6 +234,9 @@ export function TaskList({
         task={selectedTask}
         users={users}
         onSubmit={handleSubmit}
+        defaultHomeId={defaultHomeId}
+        defaultRoomId={defaultRoomId}
+        defaultItemId={defaultItemId}
       />
     </div>
   );

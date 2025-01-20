@@ -29,6 +29,9 @@ interface TaskModalProps {
   task?: Task;
   users: User[];
   onSubmit: (data: TaskFormData) => void;
+  defaultHomeId?: string;
+  defaultRoomId?: string;
+  defaultItemId?: string;
 }
 
 export function TaskModal({
@@ -38,6 +41,9 @@ export function TaskModal({
   task,
   users,
   onSubmit,
+  defaultHomeId,
+  defaultRoomId,
+  defaultItemId,
 }: TaskModalProps) {
   return (
     <Transition.Root show={isOpen} as={Fragment} afterLeave={onTransitionEnd}>
@@ -94,6 +100,9 @@ export function TaskModal({
                     users={users}
                     onSubmit={onSubmit}
                     onCancel={() => onClose()}
+                    defaultHomeId={defaultHomeId}
+                    defaultRoomId={defaultRoomId}
+                    defaultItemId={defaultItemId}
                   />
                 </div>
               </div>
