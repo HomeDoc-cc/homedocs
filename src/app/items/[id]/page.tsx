@@ -7,6 +7,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { ImageGallery } from '@/components/image-gallery';
 import { MarkdownContent } from '@/components/markdown-content';
+import { TaskList } from '@/components/tasks/task-list';
+import { useTaskData } from '@/hooks/use-task-data';
 import { hasWriteAccess } from '@/lib/permissions';
 
 interface ItemPageProps {
@@ -84,6 +86,11 @@ export default function ItemPage({ params }: ItemPageProps) {
       fetchItem();
     }
   }, [id, fetchItem]);
+
+  const { tasks, users, isLoading: isLoadingTasks, refetch } = useTaskData({
+    type: 'item',
+    id: id || undefined,
+  });
 
   if (error) {
     return (
@@ -240,28 +247,22 @@ export default function ItemPage({ params }: ItemPageProps) {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Tasks</h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              {canEdit ? 'View and manage tasks for this item' : 'View tasks for this item'}
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-2xl font-semibold text-gray-700 dark:text-gray-300">
-              {item._count.tasks}
-            </span>
-            {canEdit && (
-              <Link
-                href={`/tasks/new?itemId=${item.id}`}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-              >
-                Add Task
-              </Link>
-            )}
-          </div>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mt-8">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tasks</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            {canEdit ? 'View and manage tasks for this item' : 'View tasks for this item'}
+          </p>
         </div>
+
+        <TaskList
+          tasks={tasks}
+          users={users}
+          onTasksChange={refetch}
+          isLoading={isLoadingTasks}
+          canEdit={() => canEdit}
+          canCreateTask={canEdit}
+        />
       </div>
     </div>
   );

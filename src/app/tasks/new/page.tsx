@@ -141,6 +141,35 @@ export default function NewTaskPage() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
+    const selectedItemId = itemId || (formData.get('itemId') as string);
+    const selectedRoomId = roomId || (formData.get('roomId') as string);
+    const selectedHomeId = homeId || (formData.get('homeId') as string);
+
+    // If an item is selected, get its room and home IDs
+    let locationIds: { itemId?: string; roomId?: string; homeId?: string } = {};
+    if (selectedItemId) {
+      const item = items.find((i) => i.id === selectedItemId);
+      if (item) {
+        locationIds = {
+          itemId: selectedItemId,
+          roomId: item.roomId,
+          homeId: rooms.find((r) => r.id === item.roomId)?.homeId,
+        };
+      }
+    } else if (selectedRoomId) {
+      const room = rooms.find((r) => r.id === selectedRoomId);
+      if (room) {
+        locationIds = {
+          roomId: selectedRoomId,
+          homeId: room.homeId,
+        };
+      }
+    } else if (selectedHomeId) {
+      locationIds = {
+        homeId: selectedHomeId,
+      };
+    }
+
     const data: TaskFormData = {
       title: formData.get('title') as string,
       description: (formData.get('description') as string) || undefined,
@@ -148,9 +177,7 @@ export default function NewTaskPage() {
       status: 'PENDING',
       dueDate: (formData.get('dueDate') as string) || undefined,
       assigneeId: (formData.get('assigneeId') as string) || undefined,
-      homeId: homeId || (formData.get('homeId') as string),
-      roomId: roomId || (formData.get('roomId') as string),
-      itemId: itemId || (formData.get('itemId') as string),
+      ...locationIds,
       isRecurring: formData.get('isRecurring') === 'true',
       interval: formData.get('interval') ? parseInt(formData.get('interval') as string) : undefined,
       unit: formData.get('unit') as TaskFormData['unit'],
@@ -166,7 +193,8 @@ export default function NewTaskPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create task');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create task');
       }
 
       const task = await response.json();
