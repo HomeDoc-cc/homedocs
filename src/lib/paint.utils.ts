@@ -153,6 +153,9 @@ export async function getPaintByRoom(roomId: string, userId: string) {
         ],
       },
     },
+    include: {
+      home: true,
+    },
   });
 
   if (!room) {
@@ -161,7 +164,22 @@ export async function getPaintByRoom(roomId: string, userId: string) {
 
   const paint = await prisma.paint.findMany({
     where: {
-      roomId,
+      OR: [
+        { roomId },  // Room-specific paint
+        {
+          AND: [
+            { homeId: room.homeId },  // Home-wide paint
+            { roomId: null },  // Only include home paint that isn't assigned to any room
+          ],
+        },
+      ],
+    },
+    include: {
+      room: {
+        select: {
+          name: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc',

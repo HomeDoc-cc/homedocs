@@ -43,31 +43,32 @@ export default function PaintPage({ params }: PaintPageProps) {
   }, [id, fetchRoom]);
 
   const fetchPaints = useCallback(async () => {
-    if (!room?.homeId) return;
-
     try {
+      // Always fetch room paint
       const roomResponse = await fetch(`/api/rooms/${id}/paint`);
       if (!roomResponse.ok) {
         throw new Error('Failed to fetch room paint');
       }
       const roomPaints = await roomResponse.json();
 
-      const homeResponse = await fetch(`/api/homes/${room.homeId}/paint`);
-      if (!homeResponse.ok) {
-        throw new Error('Failed to fetch home paint');
+      // Only fetch home paint if we have the room data
+      if (room?.homeId) {
+        const homeResponse = await fetch(`/api/homes/${room.homeId}/paint`);
+        if (!homeResponse.ok) {
+          throw new Error('Failed to fetch home paint');
+        }
+        const homePaints = await homeResponse.json();
+        setPaints([...roomPaints, ...homePaints.filter((paint: PrismaPaint) => !paint.roomId)]);
+      } else {
+        setPaints(roomPaints);
       }
-      const homePaints = await homeResponse.json();
-
-      setPaints([...roomPaints, ...homePaints.filter((paint: PrismaPaint) => !paint.roomId)]);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to fetch paint');
     }
   }, [id, room?.homeId]);
 
   useEffect(() => {
-    if (room?.homeId) {
-      void fetchPaints();
-    }
+    void fetchPaints();
   }, [id, room?.homeId, fetchPaints]);
 
   const handleCreatePaint = async (data: PaintFormData) => {
