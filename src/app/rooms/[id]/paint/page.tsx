@@ -45,7 +45,7 @@ export default function PaintPage({ params }: PaintPageProps) {
   const fetchPaints = useCallback(async () => {
     try {
       // Always fetch room paint
-      const roomResponse = await fetch(`/api/rooms/${id}/paint`);
+      const roomResponse = await fetch(`/api/paints?roomId=${id}`);
       if (!roomResponse.ok) {
         throw new Error('Failed to fetch room paint');
       }
@@ -53,7 +53,7 @@ export default function PaintPage({ params }: PaintPageProps) {
 
       // Only fetch home paint if we have the room data
       if (room?.homeId) {
-        const homeResponse = await fetch(`/api/homes/${room.homeId}/paint`);
+        const homeResponse = await fetch(`/api/paints?homeId=${room.homeId}`);
         if (!homeResponse.ok) {
           throw new Error('Failed to fetch home paint');
         }
@@ -73,7 +73,7 @@ export default function PaintPage({ params }: PaintPageProps) {
 
   const handleCreatePaint = async (data: PaintFormData) => {
     try {
-      const response = await fetch(`/api/rooms/${id}/paint`, {
+      const response = await fetch(`/api/paints`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

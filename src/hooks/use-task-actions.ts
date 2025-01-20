@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 import { TaskFormData } from '@/components/tasks/task-modal';
 import { TaskStatus } from '@/types/prisma';
@@ -7,52 +7,56 @@ export function useTaskActions(onTasksChange?: () => void) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createTask = async (data: TaskFormData) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const payload = {
-        ...data,
-        description: data.description || null,
-        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
-        assigneeId: data.assigneeId || null,
-        interval: data.interval || null,
-        unit: data.unit || null,
-        homeId: data.homeId || null,
-        roomId: data.roomId || null,
-        itemId: data.itemId || null,
-      };
+  const createTask = useCallback(
+    async (data: TaskFormData) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const payload = {
+          ...data,
+          description: data.description || null,
+          dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+          assigneeId: data.assigneeId || null,
+          interval: data.interval || null,
+          unit: data.unit || null,
+          homeId: data.homeId || null,
+          roomId: data.roomId || null,
+          itemId: data.itemId || null,
+        };
 
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Create task response error:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
+        const response = await fetch('/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         });
-        throw new Error('Failed to create task');
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          console.error('Create task response error:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData,
+          });
+          throw new Error('Failed to create task');
+        }
+
+        const task = await response.json();
+        onTasksChange?.();
+        return task;
+      } catch (error) {
+        console.error('Error creating task:', error);
+        setError(error instanceof Error ? error.message : 'Failed to create task');
+        throw error;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [onTasksChange]
+  );
 
-      onTasksChange?.();
-      return true;
-    } catch (error) {
-      console.error('Error creating task:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create task');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateTask = async (taskId: string, data: TaskFormData) => {
+  const updateTask = useCallback(async (taskId: string, data: Partial<TaskFormData>) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -87,18 +91,19 @@ export function useTaskActions(onTasksChange?: () => void) {
         throw new Error('Failed to update task');
       }
 
+      const task = await response.json();
       onTasksChange?.();
-      return true;
+      return task;
     } catch (error) {
       console.error('Error updating task:', error);
       setError(error instanceof Error ? error.message : 'Failed to update task');
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onTasksChange]);
 
-  const deleteTask = async (taskId: string) => {
+  const deleteTask = useCallback(async (taskId: string) => {
     if (!confirm('Are you sure you want to delete this task?')) return false;
 
     try {
@@ -127,7 +132,7 @@ export function useTaskActions(onTasksChange?: () => void) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onTasksChange]);
 
   const completeTask = async (taskId: string) => {
     if (!confirm('Are you sure you want to mark this task as complete?')) return false;
@@ -135,8 +140,8 @@ export function useTaskActions(onTasksChange?: () => void) {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/tasks/${taskId}/complete`, {
-        method: 'POST',
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },

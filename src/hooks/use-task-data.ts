@@ -20,18 +20,30 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
   const previousId = useRef(id);
 
   const fetchTasks = useCallback(async () => {
-    if (!session) return;
+    if (!session?.user?.email) {
+      setError('Not authenticated');
+      setTasks([]);
+      return;
+    }
 
     try {
       setIsLoading(true);
       setError(null);
-      const endpoint = type && id ? `/api/${type}s/${id}/tasks` : '/api/tasks';
-      const response = await fetch(endpoint);
+      let url = '/api/tasks';
+
+      // Add query parameters for specific tasks
+      if (type && id) {
+        url += `?${type}Id=${id}`;
+      }
+
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch tasks');
       }
+
       const data = await response.json();
       setTasks(data);
+      setError(null);
       hasFetchedInitialData.current = true;
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -40,16 +52,22 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [type, id, session]);
+  }, [session, type, id]);
 
   const fetchUsers = useCallback(async () => {
-    if (!session) return;
+    if (!session?.user?.email) {
+      setUsers([]);
+      return;
+    }
 
     try {
       // If we're fetching tasks for a specific home, pass the homeId
       const homeId = type === 'home' ? id : undefined;
       const endpoint = homeId ? `/api/users?homeId=${homeId}` : '/api/users';
       const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error('Failed to fetch users');
+      }
       const data = await response.json();
       setUsers(data);
     } catch (error) {
@@ -66,20 +84,17 @@ export function useTaskData({ type, id }: UseTaskDataProps = {}) {
       previousId.current = id;
     }
 
-    // Only fetch if we have a session and either:
+    // Fetch tasks if we have a session and either:
     // 1. No type/id specified (fetch all tasks)
     // 2. Both type and id are specified (fetch specific tasks)
-    // And we haven't fetched the initial data yet
-    if (session && (!type || (type && id)) && !hasFetchedInitialData.current) {
-      fetchTasks();
+    if (!type || (type && id)) {
+      void fetchTasks();
     }
-  }, [type, id, session, fetchTasks]);
+  }, [type, id, fetchTasks]);
 
   useEffect(() => {
-    if (session) {
-      fetchUsers();
-    }
-  }, [session, fetchUsers]);
+    void fetchUsers();
+  }, [fetchUsers]);
 
   return {
     tasks,

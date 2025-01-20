@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createTask, getAllTasks, getTasksByLocation } from '@/lib/task.utils';
+import { createPaint, getPaintByHome, getPaintByRoom } from '@/lib/paint.utils';
 import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   try {
     const session = await requireAuth();
-    logger.info('Fetching tasks', {
+    logger.info('Fetching paints', {
       ...getRequestContext(request),
       userId: session.id,
     });
@@ -15,47 +15,27 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const homeId = searchParams.get('homeId');
     const roomId = searchParams.get('roomId');
-    const itemId = searchParams.get('itemId');
 
-    // If no location parameters are provided, fetch all tasks
-    const locationParams = [homeId, roomId, itemId].filter(Boolean);
-    if (locationParams.length === 0) {
-      const tasks = await getAllTasks(session.id);
-      return NextResponse.json(tasks);
-    }
-
-    // If location parameters are provided, ensure only one is present
-    if (locationParams.length !== 1) {
+    // Ensure either homeId or roomId is provided, but not both
+    if ((!homeId && !roomId) || (homeId && roomId)) {
       return NextResponse.json(
-        { error: 'Must provide exactly one of: homeId, roomId, or itemId query parameter' },
+        { error: 'Must provide either homeId or roomId query parameter' },
         { status: 400 }
       );
     }
 
-    let type: string;
-    let id: string;
+    const paints = homeId
+      ? await getPaintByHome(homeId, session.id)
+      : await getPaintByRoom(roomId!, session.id);
 
-    if (homeId) {
-      type = 'home';
-      id = homeId;
-    } else if (roomId) {
-      type = 'room';
-      id = roomId;
-    } else {
-      type = 'item';
-      id = itemId!;
-    }
-
-    const tasks = await getTasksByLocation(session.id, type, id);
-
-    logger.info('Tasks fetched successfully', {
+    logger.info('Paints fetched successfully', {
       userId: session.id,
-      count: tasks.length,
+      count: paints.length,
     });
 
-    return NextResponse.json(tasks);
+    return NextResponse.json(paints);
   } catch (error) {
-    logger.error('Failed to fetch tasks', {
+    logger.error('Failed to fetch paints', {
       ...getRequestContext(request),
       error: error as Error,
     });
@@ -70,22 +50,32 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await requireAuth();
-    logger.info('Creating new task', {
+    logger.info('Creating new paint', {
       ...getRequestContext(request),
       userId: session.id,
     });
 
     const json = await request.json();
-    const task = await createTask(session.id, json);
+    const { homeId, roomId, ...paintData } = json;
 
-    logger.info('Task created successfully', {
+    // Ensure either homeId or roomId is provided, but not both
+    if ((!homeId && !roomId) || (homeId && roomId)) {
+      return NextResponse.json(
+        { error: 'Must provide either homeId or roomId in request body' },
+        { status: 400 }
+      );
+    }
+
+    const paint = await createPaint(session.id, paintData, { homeId, roomId });
+
+    logger.info('Paint created successfully', {
       userId: session.id,
-      taskId: task.id,
+      paintId: paint.id,
     });
 
-    return NextResponse.json(task, { status: 201 });
+    return NextResponse.json(paint, { status: 201 });
   } catch (error) {
-    logger.error('Failed to create task', {
+    logger.error('Failed to create paint', {
       ...getRequestContext(request),
       error: error as Error,
     });
@@ -95,4 +85,4 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+} 

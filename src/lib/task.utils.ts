@@ -180,7 +180,17 @@ export async function createTask(userId: string, input: CreateTaskInput) {
       include: {
         room: {
           include: {
-            home: true,
+            home: {
+              include: {
+                owner: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -214,7 +224,17 @@ export async function createTask(userId: string, input: CreateTaskInput) {
         },
       },
       include: {
-        home: true,
+        home: {
+          include: {
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -241,6 +261,15 @@ export async function createTask(userId: string, input: CreateTaskInput) {
             },
           },
         ],
+      },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
@@ -312,9 +341,51 @@ export async function createTask(userId: string, input: CreateTaskInput) {
     include: {
       creator: true,
       assignee: true,
-      home: true,
-      room: true,
-      item: true,
+      home: {
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+      room: {
+        include: {
+          home: {
+            include: {
+              owner: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      item: {
+        include: {
+          room: {
+            include: {
+              home: {
+                include: {
+                  owner: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -555,7 +626,17 @@ export async function updateTask(taskId: string, userId: string, input: Partial<
         include: {
           room: {
             include: {
-              home: true,
+              home: {
+                include: {
+                  owner: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -589,7 +670,17 @@ export async function updateTask(taskId: string, userId: string, input: Partial<
           },
         },
         include: {
-          home: true,
+          home: {
+            include: {
+              owner: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -616,6 +707,15 @@ export async function updateTask(taskId: string, userId: string, input: Partial<
               },
             },
           ],
+        },
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
         },
       });
 

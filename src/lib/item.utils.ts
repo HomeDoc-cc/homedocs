@@ -121,9 +121,24 @@ export async function getItemById(itemId: string, userId: string) {
       room: {
         include: {
           home: {
-            select: {
-              id: true,
-              name: true,
+            include: {
+              owner: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+              shares: {
+                select: {
+                  role: true,
+                  user: {
+                    select: {
+                      id: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },

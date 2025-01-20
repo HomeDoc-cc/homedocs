@@ -23,7 +23,7 @@ export default function Page({ params }: PageProps) {
 
   const fetchPaints = useCallback(async () => {
     try {
-      const response = await fetch(`/api/homes/${id}/paint`);
+      const response = await fetch(`/api/paints?homeId=${id}`);
       if (!response.ok) {
         throw new Error('Failed to fetch paint');
       }
@@ -54,12 +54,15 @@ export default function Page({ params }: PageProps) {
           throw new Error('Failed to update paint');
         }
       } else {
-        const response = await fetch(`/api/homes/${id}/paint`, {
+        const response = await fetch(`/api/paints`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify({
+            ...data,
+            homeId: id,
+          }),
         });
 
         if (!response.ok) {

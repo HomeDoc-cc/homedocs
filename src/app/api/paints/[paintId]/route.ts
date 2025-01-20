@@ -1,35 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { deletePaint, updatePaint } from '@/lib/paint.utils';
 import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
-import { createTask, getTasksByHome } from '@/lib/task.utils';
 
-export async function POST(
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ homeId: string }> }
+  { params }: { params: Promise<{ paintId: string }> }
 ) {
   try {
     const session = await requireAuth();
-    logger.info('Creating new task for home', {
+    logger.info('Updating paint', {
       ...getRequestContext(request),
       userId: session.id,
-      homeId: (await params).homeId,
+      paintId: (await params).paintId,
     });
 
     const json = await request.json();
-    const task = await createTask(session.id, { ...json, homeId: (await params).homeId });
+    const paint = await updatePaint((await params).paintId, session.id, json);
 
-    logger.info('Task created successfully', {
+    logger.info('Paint updated successfully', {
       userId: session.id,
-      homeId: (await params).homeId,
-      taskId: task.id,
+      paintId: paint.id,
     });
 
-    return NextResponse.json(task, { status: 201 });
+    return NextResponse.json(paint);
   } catch (error) {
-    logger.error('Failed to create task', {
+    logger.error('Failed to update paint', {
       ...getRequestContext(request),
-      homeId: (await params).homeId,
+      paintId: (await params).paintId,
       error: error as Error,
     });
 
@@ -40,31 +39,30 @@ export async function POST(
   }
 }
 
-export async function GET(
+export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ homeId: string }> }
+  { params }: { params: Promise<{ paintId: string }> }
 ) {
   try {
     const session = await requireAuth();
-    logger.info('Fetching tasks for home', {
+    logger.info('Deleting paint', {
       ...getRequestContext(request),
       userId: session.id,
-      homeId: (await params).homeId,
+      paintId: (await params).paintId,
     });
 
-    const tasks = await getTasksByHome((await params).homeId, session.id);
+    await deletePaint((await params).paintId, session.id);
 
-    logger.info('Tasks fetched successfully', {
+    logger.info('Paint deleted successfully', {
       userId: session.id,
-      homeId: (await params).homeId,
-      count: tasks.length,
+      paintId: (await params).paintId,
     });
 
-    return NextResponse.json(tasks);
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    logger.error('Failed to fetch tasks', {
+    logger.error('Failed to delete paint', {
       ...getRequestContext(request),
-      homeId: (await params).homeId,
+      paintId: (await params).paintId,
       error: error as Error,
     });
 
@@ -73,4 +71,4 @@ export async function GET(
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+} 
