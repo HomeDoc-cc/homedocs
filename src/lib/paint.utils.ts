@@ -73,12 +73,25 @@ export async function createPaint(
     }
   }
 
+  // Look up hex color from Color table if code is provided
+  let hexColor: string | undefined;
+  if (input.code) {
+    const colorData = await prisma.color.findUnique({
+      where: { code: input.code },
+      select: { hex: true },
+    });
+    if (colorData) {
+      hexColor = colorData.hex;
+    }
+  }
+
   input.name = `${input.location} - ${input.brand} ${input.color}`;
   const parsedInput = paintSchema.parse(input);
 
   const paint = await prisma.paint.create({
     data: {
       ...parsedInput,
+      hexColor,
       ...(homeId ? { home: { connect: { id: homeId } } } : {}),
       ...(roomId ? { room: { connect: { id: roomId } } } : {}),
     },
@@ -165,11 +178,11 @@ export async function getPaintByRoom(roomId: string, userId: string) {
   const paint = await prisma.paint.findMany({
     where: {
       OR: [
-        { roomId },  // Room-specific paint
+        { roomId }, // Room-specific paint
         {
           AND: [
-            { homeId: room.homeId },  // Home-wide paint
-            { roomId: null },  // Only include home paint that isn't assigned to any room
+            { homeId: room.homeId }, // Home-wide paint
+            { roomId: null }, // Only include home paint that isn't assigned to any room
           ],
         },
       ],

@@ -225,6 +225,7 @@ model Paint {
   code     String?
   location String?
   notes    String?
+  hexColor String?
 
   home   Home?   @relation(fields: [homeId], references: [id], onDelete: Cascade)
   homeId String?
