@@ -19,6 +19,8 @@ const customJestConfig = {
     'node_modules/(?!(next|next-auth|@babel/runtime|jose)/)',
   ],
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
+  silent: false,
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

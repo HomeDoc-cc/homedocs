@@ -51,12 +51,90 @@ interface TaskFormProps {
   defaultItemId?: string;
 }
 
-export function TaskForm({ task, users, onSubmit, onCancel, defaultHomeId, defaultRoomId, defaultItemId }: TaskFormProps) {
+export function TaskForm({
+  task,
+  users,
+  onSubmit,
+  onCancel,
+  defaultHomeId,
+  defaultRoomId,
+  defaultItemId,
+}: TaskFormProps) {
   const { homes, rooms, items } = useLocationOptions();
   const hasAutoSelectedHome = useRef(false);
-  const previousHomeId = useRef<string | undefined>(task?.homeId || task?.room?.homeId || task?.item?.room?.homeId);
-  const previousRoomId = useRef<string | undefined>(task?.roomId || task?.room?.id || task?.item?.roomId);
-  const hasSetInitialValues = useRef(false);
+  const hasSetDefaultValues = useRef(false);
+  const previousHomeId = useRef<string | undefined>(
+    task?.homeId || task?.room?.homeId || task?.item?.room?.homeId
+  );
+  const previousRoomId = useRef<string | undefined>(
+    task?.roomId || task?.room?.id || task?.item?.roomId
+  );
+
+  // Find initial values based on defaults
+  const initialValues = (() => {
+    if (task) {
+      return {
+        title: task.title,
+        description: task.description || undefined,
+        priority: task.priority,
+        status: task.status,
+        dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
+        assigneeId: task.assigneeId || undefined,
+        isRecurring: task.isRecurring,
+        interval: task.interval || undefined,
+        unit: task.unit || undefined,
+        homeId: task.homeId || task.room?.homeId || task.item?.room?.homeId || undefined,
+        roomId: task.roomId || task.room?.id || task.item?.roomId || undefined,
+        itemId: task.itemId || task.item?.id || undefined,
+      };
+    }
+
+    // Find initial values based on default IDs
+    let homeId = defaultHomeId;
+    let roomId = defaultRoomId;
+    let itemId = defaultItemId;
+
+    if (defaultItemId && items.length > 0) {
+      const item = items.find((item) => item.id === defaultItemId);
+      if (item && rooms.length > 0) {
+        const room = rooms.find((room) => room.id === item.roomId);
+        if (room && homes.length > 0) {
+          const home = homes.find((home) => home.id === room.homeId);
+          if (home) {
+            itemId = defaultItemId;
+            roomId = room.id;
+            homeId = home.id;
+          }
+        }
+      }
+    } else if (defaultRoomId && rooms.length > 0) {
+      const room = rooms.find((room) => room.id === defaultRoomId);
+      if (room && homes.length > 0) {
+        const home = homes.find((home) => home.id === room.homeId);
+        if (home) {
+          roomId = room.id;
+          homeId = home.id;
+        }
+      }
+    } else if (defaultHomeId && homes.length > 0) {
+      const home = homes.find((home) => home.id === defaultHomeId);
+      if (home) {
+        homeId = home.id;
+      }
+    }
+
+    return {
+      priority: TaskPriority.LOW,
+      status: TaskStatus.PENDING,
+      isRecurring: false,
+      dueDate: new Date().toISOString().split('T')[0],
+      interval: 1,
+      unit: TaskRecurrenceUnit.WEEKLY,
+      homeId,
+      roomId,
+      itemId,
+    };
+  })();
 
   const {
     register,
@@ -66,33 +144,45 @@ export function TaskForm({ task, users, onSubmit, onCancel, defaultHomeId, defau
     formState: { errors, isSubmitting },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
-    defaultValues: task
-      ? {
-          title: task.title,
-          description: task.description || undefined,
-          priority: task.priority,
-          status: task.status,
-          dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : undefined,
-          assigneeId: task.assigneeId || undefined,
-          isRecurring: task.isRecurring,
-          interval: task.interval || undefined,
-          unit: task.unit || undefined,
-          homeId: task.homeId || task.room?.homeId || task.item?.room?.homeId,
-          roomId: task.roomId || task.room?.id || task.item?.roomId,
-          itemId: task.itemId || task.item?.id,
-        }
-      : {
-          priority: TaskPriority.LOW,
-          status: TaskStatus.PENDING,
-          isRecurring: false,
-          dueDate: new Date().toISOString().split('T')[0],
-          interval: 1,
-          unit: TaskRecurrenceUnit.WEEKLY,
-          homeId: defaultHomeId,
-          roomId: defaultRoomId,
-          itemId: defaultItemId,
-        },
+    defaultValues: initialValues,
   });
+
+  // Set default values once data is loaded
+  useEffect(() => {
+    if (!hasSetDefaultValues.current && homes.length > 0 && rooms.length > 0 && items.length > 0) {
+      if (defaultItemId) {
+        const item = items.find((item) => item.id === defaultItemId);
+        if (item) {
+          const room = rooms.find((room) => room.id === item.roomId);
+          if (room) {
+            const home = homes.find((home) => home.id === room.homeId);
+            if (home) {
+              setValue('homeId', home.id);
+              setValue('roomId', room.id);
+              setValue('itemId', item.id);
+              hasSetDefaultValues.current = true;
+            }
+          }
+        }
+      } else if (defaultRoomId) {
+        const room = rooms.find((room) => room.id === defaultRoomId);
+        if (room) {
+          const home = homes.find((home) => home.id === room.homeId);
+          if (home) {
+            setValue('homeId', home.id);
+            setValue('roomId', room.id);
+            hasSetDefaultValues.current = true;
+          }
+        }
+      } else if (defaultHomeId) {
+        const home = homes.find((home) => home.id === defaultHomeId);
+        if (home) {
+          setValue('homeId', home.id);
+          hasSetDefaultValues.current = true;
+        }
+      }
+    }
+  }, [homes, rooms, items, defaultHomeId, defaultRoomId, defaultItemId, setValue]);
 
   const isRecurring = watch('isRecurring');
   const selectedHomeId = watch('homeId');
@@ -111,22 +201,18 @@ export function TaskForm({ task, users, onSubmit, onCancel, defaultHomeId, defau
 
   // Clear dependent fields when parent selection changes
   useEffect(() => {
-    if (selectedHomeId !== previousHomeId.current) {
-      if (!selectedHomeId) {
-        setValue('roomId', undefined);
-        setValue('itemId', undefined);
-      } else {
-        const roomExists = rooms.some(
-          (room) => room.homeId === selectedHomeId && room.id === selectedRoomId
-        );
-        if (!roomExists) {
-          setValue('roomId', undefined);
-          setValue('itemId', undefined);
-        }
+    if (selectedHomeId !== previousHomeId.current && homes.length > 0 && rooms.length > 0) {
+      const roomExists =
+        selectedHomeId && selectedRoomId
+          ? rooms.some((room) => room.homeId === selectedHomeId && room.id === selectedRoomId)
+          : false;
+      if (!roomExists) {
+        setValue('roomId', '');
+        setValue('itemId', '');
       }
       previousHomeId.current = selectedHomeId;
     }
-  }, [selectedHomeId, selectedRoomId, rooms, setValue]);
+  }, [selectedHomeId, selectedRoomId, rooms, homes, setValue]);
 
   // Auto-select first home when there's only one and no home is selected
   useEffect(() => {
@@ -136,52 +222,18 @@ export function TaskForm({ task, users, onSubmit, onCancel, defaultHomeId, defau
     }
   }, [homes, selectedHomeId, setValue, defaultHomeId]);
 
-  // Set initial values when data is available
   useEffect(() => {
-    if (!task && !hasSetInitialValues.current) {
-      // If we have a default room and rooms are loaded, set room and find its home
-      if (defaultRoomId && rooms.length > 0) {
-        const room = rooms.find(room => room.id === defaultRoomId);
-        if (room) {
-          setValue('homeId', room.homeId);
-          previousHomeId.current = room.homeId;
-          setValue('roomId', defaultRoomId);
-          previousRoomId.current = defaultRoomId;
-
-          // Set item if provided and valid
-          if (defaultItemId && items.length > 0) {
-            const validItem = items.some(item => item.id === defaultItemId && item.roomId === defaultRoomId);
-            if (validItem) {
-              setValue('itemId', defaultItemId);
-            }
-          }
-        }
-      }
-      // If we have a default home and homes are loaded, set it
-      else if (defaultHomeId && homes.length > 0) {
-        setValue('homeId', defaultHomeId);
-        previousHomeId.current = defaultHomeId;
-      }
-
-      hasSetInitialValues.current = true;
-    }
-  }, [task, homes, rooms, items, defaultHomeId, defaultRoomId, defaultItemId, setValue]);
-
-  useEffect(() => {
-    if (selectedRoomId !== previousRoomId.current) {
-      if (!selectedRoomId) {
-        setValue('itemId', undefined);
-      } else {
-        const itemExists = items.some(
-          (item) => item.roomId === selectedRoomId && item.id === selectedItemId
-        );
-        if (!itemExists) {
-          setValue('itemId', undefined);
-        }
+    if (selectedRoomId !== previousRoomId.current && rooms.length > 0 && items.length > 0) {
+      const itemExists =
+        selectedRoomId && selectedItemId
+          ? items.some((item) => item.roomId === selectedRoomId && item.id === selectedItemId)
+          : false;
+      if (!itemExists) {
+        setValue('itemId', '');
       }
       previousRoomId.current = selectedRoomId;
     }
-  }, [selectedRoomId, selectedItemId, items, setValue]);
+  }, [selectedRoomId, selectedItemId, rooms, items, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
