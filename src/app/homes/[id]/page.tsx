@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { HomeShares } from '@/components/home-shares';
 import { ImageGallery } from '@/components/image-gallery';
+import { PaintColors } from '@/components/paint-colors';
 import { ShareHomeDialog } from '@/components/share-home-dialog';
 import { TaskList } from '@/components/tasks/task-list';
 import { useTaskData } from '@/hooks/use-task-data';
@@ -86,7 +87,12 @@ export default function HomePage({ params }: HomePageProps) {
     }
   }, [id, fetchHome]);
 
-  const { tasks, users, isLoading: isLoadingTasks, refetch } = useTaskData({
+  const {
+    tasks,
+    users,
+    isLoading: isLoadingTasks,
+    refetch,
+  } = useTaskData({
     type: 'home',
     id: id || undefined,
   });
@@ -113,7 +119,10 @@ export default function HomePage({ params }: HomePageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{home.name}</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{home.name}</h1>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{home.address}</div>
+        </div>
         <div className="flex space-x-4">
           {isOwner && (
             <button
@@ -215,15 +224,9 @@ export default function HomePage({ params }: HomePageProps) {
           </p>
         </Link>
 
-        <Link
-          href={`/homes/${home.id}/paint`}
-          className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-        >
-          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Paint</h3>
-          <p className="text-gray-600 dark:text-gray-300">
-            {canEdit ? 'Track paint colors and finishes' : 'View paint colors and finishes'}
-          </p>
-        </Link>
+        <div className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <PaintColors homeId={home.id} />
+        </div>
       </div>
 
       <ShareHomeDialog

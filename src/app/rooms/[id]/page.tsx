@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { ImageGallery } from '@/components/image-gallery';
 import { MarkdownContent } from '@/components/markdown-content';
+import { PaintColors } from '@/components/paint-colors';
 import { TaskList } from '@/components/tasks/task-list';
 import { useTaskData } from '@/hooks/use-task-data';
 import { hasWriteAccess } from '@/lib/permissions';
@@ -70,7 +71,12 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
     }
   }, [id, fetchRoom]);
 
-  const { tasks, users, isLoading: isLoadingTasks, refetch } = useTaskData({
+  const {
+    tasks,
+    users,
+    isLoading: isLoadingTasks,
+    refetch,
+  } = useTaskData({
     type: 'room',
     id: id || undefined,
   });
@@ -174,15 +180,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
           </p>
         </Link>
 
-        <Link
-          href={`/rooms/${room.id}/paint`}
-          className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-        >
-          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Paint</h3>
-          <p className="text-gray-600 dark:text-gray-300">
-            {canEdit ? 'Track paint colors and finishes' : 'View paint colors and finishes'}
-          </p>
-        </Link>
+        <PaintColors homeId={room.home.id} roomId={room.id} />
       </div>
     </div>
   );
