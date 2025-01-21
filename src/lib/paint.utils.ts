@@ -10,6 +10,7 @@ export const paintSchema = z.object({
   code: z.string().optional(),
   location: z.string().min(1),
   notes: z.string().optional(),
+  hexColor: z.string().optional(),
 });
 
 export type CreatePaintInput = z.infer<typeof paintSchema>;

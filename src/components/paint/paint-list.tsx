@@ -105,7 +105,7 @@ function PaintItem({
   );
 }
 
-export function PaintList({ paints, onEdit, onDelete, roomName }: PaintListProps) {
+export function PaintList({ paints, onEdit, onDelete }: PaintListProps) {
   // Separate paints into room-specific and whole-home
   const roomPaints = paints.filter((paint) => paint.roomId);
   const homePaints = paints.filter((paint) => !paint.roomId);
@@ -114,9 +114,6 @@ export function PaintList({ paints, onEdit, onDelete, roomName }: PaintListProps
     <div className="space-y-8">
       {roomPaints.length > 0 && (
         <div>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            {roomName ? `${roomName} Paints` : 'Room Paints'}
-          </h2>
           <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {roomPaints.map((paint) => (

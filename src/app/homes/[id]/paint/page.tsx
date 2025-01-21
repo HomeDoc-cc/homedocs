@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useCallback, useEffect, useState } from 'react';
 
@@ -23,7 +24,7 @@ export default function Page({ params }: PageProps) {
 
   const fetchPaints = useCallback(async () => {
     try {
-      const response = await fetch(`/api/paints?homeId=${id}`);
+      const response = await fetch(`/api/homes/${id}/paint`);
       if (!response.ok) {
         throw new Error('Failed to fetch paint');
       }
@@ -54,15 +55,12 @@ export default function Page({ params }: PageProps) {
           throw new Error('Failed to update paint');
         }
       } else {
-        const response = await fetch(`/api/paints`, {
+        const response = await fetch(`/api/homes/${id}/paint`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            ...data,
-            homeId: id,
-          }),
+          body: JSON.stringify(data),
         });
 
         if (!response.ok) {
@@ -102,14 +100,16 @@ export default function Page({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Paint</h1>
-        <div className="flex space-x-4">
-          <button
-            onClick={() => router.back()}
-            className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Paint</h1>
+          <Link
+            href={`/homes/${id}`}
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
           >
-            Back
-          </button>
+            ← Home
+          </Link>
+        </div>
+        <div className="flex space-x-4">
           <button
             onClick={() => handleEdit()}
             className="rounded-md border border-transparent bg-blue-600 dark:bg-blue-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

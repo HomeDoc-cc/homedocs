@@ -121,7 +121,6 @@ export default function HomePage({ params }: HomePageProps) {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{home.name}</h1>
-          <div className="text-sm text-gray-500 dark:text-gray-400">{home.address}</div>
         </div>
         <div className="flex space-x-4">
           {isOwner && (
@@ -184,22 +183,21 @@ export default function HomePage({ params }: HomePageProps) {
               </dd>
             </div>
           </dl>
+          {isOwner && (
+            <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow">
+              <HomeShares
+                shares={home.shares}
+                pendingShares={home.pendingShares}
+                isOwner={isOwner}
+                homeId={home.id}
+                onUpdate={() => {
+                  // Optionally trigger a server-side revalidation if needed
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
-
-      {isOwner && (
-        <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-          <HomeShares
-            shares={home.shares}
-            pendingShares={home.pendingShares}
-            isOwner={isOwner}
-            homeId={home.id}
-            onUpdate={() => {
-              // Optionally trigger a server-side revalidation if needed
-            }}
-          />
-        </div>
-      )}
 
       <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <TaskList
@@ -224,9 +222,7 @@ export default function HomePage({ params }: HomePageProps) {
           </p>
         </Link>
 
-        <div className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
-          <PaintColors homeId={home.id} />
-        </div>
+        <PaintColors homeId={home.id} />
       </div>
 
       <ShareHomeDialog
