@@ -37,18 +37,22 @@ describe('TaskForm', () => {
   };
 
   it('should pre-select location fields when default values are provided', async () => {
-    render(
-      <TaskForm
-        {...defaultProps}
-        defaultItemId="item1"
-      />
-    );
+    render(<TaskForm {...defaultProps} defaultItemId="item1" />);
 
     await waitFor(() => {
-      console.log('Item select value:', (screen.getByLabelText(/item/i) as HTMLSelectElement).value);
-      console.log('Room select value:', (screen.getByLabelText(/room/i) as HTMLSelectElement).value);
-      console.log('Home select value:', (screen.getByLabelText(/home/i) as HTMLSelectElement).value);
-      
+      console.log(
+        'Item select value:',
+        (screen.getByLabelText(/item/i) as HTMLSelectElement).value
+      );
+      console.log(
+        'Room select value:',
+        (screen.getByLabelText(/room/i) as HTMLSelectElement).value
+      );
+      console.log(
+        'Home select value:',
+        (screen.getByLabelText(/home/i) as HTMLSelectElement).value
+      );
+
       expect(screen.getByLabelText(/item/i)).toHaveValue('item1');
       expect(screen.getByLabelText(/room/i)).toHaveValue('room1');
       expect(screen.getByLabelText(/home/i)).toHaveValue('home1');
@@ -56,12 +60,7 @@ describe('TaskForm', () => {
   });
 
   it('should only pre-select valid combinations of locations', async () => {
-    render(
-      <TaskForm
-        {...defaultProps}
-        defaultRoomId="room2"
-      />
-    );
+    render(<TaskForm {...defaultProps} defaultRoomId="room2" />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/home/i)).toHaveValue('home2');
@@ -88,12 +87,7 @@ describe('TaskForm', () => {
   });
 
   it('should clear dependent fields when parent selection changes', async () => {
-    render(
-      <TaskForm
-        {...defaultProps}
-        defaultItemId="item1"
-      />
-    );
+    render(<TaskForm {...defaultProps} defaultItemId="item1" />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/home/i)).toHaveValue('home1');

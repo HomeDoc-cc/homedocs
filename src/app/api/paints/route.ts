@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createPaint, getPaintByHome, getPaintByRoom } from '@/lib/paint.utils';
 import { getRequestContext, logger } from '@/lib/logger';
+import { createPaint, getPaintByHome, getPaintByRoom } from '@/lib/paint.utils';
 import { requireAuth } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
@@ -85,4 +85,4 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

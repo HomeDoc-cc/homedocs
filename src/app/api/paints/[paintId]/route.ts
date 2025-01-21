@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { deletePaint, updatePaint } from '@/lib/paint.utils';
 import { getRequestContext, logger } from '@/lib/logger';
+import { deletePaint, updatePaint } from '@/lib/paint.utils';
 import { requireAuth } from '@/lib/session';
 
 export async function PATCH(
@@ -71,4 +71,4 @@ export async function DELETE(
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-} 
+}

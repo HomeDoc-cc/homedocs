@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { deleteTask, updateTask } from '@/lib/task.utils';
 import { getRequestContext, logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/session';
+import { deleteTask, updateTask } from '@/lib/task.utils';
 
 export async function PATCH(
   request: NextRequest,

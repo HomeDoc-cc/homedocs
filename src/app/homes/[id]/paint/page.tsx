@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { use, useCallback, useEffect, useState } from 'react';
 
 import { PaintList } from '@/components/paint/paint-list';
@@ -16,7 +15,6 @@ interface PageProps {
 }
 
 export default function Page({ params }: PageProps) {
-  const router = useRouter();
   const { id } = use(params);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPaint, setSelectedPaint] = useState<PrismaPaint>();

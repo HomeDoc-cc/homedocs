@@ -1,11 +1,11 @@
 import { Inter } from 'next/font/google';
 
+import { GoogleMapsProvider } from '@/components/google-maps-provider';
 import { Footer } from '@/components/layout/footer';
 import { Navbar } from '@/components/layout/navbar';
 import { Providers } from '@/components/providers';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { QueryProvider } from '@/providers/query-provider';
-import { GoogleMapsProvider } from '@/components/google-maps-provider';
 
 import './globals.css';
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { TaskFormData } from '@/components/tasks/task-modal';
 import { TaskStatus } from '@/types/prisma';
@@ -56,83 +56,89 @@ export function useTaskActions(onTasksChange?: () => void) {
     [onTasksChange]
   );
 
-  const updateTask = useCallback(async (taskId: string, data: Partial<TaskFormData>) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const updateTask = useCallback(
+    async (taskId: string, data: Partial<TaskFormData>) => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      const payload = {
-        ...data,
-        description: data.description || null,
-        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
-        assigneeId: data.assigneeId || null,
-        interval: data.interval || null,
-        unit: data.unit || null,
-        homeId: data.homeId || null,
-        roomId: data.roomId || null,
-        itemId: data.itemId || null,
-      };
+        const payload = {
+          ...data,
+          description: data.description || null,
+          dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : null,
+          assigneeId: data.assigneeId || null,
+          interval: data.interval || null,
+          unit: data.unit || null,
+          homeId: data.homeId || null,
+          roomId: data.roomId || null,
+          itemId: data.itemId || null,
+        };
 
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Update task response error:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
+        const response = await fetch(`/api/tasks/${taskId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         });
-        throw new Error('Failed to update task');
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          console.error('Update task response error:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData,
+          });
+          throw new Error('Failed to update task');
+        }
+
+        const task = await response.json();
+        onTasksChange?.();
+        return task;
+      } catch (error) {
+        console.error('Error updating task:', error);
+        setError(error instanceof Error ? error.message : 'Failed to update task');
+        throw error;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [onTasksChange]
+  );
 
-      const task = await response.json();
-      onTasksChange?.();
-      return task;
-    } catch (error) {
-      console.error('Error updating task:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update task');
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onTasksChange]);
+  const deleteTask = useCallback(
+    async (taskId: string) => {
+      if (!confirm('Are you sure you want to delete this task?')) return false;
 
-  const deleteTask = useCallback(async (taskId: string) => {
-    if (!confirm('Are you sure you want to delete this task?')) return false;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Delete task response error:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch(`/api/tasks/${taskId}`, {
+          method: 'DELETE',
         });
-        throw new Error('Failed to delete task');
-      }
 
-      onTasksChange?.();
-      return true;
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      setError(error instanceof Error ? error.message : 'Failed to delete task');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onTasksChange]);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          console.error('Delete task response error:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorData,
+          });
+          throw new Error('Failed to delete task');
+        }
+
+        onTasksChange?.();
+        return true;
+      } catch (error) {
+        console.error('Error deleting task:', error);
+        setError(error instanceof Error ? error.message : 'Failed to delete task');
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onTasksChange]
+  );
 
   const completeTask = async (taskId: string) => {
     if (!confirm('Are you sure you want to mark this task as complete?')) return false;

@@ -22,7 +22,7 @@ export function HomeMap({ address, className = '' }: HomeMapProps) {
       try {
         const geocoder = new google.maps.Geocoder();
         const result = await geocoder.geocode({ address });
-        
+
         if (result.results[0]?.geometry?.location) {
           const location = result.results[0].geometry.location;
           setCoordinates({
@@ -42,16 +42,21 @@ export function HomeMap({ address, className = '' }: HomeMapProps) {
     }
   }, [address]);
 
-  const onLoad = useCallback((map: google.maps.Map) => {
-    if (coordinates) {
-      map.setZoom(15);
-      map.setCenter(coordinates);
-    }
-  }, [coordinates]);
+  const onLoad = useCallback(
+    (map: google.maps.Map) => {
+      if (coordinates) {
+        map.setZoom(15);
+        map.setCenter(coordinates);
+      }
+    },
+    [coordinates]
+  );
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`}>
+      <div
+        className={`flex items-center justify-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`}
+      >
         <p className="text-gray-500 dark:text-gray-400">{error}</p>
       </div>
     );
@@ -59,7 +64,9 @@ export function HomeMap({ address, className = '' }: HomeMapProps) {
 
   if (!coordinates) {
     return (
-      <div className={`flex items-center justify-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`}>
+      <div
+        className={`flex items-center justify-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg ${className}`}
+      >
         <p className="text-gray-500 dark:text-gray-400">Loading map...</p>
       </div>
     );
@@ -84,4 +91,4 @@ export function HomeMap({ address, className = '' }: HomeMapProps) {
       </GoogleMap>
     </div>
   );
-} 
+}
