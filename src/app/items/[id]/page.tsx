@@ -87,7 +87,12 @@ export default function ItemPage({ params }: ItemPageProps) {
     }
   }, [id, fetchItem]);
 
-  const { tasks, users, isLoading: isLoadingTasks, refetch } = useTaskData({
+  const {
+    tasks,
+    users,
+    isLoading: isLoadingTasks,
+    refetch,
+  } = useTaskData({
     type: 'item',
     id: id || undefined,
   });
@@ -248,13 +253,6 @@ export default function ItemPage({ params }: ItemPageProps) {
       </div>
 
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mt-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Tasks</h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            {canEdit ? 'View and manage tasks for this item' : 'View tasks for this item'}
-          </p>
-        </div>
-
         <TaskList
           tasks={tasks}
           users={users}
