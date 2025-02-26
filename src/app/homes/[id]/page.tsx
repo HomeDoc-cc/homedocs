@@ -184,7 +184,7 @@ export default function HomePage({ params }: HomePageProps) {
             </div>
           </dl>
           {isOwner && (
-            <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg">
               <HomeShares
                 shares={home.shares}
                 pendingShares={home.pendingShares}
